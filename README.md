@@ -42,6 +42,8 @@ From the project root directory:
 python -m controller.seed_admin 
 ```
 
+---
+
 ### Why `python -m controller.seed_admin` Is Required
 
 This project follows a **package-based structure**, where `controller/` is a Python module inside the application.
@@ -73,6 +75,8 @@ This avoids:
 
 - Import and context-related runtime errors
 
+---
+
 ### When to Run the Seeding Script
 
 You should run `seed_admin.py`:
@@ -82,6 +86,8 @@ You should run `seed_admin.py`:
 - Again only if the database (`instance/database.sqlite3`) is deleted or reset
 
 You should NOT run it on every application startup.
+
+---
 
 ### What Problem This Solves
 
@@ -96,6 +102,8 @@ This approach solves several common issues:
 - Keeps authentication, authorization, and setup logic cleanly separated
 
 - Maintains compatibility with SQLite and Flask’s app context model
+
+---
 
 ### Design Note
 
