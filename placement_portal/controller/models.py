@@ -11,14 +11,14 @@ class User(db.Model):
     blacklisted = db.Column(db.Boolean, default=False)
     image_url = db.Column(db.String(225))
     
-    student_details = db.relationship('Student', backref='user', uselist=False)
-    company_details = db.relationship('Company', backref='user', uselist=False)
-    # user_roles = db.relationship('UserRoles',secondary= , backref='user', lazy=True)
+    student_details = db.relationship('Student', backref='user', lazy=True, uselist=False)
+    company_details = db.relationship('Company', backref='user', lazy=True, uselist=False)
+    roles = db.relationship('Role', secondary='user_roles', backref='user', lazy=True, uselist=True)
     
 class Role(db.Model):
     
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String(80), nullable=False)
+    name = db.Column(db.String(10), nullable=False)
     
     # def __repr__(self):
     #     return f'<User {self.username}>'
