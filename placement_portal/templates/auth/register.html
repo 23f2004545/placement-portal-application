@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<div class="container d-flex justify-content-center align-items-center" style="min-height: calc(100vh - 63px)">
+<div class="register-wrapper">
+    <h2 class="register-title">Get Started</h2>
+    <p class="register-subtitle">Create your account to join the Apex portal.</p>
+
+    <form action="{{ url_for('register') if 'register' in config else '#' }}" method="POST">
+        
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label for="name" class="form-label">Full Name</label>
+                <input type="text" class="form-control" id="name" name="name" placeholder="John Doe" required>
+            </div>
+            <div class="col-md-6">
+                <label for="role" class="form-label">I am a...</label>
+                <select class="form-select" id="role" name="role" required>
+                    <option value="" selected disabled>Select Role</option>
+                    <option value="student">Student</option>
+                    <option value="company">Company / Recruiter</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label for="email" class="form-label">Email Address</label>
+                <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" required>
+            </div>
+            <div class="col-md-6">
+                <label for="contact" class="form-label">Contact Number</label>
+                <input type="tel" class="form-control" id="contact" name="contact" placeholder="+91 98765..." required>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control" id="password" name="password" placeholder="Create a strong password" required>
+        </div>
+
+        <div class="mb-4">
+            <label for="profile_pic" class="form-label">
+                Profile Picture URL <span class="text-white-50 fw-normal">(Optional)</span>
+            </label>
+            <input type="url" class="form-control" id="profile_pic" name="profile_pic" placeholder="https://...">
+        </div>
+
+        <div class="d-grid">
+            <button type="submit" class="btn btn-primary btn-register">Create Account</button>
+        </div>
+
+        <div class="text-center mt-4">
+            <span class="text-white-50">Already have an account?</span> 
+            <a href="/login" class="text-white fw-bold text-decoration-none ms-1"><u>Sign In</u></a>
+        </div>
+
+    </form>
+</div>
+</div>
+{% endblock %}

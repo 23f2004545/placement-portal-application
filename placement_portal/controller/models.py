@@ -69,7 +69,6 @@ class JobPosition(db.Model):
     job_status = db.Column(db.String(10), default='Hiring') # Hiring , Closed 
     job_timing = db.Column(db.String(30), nullable=False) # 9am-5pm , 5days a week 
     
-    
 class Application(db.Model):
     
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -92,4 +91,4 @@ class Placement(db.Model):
     offer_letter = db.Column(db.String(225), nullable=False) #url
     status = db.Column(db.String(15), default='Offered') # Offered , Joined , Declined
     
-    
+   

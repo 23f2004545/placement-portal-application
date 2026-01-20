@@ -1,0 +1,199 @@
+:root {
+    /* Modern Green Color Variables */
+    --primary-green: #198754;  /* Bootstrap Success Green */
+    --dark-green: #0f5132;     /* Darker shade for hover/active */
+    --forest-green: #2E8B57;   /* Classic Sea Green */
+    --navbar-bg: #206a5d;      /* Deep modern teal-green */
+    --teal-green: #206a5d;
+    --light-green: #d1e7dd;
+    --glass-bg: rgba(255, 255, 255, 0.1); /* Glass effect background */
+    --glass-border: rgba(255, 255, 255, 0.2);
+    }
+
+body {
+  /* background: linear-gradient(135deg, #34d399 0%, #047857 100%); */
+  background-image: url("../uploads/Background.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  min-height: 100vh;
+}
+
+  .navbar-custom {
+    background-color: var(--glass-bg);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .navbar-custom .navbar-brand,
+  .navbar-custom .nav-link {
+    color: #ffffff;
+    font-weight: 500;
+  }
+
+  .navbar-custom .nav-link:hover {
+    color: #d1e7dd; /* Light green text on hover */
+  }
+  
+  .navbar-custom .navbar-toggler {
+    border-color: rgba(255,255,255,0.5);
+  }
+
+  .navbar-custom .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 255, 255, 0.75)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+  }
+
+
+
+
+/* Login */
+
+/* Glass Container */
+.login-wrapper {
+    display: flex;
+    width: 900px;
+    max-width: 95%;
+    backdrop-filter: blur(15px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+
+/* Left Side: Image */
+.img-section {
+    flex: 1;
+    position: relative;
+    min-height: 400px;
+    background: url('../../static/uploads/Image.png') center/cover no-repeat;
+}
+
+/* Overlay Text */
+.overlay-text {
+    position: absolute;
+    bottom: 30px; 
+    left: 30px;
+    color: white;
+    z-index: 2;
+}
+
+/* Right Side: Form */
+.form-section {
+    flex: 1;
+    padding: 50px;
+    background: rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Modern Inputs */
+.form-control {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    height: 50px;
+}
+.form-control:focus {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: var(--primary-green);
+    color: white;
+    box-shadow: none;
+}
+.form-control::placeholder { color: rgba(255,255,255,0.6); }
+
+/* Button */
+.btn-custom {
+    background-color: var(--primary-green);
+    border: none;
+    padding: 12px;
+    font-weight: 600;
+    transition: 0.3s;
+}
+.btn-custom:hover { background-color: var(--dark-green); }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .login-wrapper { flex-direction: column; }
+    .img-section { min-height: 200px; }
+    .form-section { padding: 30px; }
+}
+
+
+/* Register */
+
+
+.register-wrapper {
+    width: 100%;
+    max-width: 600px; /* Controlled width since there is no side image */
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    padding: 40px;
+    color: white;
+}
+
+/* Typography */
+.register-title {
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-align: center;
+    letter-spacing: 0.5px;
+}
+
+.register-subtitle {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 30px;
+    font-size: 0.9rem;
+}
+
+/* Glass Inputs */
+.form-control, .form-select {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    height: 50px; /* Modern taller inputs */
+    border-radius: 10px;
+}
+
+.form-control:focus, .form-select:focus {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: var(--primary-green);
+    color: white;
+    box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
+}
+
+/* Placeholder and Dropdown Text Color */
+.form-control::placeholder { color: rgba(255,255,255,0.6); }
+
+/* Fix for Select Dropdown Options (options can't be transparent) */
+.form-select option {
+    background-color: #206a5d; /* Dark Green background for options */
+    color: white;
+}
+
+/* Labels */
+.form-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Button */
+.btn-register {
+    background-color: var(--primary-green);
+    border: none;
+    padding: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+}
+
+.btn-register:hover {
+    background-color: var(--dark-green);
+    transform: translateY(-2px); /* Subtle lift effect */
+}
