@@ -18,7 +18,7 @@ def seed_admin():
                 password="admin123", 
                 contact="7898789078", 
                 image_url="https//admin_image",
-                roles=[admin_role])
+                roles=admin_role)
 
         db.session.add(admin)
         db.session.commit()

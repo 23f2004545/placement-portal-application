@@ -29,17 +29,10 @@ with app.app_context():
 
 
 @app.route('/')
-def hello():
+def home():
     return render_template('base.html')
 
-@app.route('/login')
-def login():
-    return render_template('auth/login.html')
-
-@app.route('/register')
-def register():
-    return render_template('auth/register.html')
-
+from routes.auth_routes import *
 
 
 if __name__ == '__main__':

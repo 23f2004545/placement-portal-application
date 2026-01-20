@@ -13,7 +13,7 @@ class User(db.Model):
     
     student_details = db.relationship('Student', backref='user', lazy=True, uselist=False)
     company_details = db.relationship('Company', backref='user', lazy=True, uselist=False)
-    roles = db.relationship('Role', secondary='user_roles', backref='user', lazy=True, uselist=True)
+    roles = db.relationship('Role', secondary='user_roles', backref='user', lazy=True, uselist=False)
     
 class Role(db.Model):
     
