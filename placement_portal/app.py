@@ -1,4 +1,4 @@
-from flask import Flask , render_template
+from flask import Flask , render_template , session , redirect , url_for
 from controller.db import db
 from controller.models import *
 from config import config
@@ -28,15 +28,15 @@ with app.app_context():
     db.session.commit()
 
 
-@app.route('/')
-def home():
-    return render_template('base.html')
+# @app.route('/')
+# def home():
+#     return render_template('base.html')
 
-@app.route('/student')
-def student():
-    return render_template('student/dashboard.html')
 
 from routes.auth_routes import *
+from routes.admin_routes import *
+from routes.student_routes import *
+from routes.company_routes import *
 
 
 if __name__ == '__main__':

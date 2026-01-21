@@ -6,7 +6,8 @@ from controller.models import *
 def login():
     if request.method == 'GET':
         if 'user_id' in session:
-            return redirect(url_for('home'))  #redirect to assigned role's dashboard
+            role = session['role']
+            return redirect(url_for(f"{role}"))  #redirect to assigned role's dashboard
         return render_template('auth/login.html')
     
     if request.method == 'POST':
@@ -22,8 +23,9 @@ def login():
             if user.password == password:
                 session['user_id'] = user.id
                 session['role'] = user.roles.name
+                role = session['role']
                 flash('Login successful', 'success')
-                return redirect(url_for('home'))  #redirect to assigned role's dashboard
+                return redirect(url_for(f"{role}"))  #redirect to assigned role's dashboard
             else: 
                 flash('Incorrect email or password', 'warning')
                 return redirect('/login')
@@ -45,7 +47,8 @@ def logout():
 def register():
     if request.method == 'GET':
         if 'user_id' in session:
-            return redirect(url_for('home'))
+            role = session['role']
+            return redirect(url_for(f"{role}"))
         return render_template('auth/register.html')   
 
     if request.method == 'POST':
