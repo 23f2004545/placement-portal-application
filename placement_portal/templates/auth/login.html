@@ -38,3 +38,25 @@
 </div>
 </div>
 {% endblock %}
+
+{% block script %}
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Select all alerts
+      var alerts = document.querySelectorAll('.alert-dismissible');
+      
+      // Loop through each alert
+      alerts.forEach(function(alert) {
+        // Set a timeout of 4000ms (4 seconds)
+        setTimeout(function() {
+          // Create a Bootstrap alert instance to utilize the 'close' method
+          // Ensure you have bootstrap.js loaded for this to work
+          var bsAlert = new bootstrap.Alert(alert);
+          bsAlert.close();
+        }, 4000);
+      });
+    });
+  </script>
+
+{% endblock %}

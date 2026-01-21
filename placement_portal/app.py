@@ -32,6 +32,10 @@ with app.app_context():
 def home():
     return render_template('base.html')
 
+@app.route('/student')
+def student():
+    return render_template('student/dashboard.html')
+
 from routes.auth_routes import *
 
 

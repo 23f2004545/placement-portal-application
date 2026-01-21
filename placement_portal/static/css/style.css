@@ -197,3 +197,271 @@ body {
     background-color: var(--dark-green);
     transform: translateY(-2px); /* Subtle lift effect */
 }
+
+/* --- 1. DASHBOARD WRAPPER --- */
+.dashboard-wrapper {
+    display: flex;
+    background: var(--glass-bg);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    
+    /* Desktop: Floating Card */
+    margin-top: 20px;
+    height: calc(100vh - 100px); 
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative; /* Essential for z-index */
+}
+
+/* Mobile: Full Screen Snap */
+@media (max-width: 1024px) {
+    .dashboard-wrapper {
+        margin-top: 10;
+        height: calc(100vh - 100px); /* Fill space below navbar */
+        border-radius: 20;
+        border: 1px solid var(--glass-border);
+    }
+}
+
+/* --- 2. SIDEBAR (The Fix for Clickability & Mobile) --- */
+.sidebar {
+    width: 260px;
+    background: rgba(0, 0, 0, 0.2);
+    border-right: 1px solid var(--glass-border);
+    display: flex;
+    flex-direction: column;
+    transition: width 0.3s ease; 
+    padding: 20px 10px;
+    
+    /* FIX: High Z-Index ensures buttons are always clickable */
+    position: relative;
+    z-index: 100; 
+    flex-shrink: 0;
+}
+
+/* COLLAPSED STATE (Icons Only) */
+.sidebar.collapsed {
+    width: 80px;
+}
+
+/* Hiding Text Smoothly */
+.sidebar.collapsed .nav-text, 
+.sidebar.collapsed .user-info,
+.sidebar.collapsed .btn-text {
+    opacity: 0;
+    pointer-events: none; /* Prevents ghost clicks */
+    display: none; /* Removes from flow completely */
+}
+
+/* Center icons when collapsed */
+.sidebar.collapsed .sidebar-link {
+    justify-content: center;
+    padding-left: 0; 
+    padding-right: 0;
+}
+
+.sidebar.collapsed .sidebar-link i { margin: 0; }
+
+/* --- 3. MOBILE AUTOMATION (CSS Enforced) --- */
+/* This forces the collapsed look on small screens automatically */
+@media (max-width: 1024px) {
+    .sidebar {
+        width: 80px;
+        z-index: 1000; /* Force small width by default on mobile */
+    }
+    
+    .sidebar .nav-text, 
+    .sidebar .user-info,
+    .sidebar .btn-text {
+        display: none; /* Force hide text */
+    }
+
+    .sidebar .sidebar-link {
+        justify-content: center;
+    }
+    
+    /* Rotate the toggle arrow to show it can be expanded */
+    .sidebar .toggle-btn i {
+        transform: rotate(180deg); 
+    }
+
+    /* If user manually expands it on mobile (via JS), these override the defaults */
+    .sidebar.expanded {
+        width: 260px !important;
+        position: absolute; /* Float over content on mobile */
+        height: 100%;
+        top: 0;
+        left: 0;
+        background: #152825; /* Solid color for readability */
+        box-shadow: 10px 0 30px rgba(0,0,0,0.5);
+    }
+
+    .sidebar.expanded .nav-text,
+    .sidebar.expanded .user-info,
+    .sidebar.expanded .btn-text {
+        display: block !important;
+        animation: fadeIn 0.3s ease;
+        opacity: 1;
+    }
+
+    .sidebar.expanded .sidebar-link { justify-content: flex-start; }
+    .sidebar.expanded .toggle-btn { transform: rotate(0deg); }
+}
+
+
+/* --- 4. TOGGLE BUTTON --- */
+.toggle-btn {
+    position: absolute;
+    right: 2px; /* Inside the container */
+    top: 25px; 
+    background: var(--primary-green); 
+    border: 2px solid rgba(255,255,255,0.2);
+    color: white;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 200; /* Super high priority */
+    transition: 0.3s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.toggle-btn:hover { background: var(--forest-green); transform: scale(1.1); }
+.sidebar.collapsed .toggle-btn { transform: rotate(180deg); }
+
+
+/* USER PROFILE SECTION */
+.user-profile-section {
+    display: flex;
+    align-items: center;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--glass-border);
+    position: relative;
+    height: 70px; /* Fixed height stops jumping when text hides */
+    overflow: hidden; /* Ensures nothing spills out */
+}
+
+.user-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--primary-green);
+    background: #eee;
+    flex-shrink: 0;
+    transition: all 0.3s;
+}
+
+.user-info {
+    margin-left: 15px;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+}
+
+.user-name {
+    font-weight: 600;
+    color: white;
+    margin: 0;
+    font-size: 1rem;
+}
+
+.user-role {
+    font-size: 0.8rem;
+    color: var(--light-green);
+    margin: 0;
+}
+
+
+/* --- 6. NAV LINKS --- */
+.nav-section { flex-grow: 1; }
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    border-radius: 12px;
+    transition: all 0.2s;
+    white-space: nowrap;
+    background: transparent; /* Default transparent */
+    position: relative; /* For z-index */
+    z-index: 101; /* Above sidebar background */
+}
+
+.sidebar-link:hover, .sidebar-link.active {
+    background: rgba(25, 135, 84, 0.4); 
+    color: white;
+    border-left: 3px solid var(--primary-green);
+}
+
+.sidebar-link i { font-size: 1.3rem; min-width: 30px; text-align: center; }
+
+
+/* --- 7. CREATE BUTTON (Morphing) --- */
+.create-btn-container { margin-top: auto; }
+
+.btn-create {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary-green);
+    color: white;
+    border: none;
+    height: 50px;
+    width: 100%;
+    border-radius: 25px; /* Fully rounded pill shape */
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    text-decoration: none;
+    overflow: hidden;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(25, 135, 84, 0.3);
+    z-index: 101;
+}
+
+.btn-create:hover {
+    background: var(--forest-green);
+    transform: translateY(-2px);
+    color: white;
+}
+
+/* Collapsed Create Button -> Circle */
+.sidebar.collapsed .btn-create {
+    width: 50px;
+    border-radius: 50%;
+    padding: 0;
+}
+
+@media (max-width: 1024px) { .sidebar:not(.expanded) .btn-create {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    padding: 0;
+}}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.btn-icon { font-size: 1.5rem; font-weight: 300; line-height: 1; }
+.sidebar.collapsed .btn-icon { margin-right: 0; }
+
+
+/* --- 8. MAIN CONTENT --- */
+.main-content {
+    flex-grow: 1;
+    padding: 30px;
+    overflow-y: auto;
+}
+
+@media (max-width: 1024px) { .main-content { padding: 15px; } }
