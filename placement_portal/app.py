@@ -28,9 +28,12 @@ with app.app_context():
     db.session.commit()
 
 
-# @app.route('/')
-# def home():
-#     return render_template('base.html')
+@app.route('/')
+def home():
+    if 'user_id' in session:
+        role = session['role']
+        return redirect(url_for(f"{role}"))
+    return render_template('auth/login.html')
 
 
 from routes.auth_routes import *

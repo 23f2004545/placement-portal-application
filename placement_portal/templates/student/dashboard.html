@@ -10,12 +10,12 @@
                 
                 <div class="user-profile-section">
                     <!-- change src -->
-                    <img src="https://github.com/identicons/apex.png" alt="Profile" class="user-avatar"> 
+                    <img src="{{user.image_url}}" alt="Profile" class="user-avatar"> 
                     
                     <!-- change with variable ''{{f}}'' -->
                     <div class="user-info">
-                        <p class="user-name">nohara</p> 
-                        <p class="user-role">student</p>
+                        <p class="user-name">{{user.name}}</p> 
+                        <p class="user-role">(student)</p>
                     </div>
 
                     <button class="toggle-btn" id="sidebarToggle" >

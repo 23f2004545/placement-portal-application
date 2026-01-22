@@ -7,7 +7,7 @@ def login():
     if request.method == 'GET':
         if 'user_id' in session:
             role = session['role']
-            return redirect(url_for(f"{role}"))  #redirect to assigned role's dashboard
+            return redirect(url_for(f"{role}"))  
         return render_template('auth/login.html')
     
     if request.method == 'POST':
@@ -25,7 +25,7 @@ def login():
                 session['role'] = user.roles.name
                 role = session['role']
                 flash('Login successful', 'success')
-                return redirect(url_for(f"{role}"))  #redirect to assigned role's dashboard
+                return redirect(url_for(f"{role}"))  
             else: 
                 flash('Incorrect email or password', 'warning')
                 return redirect('/login')
@@ -57,7 +57,7 @@ def register():
         password = request.form.get('password' , None)
         contact = request.form.get('contact' , None)
         role = request.form.get('role' , None)
-        profile_pic = request.form.get('profile_pic') or f"https://api.dicebear.com/7.x/identicon/svg?seed={name}"
+        profile_pic = request.form.get('profile_pic') or f"https://github.com/identicons/{role}.png"
 
         if len(password) < 8:
             flash('Password must be at least 8 characters long', 'warning')
