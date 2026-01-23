@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}Complete Your Student Profile{% endblock %}
+
+{% block content %}
+<div class="container d-flex justify-content-center align-items-center" style="min-height: calc(100vh - 63px)">
+    <div class="auth-wrapper setup-container">
+
+        <div class="welcome-header">
+            <h2 class="auth-title">Welcome, {{ user.name }}!</h2>
+            <p class="auth-subtitle">Let's set up your profile so we can find the perfect jobs for you.</p>
+        </div>
+
+        <form action="/student/setup" method="POST" enctype="multipart/form-data" onsubmit="return validateSetup()">
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">CGPA (Out of 10)</label>
+                    <input type="number" step="0.01" max="10" class="form-control glass-input" id="cgpa" name="cgpa"
+                        placeholder="e.g. 8.5" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Experience (Years)</label>
+                    <input type="number" class="form-control glass-input" name="experience" placeholder="0 for Fresher"
+                        required>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Skill Set</label>
+                <input type="text" class="form-control glass-input text-capitalize" name="skill_set"
+                    placeholder="Java, Python, Flask, React..." required>
+                <small class="text-white-50 ms-1">Separate skills with commas</small>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Upload Resume (PDF only)</label>
+                <input type="file" class="form-control glass-input" id="resume" name="resume" accept=".pdf" required>
+                <small id="fileError" class="text-danger mt-1" style="display:none;">File too large (Max 2MB) or invalid
+                    format.</small>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Key Milestones / Achievements</label>
+                <textarea class="form-control glass-input" name="milestones" rows="3"
+                    placeholder="If Any ..."></textarea>
+            </div>
+
+            <button type="submit" class="btn-auth">Complete Profile</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function validateSetup() {
+        // 1. Validate CGPA
+        const cgpa = parseFloat(document.getElementById('cgpa').value);
+        if (cgpa > 10 || cgpa < 0) {
+            alert("CGPA must be between 0 and 10");
+            return false;
+        }
+
+        // 2. Validate Resume Size
+        const fileInput = document.getElementById('resume');
+        const maxSize = 2 * 1024 * 1024; // 2MB
+        if (fileInput.files.length > 0) {
+            if (fileInput.files[0].size > maxSize) {
+                document.getElementById('fileError').style.display = 'block';
+                return false;
+            }
+        }
+        return true;
+    }
+</script>
+{% endblock %}

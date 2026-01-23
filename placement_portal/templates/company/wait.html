@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}Verification Pending - Apex{% endblock %}
+
+{# Hide Navbar to prevent navigation #}
+{% block navbar %}{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-center" style="min-height: 90vh;">
+    
+    <div class="auth-wrapper p-5 text-center" style="max-width: 600px;">
+        
+        <div class="mb-4">
+            <i class="bi bi-hourglass-split" style="font-size: 4rem; color: var(--light-green);"></i>
+        </div>
+
+        <h2 class="auth-title mb-3">Verification in Progress</h2>
+        
+        <p class="auth-subtitle mb-4">
+            Thank you for completing your profile, <strong>{{ user.name }}</strong>. 
+            <br><br>
+            To ensure the safety of our students, an Admin must verify your company details. 
+            This usually takes <strong>24-48 hours</strong>.
+        </p>
+
+        <div class="alert alert-warning" role="alert" style="background: rgba(255,193,7,0.1); border-color: rgba(255,193,7,0.3); color: #ffca2c;">
+            <i class="bi bi-lock-fill me-2"></i> Dashboard access is restricted until approved.
+        </div>
+
+        <div class="mt-4">
+            <a href="/auth/logout" class="btn btn-outline-light px-4 rounded-pill">
+                Logout & Come Back Later
+            </a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

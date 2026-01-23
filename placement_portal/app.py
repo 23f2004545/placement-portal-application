@@ -3,6 +3,12 @@ from controller.db import db
 from controller.models import *
 from config import config
 
+from routes.auth_routes import auth_bp
+from routes.admin_routes import admin_bp
+from routes.student_routes import student_bp
+from routes.company_routes import company_bp
+
+
 app = Flask(__name__)
 app.config.from_object(config)
 db.init_app(app)
@@ -32,14 +38,16 @@ with app.app_context():
 def home():
     if 'user_id' in session:
         role = session['role']
-        return redirect(url_for(f"{role}"))
+        return redirect(url_for(f"{role}_bp.dashboard"))
     return render_template('auth/login.html')
 
 
-from routes.auth_routes import *
-from routes.admin_routes import *
-from routes.student_routes import *
-from routes.company_routes import *
+# REGISTER THE BLUEPRINT
+# url_prefix='/student' means every route in student_bp gets '/student' added to front
+app.register_blueprint(auth_bp, url_prefix='/auth')
+app.register_blueprint(admin_bp, url_prefix='/admin')
+app.register_blueprint(student_bp, url_prefix='/student')
+app.register_blueprint(company_bp, url_prefix='/company')
 
 
 if __name__ == '__main__':

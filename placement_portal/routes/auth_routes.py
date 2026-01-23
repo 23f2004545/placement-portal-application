@@ -1,13 +1,15 @@
-from app import app
-from flask import render_template , request , session , flash , redirect , url_for
+from flask import Blueprint ,current_app , render_template , request , session , flash , redirect , url_for
 from controller.models import *
+import os 
 
-@app.route('/login' , methods=['GET','POST'])
+auth_bp = Blueprint('auth_bp', __name__) 
+
+@auth_bp.route("/login" , methods=['GET','POST'])
 def login():
     if request.method == 'GET':
         if 'user_id' in session:
             role = session['role']
-            return redirect(url_for(f"{role}"))  
+            return redirect(url_for(f"{role}_bp.dashboard"))  
         return render_template('auth/login.html')
     
     if request.method == 'POST':
@@ -18,32 +20,32 @@ def login():
         user = User.query.filter_by(email=email).first()
         if not user:
             flash('Incorrect email or password', 'warning')
-            return redirect('/login')
+            return redirect(url_for('auth_bp.login'))
         else:
             if user.password == password:
                 session['user_id'] = user.id
                 session['role'] = user.roles.name
                 role = session['role']
                 flash('Login successful', 'success')
-                return redirect(url_for(f"{role}"))  
+                return redirect(url_for(f"{role}_bp.dashboard"))  
             else: 
                 flash('Incorrect email or password', 'warning')
-                return redirect('/login')
+                return redirect(url_for('auth_bp.login'))
         
         
-@app.route('/logout')
+@auth_bp.route('/logout')
 def logout():
     if "user_id" not in session:
         flash('You are not logged in', 'warning')
-        return redirect('/login')
+        return redirect(url_for('auth_bp.login'))
     else :
         session.pop('user_id')
         session.pop('role')
         flash('You are logged out', 'warning')
-        return redirect('/login')
+        return redirect(url_for('auth_bp.login'))
     
     
-@app.route('/register' , methods=['GET','POST'])
+@auth_bp.route("/register" , methods=['GET','POST'])
 def register():
     if request.method == 'GET':
         if 'user_id' in session:
@@ -57,16 +59,31 @@ def register():
         password = request.form.get('password' , None)
         contact = request.form.get('contact' , None)
         role = request.form.get('role' , None)
-        profile_pic = request.form.get('profile_pic') or f"https://github.com/identicons/{role}.png"
+        
+        profile_pic = None 
+        if 'profile_pic' in request.files:
+            file = request.files['profile_pic']
+            if file and file.filename != '':
+                filename = os.path.basename(file.filename) # Prevents directory traversal
+                save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'Profile_pics' , filename)
+                file.save(save_path)
 
+                profile_pic = f"/static/uploads/Profile_pics/{filename}"
+        # Fallback if no image uploaded
+        if not profile_pic :
+            profile_pic = f"/static/uploads/Profile_pics/{role}.png"
+            
+        
+        name = name.strip().title() 
+        
         if len(password) < 8:
             flash('Password must be at least 8 characters long', 'warning')
-            return redirect('/register')
+            return redirect(url_for('auth_bp.register'))
 
         user = User.query.filter_by(email=email).first()
         if user:        
             flash('User already exists', 'danger')
-            return redirect('/register')
+            return redirect(url_for('auth_bp.register'))
         
         role = Role.query.filter_by(name=role).first()
         user = User(
@@ -81,5 +98,5 @@ def register():
         db.session.add(user)
         db.session.commit()
         flash('Registration successful. Please login.', 'success')
-        return redirect('/login')
+        return redirect(url_for('auth_bp.login'))
         
