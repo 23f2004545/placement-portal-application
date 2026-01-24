@@ -1,4 +1,4 @@
-from flask import Flask , render_template , session , redirect , url_for
+from flask import Flask 
 from controller.db import db
 from controller.models import *
 from config import config
@@ -33,15 +33,6 @@ with app.app_context():
         
     db.session.commit()
 
-
-@app.route('/')
-def home():
-    if 'user_id' in session:
-        role = session['role']
-        return redirect(url_for(f"{role}_bp.dashboard"))
-    return render_template('auth/login.html')
-
-
 # REGISTER THE BLUEPRINT
 # url_prefix='/student' means every route in student_bp gets '/student' added to front
 app.register_blueprint(auth_bp, url_prefix='/auth')
@@ -49,6 +40,8 @@ app.register_blueprint(admin_bp, url_prefix='/admin')
 app.register_blueprint(student_bp, url_prefix='/student')
 app.register_blueprint(company_bp, url_prefix='/company')
 
+
+from routes.main_routes import *
 
 if __name__ == '__main__':
     app.run(debug=True)

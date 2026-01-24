@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Page Not Found - Apex{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-center" style="min-height: 80vh;">
+    <div class="auth-wrapper p-5 text-center" style="max-width: 600px;">
+        
+        <h1 style="font-size: 6rem; font-weight: 800; color: var(--light-green); opacity: 0.5;">404</h1>
+        
+        <h2 class="auth-title mb-3">Oops! Lost in Space?</h2>
+        
+        <p class="auth-subtitle mb-4">
+            The page you are looking for doesn't exist or has been moved.
+            <br>
+            Don't worry, let's get you back on track.
+        </p>
+
+        <a href="{{url_for('auth_bp.login')}}" class="btn btn-auth px-5 rounded-pill">
+            <i class="bi bi-house-door-fill me-2"></i> Go to Home
+        </a>
+
+    </div>
+</div>
+{% endblock %}

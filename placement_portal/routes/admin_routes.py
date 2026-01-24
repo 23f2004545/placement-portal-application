@@ -3,7 +3,7 @@ from controller.models import *
 
 admin_bp = Blueprint('admin_bp', __name__) 
 
-@admin_bp.route('/admin')
+@admin_bp.route('/dashboard')
 def dashboard():
     if not session.get('user_id', None):
         return redirect(url_for('auth_bp.login'))  
