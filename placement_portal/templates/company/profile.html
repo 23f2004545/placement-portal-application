@@ -1,0 +1,138 @@
+{% extends 'student/dashboard.html' %}
+
+{% block title %}Company Profile - Apex{% endblock %}
+
+{% block dashboard_content %}
+<div class="profile-container fade-in">
+    
+    <div class="glass-card profile-header-card">
+        <div class="d-flex align-items-center flex-wrap gap-4">
+            <div class="profile-img-container">
+                <img src="{{user.image_url}}" alt="Company Logo" class="profile-img-lg">
+            </div>
+
+            <div class="flex-grow-1">
+                <div class="d-flex align-items-center gap-2">
+                    <h2 class="text-white fw-bold mb-0">{{ user.company_details.company_name }}</h2>
+                    <a href="#" class="edit-icon" title="Edit Name"><i class="bi bi-pencil-fill"></i></a>
+                </div>
+                <p class="text-success mb-1">Company <a href="#" class="edit-icon-sm"><i class="bi bi-pencil-fill"></i></a></p>
+                <small class="text-white-50">
+                    <i class="bi bi-calendar-event me-1"></i> 
+                    Joined: {{ user.created_at.strftime('%b %d, %Y') }}
+                </small>
+            </div>
+
+            {% if user.blacklisted %}
+            <div class="status-badge danger-glow">
+                <span class="fw-bold"><i class="bi bi-exclamation-triangle-fill me-1"></i> BLACKLISTED</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="glass-card">
+        <div class="card-header-flex">
+            <h4 class="section-title">Company Details</h4>
+            <a href="#" class="edit-icon"><i class="bi bi-pencil-fill"></i></a>
+        </div>
+        
+        <div class="row g-4 mt-1">
+            <div class="col-md-6">
+                <div class="info-item">
+                    <i class="bi bi-globe icon-lg"></i>
+                    <div class="overflow-hidden">
+                        <span class="d-block text-white-50 text-uppercase text-xs">Website</span>
+                        {% if user.company_details.website %}
+                            <a href="{{ user.company_details.website }}" target="_blank" class="text-white text-decoration-underline text-truncate d-block">
+                                {{ user.company_details.website }} <i class="bi bi-box-arrow-up-right ms-1" style="font-size: 0.8rem;"></i>
+                            </a>
+                        {% else %}
+                            <span class="text-white-50">Not Provided</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="info-item">
+                    <i class="bi bi-geo-alt-fill icon-lg"></i>
+                    <div class="w-100">
+                        <span class="d-block text-white-50 text-uppercase text-xs">Location</span>
+                        <span class="fw-bold text-white d-block text-truncate" style="max-width: 90%;" title="{{ user.company_details.location }}">
+                            {{ user.company_details.location }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="info-item">
+                    <i class="bi bi-person-badge-fill icon-lg"></i>
+                    <div>
+                        <span class="d-block text-white-50 text-uppercase text-xs">HR Representative</span>
+                        <span class="text-white">{{ user.company_details.hr_name }}</span> </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="info-item">
+                    <i class="bi bi-people-fill icon-lg"></i>
+                    <div>
+                        <span class="d-block text-white-50 text-uppercase text-xs">Team Size</span>
+                        <span class="text-white">{{user.company_details.employee_count}}</span> </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass-card">
+        <div class="card-header-flex">
+            <h4 class="section-title">About the Company</h4>
+            <a href="#" class="edit-icon"><i class="bi bi-pencil-fill"></i></a>
+        </div>
+
+        <div class="row mt-2">
+            <div class="col-12">
+                {% if user.company_details.description %}
+                    <p class="text-white lh-lg opacity-75">
+                        {{ user.company_details.description }}
+                    </p>
+                {% else %}
+                    <span class="text-white-50">Add description now</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="glass-card">
+        <div class="card-header-flex">
+            <h4 class="section-title">Contact Information</h4>
+            <a href="#" class="edit-icon"><i class="bi bi-pencil-fill"></i></a>
+        </div>
+
+        <div class="row g-4 mt-1">
+            <div class="col-md-6">
+                <div class="info-item">
+                    <i class="bi bi-envelope-fill icon-lg"></i>
+                    <div>
+                        <span class="d-block text-white-50 text-uppercase text-xs">Email</span>
+                        <span class="text-white">{{ user.email }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="info-item">
+                    <i class="bi bi-telephone-fill icon-lg"></i>
+                    <div>
+                        <span class="d-block text-white-50 text-uppercase text-xs">Contact</span>
+                        <span class="text-white">+91 {{ user.contact }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

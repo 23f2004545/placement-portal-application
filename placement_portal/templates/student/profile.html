@@ -1,0 +1,133 @@
+{% extends 'student/dashboard.html' %}
+
+{% block title %}My Profile - Apex{% endblock %}
+
+{% block dashboard_content %}
+<div class="profile-container fade-in">
+    
+    <div class="glass-card profile-header-card">
+        <div class="d-flex align-items-center flex-wrap gap-4">
+            <div class="profile-img-container">
+                <img src="{{user.image_url}}" alt="Profile" class="profile-img-lg">
+            </div>
+
+            <div class="flex-grow-1">
+                <div class="d-flex align-items-center gap-2">
+                    <h2 class="text-white fw-bold mb-0">{{ user.name }}</h2>
+                </div>
+                <p class="text-info mb-1">(Student) </p>
+                <small class="text-white-50">
+                    <i class="bi bi-calendar-event me-1"></i> 
+                    Joined: {{ user.created_at.strftime('%b %d, %Y') }}
+                </small>
+            </div>
+            
+            <div class="d-flex align-items-center gap-3">
+                <a href="/student/profile/edit" class="btn btn-outline-light rounded-pill px-4 glass-btn">
+                    <i class="bi bi-pencil-square me-2"></i> Edit Profile
+                </a>
+                {% if user.blacklisted %}
+                <div class="status-badge danger-glow">
+                    <span class="fw-bold"><i class="bi bi-exclamation-triangle-fill me-1"></i> BLACKLISTED</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="glass-card">
+        <div class="card-header-flex">
+            <h4 class="section-title">Academic & Skills</h4>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="info-item">
+                    <i class="bi bi-mortarboard-fill icon-lg"></i>
+                    <div>
+                        <span class="d-block text-white-50 text-uppercase text-xs">CGPA</span>
+                        <span class="fw-bold text-white fs-5">{{ user.student_details.cgpa }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="info-item">
+                    <i class="bi bi-briefcase-fill icon-lg"></i>
+                    <div>
+                        <span class="d-block text-white-50 text-uppercase text-xs">Experience</span>
+                        <span class="fw-bold text-white fs-5">{{ user.student_details.experience }} Years</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-12">
+                <div class="info-item">
+                    <i class="bi bi-cpu-fill icon-lg"></i>
+                    <div>
+                        <span class="d-block text-white-50 text-uppercase text-xs">Skill Set</span>
+                        <span class="text-white">{{ user.student_details.skill_set }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass-card">
+        <div class="card-header-flex">
+            <h4 class="section-title">Achievements & Resume</h4>
+        </div>
+
+        <div class="row align-items-center mt-2">
+            <div class="col-md-8">
+                {% if user.student_details.milestones %}
+                    <ul class="milestone-list">
+                        <li class="text-white mb-2">
+                            {{ user.student_details.milestones }}
+                        </li>
+                    </ul>
+                {% else %}
+                    <span class="text-white-50">Add your Milestones</span>
+                {% endif %}
+            </div>
+
+            <div class="col-md-4 text-md-end text-center mt-3 mt-md-0">
+                <div class="d-flex align-items-center justify-content-end gap-2">
+                    <a href="{{user.student_details.resume}}" target="_blank" class="btn btn-outline-light rounded-pill px-4 glass-btn">
+                        Download Resume (PDF)
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass-card">
+        <div class="card-header-flex">
+            <h4 class="section-title">Contact Information</h4> 
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="info-item">
+                    <i class="bi bi-envelope-fill icon-lg"></i>
+                    <div>
+                        <span class="d-block text-white-50 text-uppercase text-xs">Email</span>
+                        <span class="text-white">{{ user.email }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="info-item">
+                    <i class="bi bi-telephone-fill icon-lg"></i>
+                    <div>
+                        <span class="d-block text-white-50 text-uppercase text-xs">Contact</span>
+                        <span class="text-white">+91 {{ user.contact }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

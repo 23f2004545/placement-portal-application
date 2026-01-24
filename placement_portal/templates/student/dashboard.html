@@ -24,7 +24,7 @@
                 </div>
 
                 <div class="nav-section">
-                    <a href="#" class="sidebar-link {% if active_page == 'profile' %}active{% endif %}">
+                    <a href="{{ url_for('student_bp.profile') }}" class="sidebar-link {% if active_page == 'profile' %}active{% endif %}">
                         <i class="bi bi-person-badge"></i>
                         <span class="nav-text">&nbsp;Profile</span>
                     </a>

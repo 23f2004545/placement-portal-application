@@ -5,7 +5,7 @@ from flask import  render_template , session , flash , redirect , url_for
 def home():
     if 'user_id' in session:
         role = session['role']
-        return redirect(url_for(f"{role}_bp.dashboard"))
+        return redirect(url_for(f"{role}_bp.profile"))
     return render_template('auth/login.html')
 
 

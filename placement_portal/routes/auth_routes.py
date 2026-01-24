@@ -9,7 +9,7 @@ def login():
     if request.method == 'GET':
         if 'user_id' in session:
             role = session['role']
-            return redirect(url_for(f"{role}_bp.dashboard"))  
+            return redirect(url_for(f"{role}_bp.profile"))  
         return render_template('auth/login.html')
     
     if request.method == 'POST':
@@ -27,7 +27,7 @@ def login():
                 session['role'] = user.roles.name
                 role = session['role']
                 flash('Login successful', 'success')
-                return redirect(url_for(f"{role}_bp.dashboard"))  
+                return redirect(url_for(f"{role}_bp.profile"))  
             else: 
                 flash('Incorrect email or password', 'warning')
                 return redirect(url_for('auth_bp.login'))

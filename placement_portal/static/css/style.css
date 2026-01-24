@@ -30,6 +30,10 @@ body {
 
 /* Navbar Customization */
 .navbar-custom {
+    position: sticky; /* Stick to top */
+    top: 0;
+    z-index: 1050; /* Ensure it stays above everything */
+    width: 100%;
     background-color: var(--glass-bg);
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     backdrop-filter: blur(10px); /* Added blur for better read */
@@ -450,8 +454,165 @@ select.glass-input option {
 /* Main Content Area */
 .main-content {
     flex-grow: 1;
-    padding: 30px;
+    padding: 15px;
     overflow-y: auto;
 }
 
 @media (max-width: 1024px) { .main-content { padding: 15px; } }
+
+/* =========================================
+   5. PROFILE PAGE SPECIFIC STYLES
+   ========================================= */
+
+/* Main Container */
+.profile-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Space between cards */
+    max-width: 1000px;
+    margin: 0 auto; /* Center content */
+}
+
+/* Generic Glass Card for Sections */
+.glass-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 25px;
+    /* Reuse backdrop filter from global if needed, usually inherited */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* Profile Header Specifics */
+.profile-img-lg {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--light-green);
+    box-shadow: 0 0 20px rgba(25, 135, 84, 0.4);
+}
+
+/* The Glowing Status Badge */
+.status-badge {
+    padding: 10px 20px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+    backdrop-filter: blur(5px);
+}
+
+.danger-glow {
+    background: rgba(220, 53, 69, 0.2); /* Bootstrap Danger Red transparent */
+    border: 1px solid rgba(220, 53, 69, 0.4);
+    color: #ffcccc;
+    box-shadow: 0 0 15px rgba(220, 53, 69, 0.5); /* The Red Glow */
+}
+
+.success-dim {
+    background: rgba(25, 135, 84, 0.1);
+    border: 1px solid rgba(25, 135, 84, 0.2);
+    color: var(--light-green);
+}
+
+/* Section Titles */
+.card-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 10px;
+}
+
+.section-title {
+    color: var(--text-white);
+    font-weight: 600;
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+/* Icon + Text Groupings */
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.icon-lg {
+    font-size: 1.8rem;
+    color: var(--text-muted); /* Icon color */
+}
+
+.text-xs { font-size: 0.75rem; letter-spacing: 1px; }
+
+/* Edit Icons */
+.edit-icon {
+    color: var(--text-muted);
+    transition: 0.3s;
+    font-size: 1rem;
+    opacity: 0.7;
+}
+
+.edit-icon:hover {
+    color: var(--light-green);
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.edit-icon-sm { font-size: 0.8rem; margin-left: 5px; color: var(--text-muted); }
+
+.box-edit {
+    border: 1px solid var(--glass-border);
+    padding: 8px;
+    border-radius: 8px;
+    display: inline-flex;
+}
+
+/* Resume Button Custom */
+.glass-btn {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.2);
+    transition: all 0.3s;
+}
+
+.glass-btn:hover {
+    background: rgba(255,255,255,0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+/* Fade In Animation for smooth load */
+.fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Mobile Responsiveness for Profile */
+@media (max-width: 768px) {
+    .profile-header-card .d-flex {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .card-header-flex {
+        align-items: flex-start;
+    }
+    
+    .info-item {
+        margin-bottom: 15px;
+    }
+}
+
+/* Helper for Long Addresses/Links */
+.text-truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+/* Ensure the container doesn't break when truncating */
+.info-item .w-100 {
+    min-width: 0; /* Critical flexbox fix for truncation */
+}
