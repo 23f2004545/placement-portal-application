@@ -1,0 +1,72 @@
+{% extends 'student/dashboard.html' %}
+
+{% block title %}Job Postings{% endblock %}
+
+{% block dashboard_content %}
+<div class="job-container fade-in">
+    
+    <div class="search-wrapper mb-4">
+        <form action="{{ url_for('student_bp.job_postings') }}" method="GET" class="d-flex w-100">
+            <div class="input-group glass-input-group">
+                <span class="input-group-text bg-transparent border-0 text-white-50">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="text" name="q" value="{{ search_query }}" class="form-control bg-transparent border-0 text-white shadow-none" placeholder="Search by Company, Position, or Skills...">
+                {% if search_query %}
+                    <a href="{{ url_for('student_bp.job_postings') }}" class="btn btn-link text-white-50 text-decoration-none">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <div class="job-list">
+        {% if jobs %}
+            {% for job in jobs %}
+            <div class="glass-card job-card mb-3">
+                <div class="d-flex align-items-start gap-3">
+                    
+                    <div class="job-logo-container">
+                        <img src="{{ url_for('static', filename=job.company.user.image_url) }}" alt="Logo" class="job-logo">
+                    </div>
+
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <h5 class="text-white fw-bold mb-0">{{ job.company.company_name }}</h5>
+                            <span class="badge bg-success-subtle text-success rounded-pill px-2 py-1" style="font-size: 0.7rem;">Hiring</span>
+                        </div>
+                        
+                        <h4 class="text-white fw-bold mb-2">{{ job.title }}</h4>
+                        
+                        <div class="d-flex flex-wrap gap-3 text-white-50 small mb-3">
+                            <span><i class="bi bi-cash-stack me-1"></i> {{ job.pay_range }}</span>
+                            <span><i class="bi bi-people me-1"></i> {{ job.job_type }}</span>
+                            <span><i class="bi bi-clock me-1"></i> {{ job.timing }}</span>
+                        </div>
+
+                        <div class="text-end">
+                            <small class="text-white-50" style="font-size: 0.75rem;">Created at: {{ job.created_at.strftime('%b %d, %Y') }}</small>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-column gap-2">
+                        <a href="#" class="btn btn-outline-light btn-sm glass-btn px-4">View</a>
+                        <a href="#" class="btn btn-success btn-sm px-4">Apply</a>
+                    </div>
+
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="text-center text-white-50 mt-5">
+                <i class="bi bi-briefcase fs-1 d-block mb-3"></i>
+                <p>No job postings found matching your search.</p>
+                <a href="{{ url_for('student_bp.job_postings') }}" class="text-success">Clear Search</a>
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+
+{% endblock %}

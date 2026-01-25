@@ -29,33 +29,33 @@
                         <span class="nav-text">&nbsp;Profile</span>
                     </a>
 
-                    <a href="#" class="sidebar-link {% if active_page == 'jobs' %}active{% endif %}">
+                    <a href="{{ url_for('student_bp.job_postings') }}" class="sidebar-link {% if active_page == 'jobs' %}active{% endif %}">
                         <i class="bi bi-briefcase"></i>
                         <span class="nav-text">&nbsp;Job Postings</span>
                     </a>
 
-                    <a href="#" class="sidebar-link {% if active_page == 'applications' %}active{% endif %}">
+                    <a href="{{ url_for('student_bp.applications') }}" class="sidebar-link {% if active_page == 'applications' %}active{% endif %}">
                         <i class="bi bi-file-earmark-text"></i>
                         <span class="nav-text">&nbsp;Applications</span>
                     </a>
 
-                    <a href="#" class="sidebar-link {% if active_page == 'notifications' %}active{% endif %}">
+                    <a href="{{ url_for('student_bp.notifications') }}" class="sidebar-link {% if active_page == 'notifications' %}active{% endif %}">
                         <i class="bi bi-bell"></i>
                         <span class="nav-text">&nbsp;Notifications</span>
                     </a>
 
-                    <a href="#" class="sidebar-link {% if active_page == 'history' %}active{% endif %}">
+                    <a href="{{ url_for('student_bp.history') }}" class="sidebar-link {% if active_page == 'history' %}active{% endif %}">
                         <i class="bi bi-clock-history"></i>
                         <span class="nav-text">&nbsp;History</span>
                     </a>
                 </div>
 
-                <div class="create-btn-container">
+                <!-- <div class="create-btn-container">
                     <a href="#" class="btn-create" title="Create New">
                         <span class="btn-icon">+</span>
                         <span class="btn-text">&nbsp;Create</span>
                     </a>
-                </div>
+                </div> -->
             </aside>
 
 
@@ -67,7 +67,7 @@
     </div>
     {% endblock %}
 
-    {% block script %}
+{% block script %}
     <script>
         const Btn = document.getElementById('sidebarToggle');
         const Sidebar = document.getElementById('sidebar');

@@ -13,7 +13,7 @@
             </a>
         </div>
 
-        <form action="{{ url_for('student_bp.edit_profile') }}" method="POST" enctype="multipart/form-data" onsubmit="return validateSetup()">
+        <form action="/student/profile/edit" method="POST" enctype="multipart/form-data" onsubmit="return validateSetup()">
             
             <h5 class="text-success mb-3 border-bottom border-secondary pb-2">Personal Information</h5>
             <div class="row g-3 mb-4">

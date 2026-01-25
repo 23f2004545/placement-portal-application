@@ -27,17 +27,17 @@
                         <span class="nav-text">&nbsp;Profile</span>
                     </a>
 
-                    <a href="#" class="sidebar-link {% if active_page == 'jobs' %}active{% endif %}">
+                    <a href="{{ url_for('company_bp.job_postings') }}" class="sidebar-link {% if active_page == 'jobs' %}active{% endif %}">
                         <i class="bi bi-briefcase"></i>
                         <span class="nav-text">&nbsp;Job Postings</span>
                     </a>
 
-                    <a href="#" class="sidebar-link {% if active_page == 'applications' %}active{% endif %}">
+                    <a href="{{ url_for('company_bp.applications') }}" class="sidebar-link {% if active_page == 'applications' %}active{% endif %}">
                         <i class="bi bi-file-earmark-text"></i>
                         <span class="nav-text">&nbsp;Job Applications</span>
                     </a>
 
-                    <a href="#" class="sidebar-link {% if active_page == 'notifications' %}active{% endif %}">
+                    <a href="{{ url_for('company_bp.shortlisted') }}" class="sidebar-link {% if active_page == 'notifications' %}active{% endif %}">
                         <i class="bi bi-card-checklist"></i>
                         <span class="nav-text">&nbsp;Shortlisted</span>
                     </a>
@@ -49,7 +49,7 @@
                 </div>
 
                 <div class="create-btn-container">
-                    <a href="#" class="btn-create" title="Create New">
+                    <a href="/company/jobs/create" class="btn-create" title="Create New">
                         <span class="btn-icon">+</span>
                         <span class="btn-text">&nbsp;Post Job</span>
                     </a>

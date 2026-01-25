@@ -19,7 +19,7 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="text-white-50 small mb-1">HR Name</label>
-                    <input type="text" name="hr_name" class="form-control glass-input" value="{{ user.name }}" required>
+                    <input type="text" name="hr_name" class="form-control glass-input" value="{{ user.company_details.hr_name }}" required>
                 </div>
                 <div class="col-md-6">
                     <label class="text-white-50 small mb-1">Contact Number</label>
@@ -36,8 +36,8 @@
             <h5 class="text-success mb-3 border-bottom border-secondary pb-2">Company Information</h5>
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
-                    <label class="text-white-50 small mb-1">Company Name</label>
-                    <input type="text" name="company_name" class="form-control glass-input" value="{{ user.company_details.company_name }}" required>
+                    <label class="text-white-50 small mb-1">Name</label>
+                    <input type="text" name="company_name" class="form-control glass-input" value="{{ user.name }}" required>
                 </div>
                 <div class="col-md-6">
                     <label class="text-white-50 small mb-1">Location (Headquarters)</label>

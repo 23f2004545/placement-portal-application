@@ -1,0 +1,77 @@
+{% extends 'student/dashboard.html' %}
+
+{% block title %}My History{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="container-fluid fade-in">
+    
+    <h3 class="text-white fw-bold mb-4">Placement History</h3>
+
+    {% if placements %}
+    <div class="row g-4">
+        {% for offer in placements %}
+        <div class="col-lg-6">
+            <div class="glass-card p-0 overflow-hidden h-100 d-flex flex-column">
+                
+                <div class="p-4 border-bottom border-secondary bg-white-10">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="d-flex gap-3 align-items-center">
+                            <img src="{{ url_for('static', filename=offer.application.job.company.user.image_url) }}" 
+                                 alt="Logo" style="width: 50px; height: 50px; border-radius: 10px; background: white; object-fit: contain;">
+                            <div>
+                                <h5 class="text-white fw-bold mb-0">{{ offer.application.job.company.company_name }}</h5>
+                                <p class="text-success mb-0 small">{{ offer.application.job.title }}</p>
+                            </div>
+                        </div>
+                        
+                        <span class="badge {% if offer.status == 'Joined' %}bg-success{% elif offer.status == 'Declined' %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+                            {{ offer.status }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="p-4 flex-grow-1">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="text-white-50 text-xs text-uppercase">Salary Offered</label>
+                            <p class="text-white fw-bold fs-5 mb-0">{{ offer.salary_offered }}</p>
+                        </div>
+                        <div class="col-6">
+                            <label class="text-white-50 text-xs text-uppercase">Joining Date</label>
+                            <p class="text-white fw-bold fs-5 mb-0">{{ offer.joining_date }}</p>
+                        </div>
+                        <div class="col-12">
+                            <label class="text-white-50 text-xs text-uppercase">Offer Date</label>
+                            <p class="text-white mb-0">{{ offer.created_at.strftime('%B %d, %Y') }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-black-20 d-flex gap-2">
+                    <a href="{{ url_for('static', filename=offer.offer_letter) }}" target="_blank" class="btn btn-outline-light btn-sm w-100">
+                        <i class="bi bi-file-earmark-pdf me-2"></i> Offer Letter
+                    </a>
+                    
+                    {% if offer.status == 'Offered' %}
+                        <button class="btn btn-success btn-sm w-100">Accept</button>
+                        <button class="btn btn-danger btn-sm w-100">Decline</button>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="text-center text-white-50 mt-5">
+        <i class="bi bi-trophy fs-1 d-block mb-3 opacity-50"></i>
+        <p>No placement offers yet. Keep applying!</p>
+        <a href="{{ url_for('student_bp.job_postings') }}" class="btn btn-success btn-sm rounded-pill px-4">Find Jobs</a>
+    </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}

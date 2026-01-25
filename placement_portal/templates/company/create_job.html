@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Post New Job{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-center fade-in">
+    <div class="glass-card p-4" style="width: 100%; max-width: 800px;">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="text-white fw-bold mb-0">Create Job Position</h3>
+            <a href="{{ url_for('company_bp.job_postings') }}" class="btn btn-sm btn-outline-light rounded-circle">
+                <i class="bi bi-x-lg"></i>
+            </a>
+        </div>
+
+        <form action="{{ url_for('company_bp.create_job') }}" method="POST">
+            
+            <h5 class="text-success mb-3 border-bottom border-secondary pb-2">Job Details</h5>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="text-white-50 small mb-1">Job Title</label>
+                    <input type="text" name="job_title" class="form-control glass-input" placeholder="e.g. Senior Backend Engineer" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="text-white-50 small mb-1">Job Type</label>
+                    <select name="job_type" class="form-select glass-input" required>
+                        <option value="" disabled selected>Select Type</option>
+                        <option value="Remote">Remote</option>
+                        <option value="Onsite">Onsite</option>
+                        <option value="Hybrid">Hybrid</option>
+                    </select>
+                </div>
+            </div>
+
+            <h5 class="text-success mb-3 border-bottom border-secondary pb-2">Logistics</h5>
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label class="text-white-50 small mb-1">Pay Range</label>
+                    <input type="text" name="job_pay" class="form-control glass-input" placeholder="e.g. $80k - $100k" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="text-white-50 small mb-1">Timing / Schedule</label>
+                    <input type="text" name="job_timing" class="form-control glass-input" placeholder="e.g. 9am-5pm, Mon-Fri" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="text-white-50 small mb-1">Location</label>
+                    <input type="text" name="job_location" class="form-control glass-input" placeholder="e.g. San Francisco, CA" required>
+                </div>
+            </div>
+
+            <h5 class="text-success mb-3 border-bottom border-secondary pb-2">Description</h5>
+            <div class="mb-3">
+                <label class="text-white-50 small mb-1">Job Requirements (Skills, experience, etc.)</label>
+                <input type="text" name="requirements" class="form-control glass-input" placeholder="e.g. Python, SQL, 3+ years experience" required>
+                <small class="text-white-50" style="font-size: 0.75rem;">Keep it short and comma separated for better search visibility.</small>
+            </div>
+            
+            <div class="mb-4">
+                <label class="text-white-50 small mb-1">Full Job Description</label>
+                <textarea name="job_description" class="form-control glass-input" rows="6" placeholder="Describe the role, responsibilities, and company culture..." required></textarea>
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a href="{{ url_for('company_bp.job_postings') }}" class="btn btn-outline-light px-4 rounded-pill">Cancel</a>
+                <button type="submit" class="btn btn-success px-5 rounded-pill fw-bold">Post Job</button>
+            </div>
+
+        </form>
+    </div>
+</div>
+{% endblock %}

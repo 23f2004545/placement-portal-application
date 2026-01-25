@@ -21,6 +21,8 @@ def profile():
         flash('Unauthorized access', 'danger')
         return redirect(url_for('auth_bp.login'))
     
+    
+    
 @company_bp.route('/setup', methods=['GET', 'POST'])
 def setup():
     user_id = session['user_id']
@@ -42,7 +44,9 @@ def setup():
         location = request.form.get('location')
         website = request.form.get('website') 
         description = request.form.get('description')
-            
+        
+        hr_name = hr_name.strip().title()        
+        location = location.strip().title()        
         # --- CREATE company RECORD ---
         user_id = session['user_id']
         new_company = Company(
@@ -86,17 +90,17 @@ def edit_profile():
     if request.method == 'GET':
         if not session.get('user_id', None):
             return redirect(url_for('auth_bp.login'))    
-    elif session.get('role') == 'company':
-        if current_user.company_details:
-            return render_template('company/profile.html' , user=current_user)
-        return render_template('compan/setup.html' , user=current_user)
-    else :
-        flash('Unauthorized access', 'danger')
-        return redirect(url_for('auth_bp.login'))
+        elif session.get('role') == 'company':
+            return render_template('compan/edit.html' , user=current_user)
+        else :
+            flash('Unauthorized access', 'danger')
+            return redirect(url_for('auth_bp.login'))
     
     if request.method == 'POST':
         try:
-            current_user.name = request.form.get('hr_name')
+            name = request.form.get('name')
+            
+            current_user.name = name.strip().title()
             current_user.contact = request.form.get('contact')
 
             if 'profile_pic' in request.files:
@@ -110,8 +114,11 @@ def edit_profile():
 
             # --- Update Company Table (Business Info) ---
             company = current_user.company_details
-            company.company_name = request.form.get('company_name')
-            company.location = request.form.get('location')
+            hr_name = request.form.get('hr_name')
+            location = request.form.get('location')
+            
+            company.hr_name = hr_name.split().title()
+            company.location = location.strip().title()
             company.website = request.form.get('website')
             company.description = request.form.get('description')
 
@@ -126,3 +133,97 @@ def edit_profile():
 
     # 2. GET: Show Form
     return render_template('company/edit.html', user=current_user)
+
+
+@company_bp.route('/job_postings')
+def job_postings():
+    user_id = session['user_id']
+    current_user = User.query.filter_by(id=user_id).first()
+    if not session.get('user_id', None):
+        return redirect(url_for('auth_bp.login'))
+    elif session.get('role') == 'company':
+        if not current_user.company_details:
+            flash('Please complete your profile first.', 'info')
+            return redirect(url_for('company_bp.setup'))
+        return render_template('company/job_postings.html' , user=current_user)
+    else:
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('auth_bp.login'))
+    
+    
+    
+@company_bp.route('/applications')
+def applications():
+    user_id = session['user_id']
+    current_user = User.query.filter_by(id=user_id).first()
+    if not session.get('user_id', None):
+        return redirect(url_for('auth_bp.login'))
+    elif session.get('role') == 'company':
+        if not current_user.company_details:
+            flash('Please complete your profile first.', 'info')
+            return redirect(url_for('company_bp.setup'))
+        return render_template('company/applications.html' , user=current_user)
+    else:
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('auth_bp.login'))
+    
+    
+    
+@company_bp.route('/shortlisted')
+def shortlisted():
+    user_id = session['user_id']
+    current_user = User.query.filter_by(id=user_id).first()
+    if not session.get('user_id', None):
+        return redirect(url_for('auth_bp.login'))
+    elif session.get('role') == 'company':
+        if not current_user.company_details:
+            flash('Please complete your profile first.', 'info')
+            return redirect(url_for('company_bp.setup'))
+        return render_template('company/shortlisted.html' , user=current_user)
+    else:
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('auth_bp.login'))
+    
+
+
+@company_bp.route('/jobs/create', methods=['GET', 'POST'])
+def create_job():
+    user_id = session['user_id']
+    current_user = User.query.filter_by(id=user_id).first()
+    if request.method == 'GET':
+        if not session.get('user_id', None):
+            return redirect(url_for('auth_bp.login'))    
+        elif session.get('role') == 'company':
+            return render_template('company/create_job.html' , user=current_user)
+        else :
+            flash('Unauthorized access', 'danger')
+            return redirect(url_for('auth_bp.login'))
+        
+        
+    if request.method == 'POST':
+        try:
+            new_job = JobPosition(
+                company_id=current_user.company_details.id,
+                job_title=request.form.get('job_title'),
+                job_type=request.form.get('job_type'),
+                job_pay=request.form.get('job_pay'),
+                job_timing=request.form.get('job_timing'),
+                job_location=request.form.get('job_location'),
+                requirements=request.form.get('requirements'),
+                job_description=request.form.get('job_description'),
+                job_status='Hiring'
+            )
+
+            db.session.add(new_job)
+            db.session.commit()
+            
+            flash('Job posted successfully! Waiting for admin approval.', 'success')
+            return redirect(url_for('company_bp.job_postings'))
+
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error posting job: {str(e)}', 'danger')
+            return redirect(url_for('company_bp.create_job'))
+
+    return render_template('company/create_job.html', user=current_user)
+    

@@ -53,6 +53,7 @@ def setup():
                 resume = f"/static/uploads/Resumes/{filename}"
             
         # --- CREATE STUDENT RECORD ---
+        skills = ', '.join(word.capitalize().strip() for word in skills.split(','))
         user_id = session['user_id']
         new_student = Student(
             user_id=user_id, # Link to the currently logged in User
@@ -79,17 +80,17 @@ def edit_profile():
     if request.method == 'GET':
         if not session.get('user_id', None):
             return redirect(url_for('auth_bp.login'))    
-    elif session.get('role') == 'student':
-        if current_user.student_details:
-            return render_template('student/profile.html' , user=current_user)
-        return render_template('student/edit.html' , user=current_user)
-    else :
-        flash('Unauthorized access', 'danger')
-        return redirect(url_for('auth_bp.login'))
+        elif session.get('role') == 'student':
+            return render_template('student/edit.html' , user=current_user)
+        else :
+            flash('Unauthorized access', 'danger')
+            return redirect(url_for('auth_bp.login'))
 
     if request.method == 'POST':
         try:
-            current_user.name = request.form.get('name')
+            name = request.form.get('name')
+            
+            current_user.name = name.strip().title()
             current_user.contact = request.form.get('contact')
 
             if 'profile_pic' in request.files:
@@ -103,9 +104,12 @@ def edit_profile():
 
             # --- Update Student Table (Specific Fields) ---
             student = current_user.student_details
+            skills = request.form.get('skill_set')
+            skills = ' , '.join(word.capitalize().strip() for word in skills.split(','))
+            
             student.cgpa = float(request.form.get('cgpa'))
             student.experience = int(request.form.get('experience'))
-            student.skill_set = request.form.get('skill_set')
+            student.skill_set = skills
             student.milestones = request.form.get('milestones')
             
             if 'resume' in request.files:
@@ -119,7 +123,7 @@ def edit_profile():
 
             db.session.commit()
             flash('Profile updated successfully!', 'success')
-            return render_template('student/profile.html' , user=current_user)
+            return redirect(url_for('student_bp.profile'))
 
         except Exception as e:
             db.session.rollback()
@@ -127,3 +131,71 @@ def edit_profile():
             return render_template('student/edit.html')
         
     return render_template('student/edit.html', user=current_user)
+
+
+
+@student_bp.route('/job_postings')
+def job_postings():
+    user_id = session['user_id']
+    current_user = User.query.filter_by(id=user_id).first()
+    if not session.get('user_id', None):
+        return redirect(url_for('auth_bp.login'))
+    elif session.get('role') == 'student':
+        if not current_user.student_details:
+            flash('Please complete your profile first.', 'info')
+            return redirect(url_for('student_bp.setup'))
+        return render_template('student/job_postings.html' , user=current_user)
+    else:
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('auth_bp.login'))
+    
+    
+    
+@student_bp.route('/applications')
+def applications():
+    user_id = session['user_id']
+    current_user = User.query.filter_by(id=user_id).first()
+    if not session.get('user_id', None):
+        return redirect(url_for('auth_bp.login'))
+    elif session.get('role') == 'student':
+        if not current_user.student_details:
+            flash('Please complete your profile first.', 'info')
+            return redirect(url_for('student_bp.setup'))
+        return render_template('student/applications.html' , user=current_user)
+    else:
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('auth_bp.login'))
+    
+    
+    
+@student_bp.route('/notifications')
+def notifications():
+    user_id = session['user_id']
+    current_user = User.query.filter_by(id=user_id).first()
+    if not session.get('user_id', None):
+        return redirect(url_for('auth_bp.login'))
+    elif session.get('role') == 'student':
+        if not current_user.student_details:
+            flash('Please complete your profile first.', 'info')
+            return redirect(url_for('student_bp.setup'))
+        return render_template('student/notifications.html' , user=current_user)
+    else:
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('auth_bp.login'))
+    
+    
+    
+@student_bp.route('/history')
+def history():
+    user_id = session['user_id']
+    current_user = User.query.filter_by(id=user_id).first()
+    if not session.get('user_id', None):
+        return redirect(url_for('auth_bp.login'))
+    elif session.get('role') == 'student':
+        if not current_user.student_details:
+            flash('Please complete your profile first.', 'info')
+            return redirect(url_for('student_bp.setup'))
+        return render_template('student/history.html' , user=current_user)
+    else:
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('auth_bp.login'))

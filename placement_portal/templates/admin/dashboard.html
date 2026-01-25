@@ -22,27 +22,27 @@
                 </div>
 
                 <div class="nav-section">
-                    <a href="#" class="sidebar-link {% if active_page == 'profile' %}active{% endif %}">
+                    <a href="{{ url_for('admin_bp.profile') }}" class="sidebar-link {% if active_page == 'profile' %}active{% endif %}">
                         <i class="bi bi-person-badge"></i>
                         <span class="nav-text">&nbsp;Profile</span>
                     </a>
 
-                    <a href="#" class="sidebar-link {% if active_page == 'profile' %}active{% endif %}">
+                    <a href="{{ url_for('admin_bp.companies') }}" class="sidebar-link {% if active_page == 'profile' %}active{% endif %}">
                         <i class="bi bi-building"></i>
                         <span class="nav-text">&nbsp;Companies</span>
                     </a>
 
-                    <a href="#" class="sidebar-link {% if active_page == 'notifications' %}active{% endif %}">
+                    <a href="{{ url_for('admin_bp.students') }}" class="sidebar-link {% if active_page == 'notifications' %}active{% endif %}">
                         <i class="bi bi-backpack"></i>
                         <span class="nav-text">&nbsp;Students</span>
                     </a>
 
-                    <a href="#" class="sidebar-link {% if active_page == 'jobs' %}active{% endif %}">
+                    <a href="{{ url_for('admin_bp.job_postings') }}" class="sidebar-link {% if active_page == 'jobs' %}active{% endif %}">
                         <i class="bi bi-briefcase"></i>
                         <span class="nav-text">&nbsp;Job Postings</span>
                     </a>
 
-                    <a href="#" class="sidebar-link {% if active_page == 'applications' %}active{% endif %}">
+                    <a href="{{ url_for('admin_bp.job_applications') }}" class="sidebar-link {% if active_page == 'applications' %}active{% endif %}">
                         <i class="bi bi-file-earmark-text"></i>
                         <span class="nav-text">&nbsp;Job Applications</span>
                     </a>

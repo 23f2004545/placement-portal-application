@@ -15,7 +15,8 @@
     --text-muted: rgba(255, 255, 255, 0.7);
 }
 
-body {
+body,html {
+    overscroll-behavior: none;
     background-image: url("../uploads/Background.jpg");
     background-repeat: no-repeat;
     background-size: cover;
@@ -448,7 +449,7 @@ select.glass-input option {
     }
 }
 
-.btn-icon { font-size: 1.5rem; font-weight: 300; line-height: 1; margin-right: 5px; }
+.btn-icon { font-size: 1.5rem; font-weight: 300; line-height: 1; }
 .sidebar.collapsed .btn-icon { margin-right: 0; }
 
 /* Main Content Area */
@@ -615,4 +616,215 @@ select.glass-input option {
 /* Ensure the container doesn't break when truncating */
 .info-item .w-100 {
     min-width: 0; /* Critical flexbox fix for truncation */
+}
+
+/* --- JOB DASHBOARD STYLES --- */
+
+/* Search Bar Container */
+.glass-input-group {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    padding: 5px 10px;
+    transition: 0.3s;
+    width: 100%;
+}
+
+.glass-input-group:focus-within {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: var(--primary-green);
+    box-shadow: 0 0 15px rgba(25, 135, 84, 0.2);
+}
+
+.glass-input-group input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* Job Card Specifics */
+.job-card {
+    transition: transform 0.2s, background 0.2s;
+}
+
+.job-card:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.15); /* Slightly lighter on hover */
+}
+
+/* Job Logo */
+.job-logo-container {
+    width: 60px;
+    height: 60px;
+    background: white; /* White bg for logos usually looks better */
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.job-logo {
+    width: 80%;
+    height: 80%;
+    object-fit: contain;
+}
+
+/* Badges */
+.bg-success-subtle {
+    background-color: rgba(25, 135, 84, 0.2) !important;
+    color: #75b798 !important;
+}
+
+/* Small adjustments for mobile */
+@media (max-width: 768px) {
+    .job-card .d-flex {
+        flex-wrap: wrap;
+    }
+    .job-logo-container {
+        width: 50px;
+        height: 50px;
+    }
+    .d-flex.flex-column.gap-2 {
+        flex-direction: row !important; /* Buttons side-by-side on mobile */
+        width: 100%;
+        margin-top: 10px;
+    }
+    .d-flex.flex-column.gap-2 .btn {
+        flex: 1;
+    }
+}
+
+
+/* --- STATUS BADGES --- */
+.status-badge {
+    padding: 6px 15px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    backdrop-filter: blur(4px);
+    display: inline-flex;
+    align-items: center;
+}
+
+/* 1. Applied (Yellow/Orange) */
+.warning-glow {
+    background: rgba(255, 193, 7, 0.15);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    color: #ffca2c;
+    box-shadow: 0 0 10px rgba(255, 193, 7, 0.1);
+}
+
+/* 2. Reviewed (Blue) */
+.primary-glow {
+    background: rgba(13, 110, 253, 0.15);
+    border: 1px solid rgba(13, 110, 253, 0.3);
+    color: #6ea8fe;
+    box-shadow: 0 0 10px rgba(13, 110, 253, 0.1);
+}
+
+/* 3. Interviewed (Cyan/Info) */
+.info-glow {
+    background: rgba(13, 202, 240, 0.15);
+    border: 1px solid rgba(13, 202, 240, 0.3);
+    color: #3dd5f3;
+    box-shadow: 0 0 10px rgba(13, 202, 240, 0.1);
+}
+
+/* 4. Selected (Green - reusing your success-dim but brighter) */
+.success-glow {
+    background: rgba(25, 135, 84, 0.2);
+    border: 1px solid rgba(25, 135, 84, 0.4);
+    color: #75b798;
+    box-shadow: 0 0 15px rgba(25, 135, 84, 0.2);
+}
+
+
+/* --- NOTIFICATIONS --- */
+.notif-card:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.notif-icon-box {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+/* Close button hover effect */
+.close-btn {
+    transition: 0.3s;
+    border-radius: 50%;
+}
+.close-btn:hover {
+    background: rgba(255,255,255,0.1);
+    color: white !important;
+}
+
+/* --- HISTORY / PLACEMENTS --- */
+.bg-white-10 { background: rgba(255,255,255,0.05); }
+.bg-black-20 { background: rgba(0,0,0,0.2); }
+
+.text-xs { font-size: 0.75rem; letter-spacing: 1px; }
+
+/* --- COMPANY DASHBOARD UTILS --- */
+
+/* 1. Header & Search Alignment */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+/* Force the search group to stay together */
+.search-group {
+    display: flex;
+    gap: 10px;
+    flex-grow: 1;
+    max-width: 500px; /* Prevent it from stretching too wide */
+}
+
+/* 2. Job Card Grid Layout */
+.job-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Responsive Grid */
+    gap: 20px;
+}
+
+/* 3. Job Card Internal Spacing */
+.job-card-company {
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Make all cards same height */
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 20px;
+    position: relative;
+    transition: transform 0.2s ease;
+}
+
+.job-card-company:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-5px);
+}
+
+/* 4. Description Truncation (Fixed) */
+.desc-truncate {
+    display: -webkit-box;
+    -webkit-line-clamp: 3; /* Show exactly 3 lines */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 15px;
+    color: rgba(255, 255, 255, 0.6);
+    min-height: 4.5em; /* Reserve space so buttons align */
 }
