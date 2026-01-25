@@ -3,4 +3,129 @@
 {% block title %}Manage Companies{% endblock %}
 
 {% block dashboard_content %}
+
+<div class="container-fluid fade-in">
+    
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+        <h3 class="text-white fw-bold mb-0">Companies</h3>
+        
+        <form action="{{ url_for('admin_bp.companies') }}" method="GET" class="flex-grow-1" style="max-width: 400px;">
+            <div class="glass-input-group">
+                <span class="input-group-text bg-transparent border-0 text-white-50"><i class="bi bi-search"></i>
+                    <input type="text" name="q" class="form-control bg-transparent border-0 text-white shadow-none" placeholder="Search by Company / ID / HR Name">
+                </span>
+                {% if search_query %}
+                <a href="{{ url_for('admin_bp.companies') }}" class="btn btn-link text-white-50 text-decoration-none">
+                        <i class="bi bi-x-lg"></i>
+                    </a>
+                {% endif %}
+                </div>
+            </form>
+        </div>
+        
+        <hr class="border-secondary opacity-25 mb-4">
+    {% if companies %}
+        {% if pending_companies %}
+        <div class="mb-4">
+            <button class="btn btn-link text-white text-decoration-none p-0 d-flex align-items-center gap-2 mb-3 w-100" type="button" data-bs-toggle="collapse" data-bs-target="#pendingCollapse">
+                <div class="badge bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center" style="width: 24px; height: 24px;">{{ pending_companies|length }}</div>
+                <span class="fw-bold text-warning">Pending Approvals</span>
+                <i class="bi bi-chevron-down ms-auto transition-icon"></i>
+            </button>
+            
+            <div class="collapse show" id="pendingCollapse">
+                <div class="d-flex flex-column gap-3">
+                    {% for company in pending_companies %}
+                    <div class="glass-card p-3 border border-warning">
+                        <div class="row g-3 align-items-center text-center text-md-start">
+                            
+                            <div class="col-12 col-md-auto">
+                                <img src="{{ company.user.image_url }}" class="rounded-circle bg-white mx-auto mx-md-0" style="width: 60px; height: 60px; object-fit: contain; padding: 2px;">
+                            </div>
+                            
+                            <div class="col-12 col-md">
+                                <h5 class="text-white fw-bold mb-0">{{ company.user.name }}</h5>
+                                <small class="text-white-50">Joined: {{ company.user.created_at.strftime('%b %d, %Y') }}</small>
+                            </div>
+                            
+                            <div class="col-12 col-md-auto">
+                                <div class="d-flex flex-wrap justify-content-center justify-content-md-end gap-2">
+                                    <a href="{{ url_for('admin_bp.approve_company', id=company.id) }}" class="btn btn-outline-success btn-sm px-4 rounded-pill fw-bold flex-grow-1 flex-md-grow-0">
+                                        Approve
+                                    </a>
+                                    <a href="{{ url_for('admin_bp.view_company_profile', id=company.id) }}" class="btn btn-outline-light btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0">
+                                        View Profile
+                                    </a>
+                                    <a href="{{ url_for('admin_bp.delete_company', id=company.id) }}" class="btn btn-outline-danger btn-sm px-3 rounded-pill flex-grow-1 flex-md-grow-0" onclick="return confirm('Reject and Delete this request?');">
+                                        Reject
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <hr class="border-secondary opacity-25 mb-4">
+        {% endif %}
+        
+        <div class="d-flex flex-column gap-3">
+            {% for company in approved_companies %}
+            <div class="glass-card p-3 position-relative">
+                
+                {% if company.user.blacklisted %}
+                <div class="position-absolute start-0 top-0 w-100 h-100 bg-black-50 d-flex align-items-center justify-content-center rounded-3" style="z-index: 5;">
+                    <div class="text-center p-3">
+                        <span class="badge bg-danger mb-2">BLACKLISTED</span>
+                        <br>
+                        <a href="{{ url_for('admin_bp.toggle_blacklist_company', id=company.id) }}" class="btn btn-sm btn-outline-light rounded-pill mt-2">Reactivate Access</a>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="row g-3 align-items-center text-center text-md-start">
+                    
+                    <div class="col-12 col-md-auto">
+                        <img src="{{ company.user.image_url }}" class="rounded-circle bg-white border border-secondary mx-auto mx-md-0" style="width: 60px; height: 60px; object-fit: contain; padding: 2px;">
+                    </div>
+                    
+                    <div class="col-12 col-md">
+                        <h5 class="text-white fw-bold mb-0">{{ company.user.name }}</h5>
+                        <small class="text-white-50">Joined: {{ company.user.created_at.strftime('%b %d, %Y') }}</small>
+                        
+                        
+                    </div>
+                    
+                    <div class="col-12 col-md-auto">
+                        <div class="d-flex flex-wrap justify-content-center justify-content-md-end gap-2">
+                            <a href="{{ url_for('admin_bp.view_company_profile', id=company.id) }}" class="btn btn-outline-light btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0">
+                                View Profile
+                            </a>
+                            
+                            {% if not company.user.blacklisted %}
+                            <a href="{{ url_for('admin_bp.toggle_blacklist_company', id=company.id) }}" class="btn btn-outline-warning btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0" title="Restrict Access">
+                                Blacklist
+                            </a>
+                            {% endif %}
+                            
+                            <a href="{{ url_for('admin_bp.delete_company', id=company.id) }}" class="btn btn-outline-danger btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0" onclick="return confirm('Permanently delete this company?');">
+                                Delete
+                            </a>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center text-white-50 mt-5">
+            <i class="bi bi-briefcase fs-1 d-block mb-3"></i>
+            <p>No companies found matching your search.</p>
+            <a href="{{ url_for('admin_bp.companies') }}" class="text-success">Clear Search</a>
+        </div>
+    {% endif %}
+</div>
+
 {% endblock %}

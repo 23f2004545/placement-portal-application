@@ -1,0 +1,136 @@
+{% extends 'admin/dashboard.html' %}
+
+{% block title %}View Company - Apex Admin{% endblock %}
+
+{% block dashboard_content %}
+<div class="container-fluid fade-in" style="max-width: 1000px;">
+    
+    <div class="d-flex align-items-center mb-4">
+        <a href="{{ url_for('admin_bp.companies') }}" class="btn btn-outline-light btn-sm rounded-circle me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+            <i class="bi bi-arrow-left fs-5"></i>
+        </a>
+        <h3 class="text-white fw-bold mb-0">Company Profile</h3>
+    </div>
+
+    <div class="glass-card profile-header-card mb-4">
+        <div class="d-flex flex-column flex-md-row align-items-center align-items-md-start gap-4">
+            
+            <div class="profile-img-container">
+                <img src="{{ company.user.image_url }}" alt="Company Logo" class="profile-img-lg" style="width: 120px; height: 120px; object-fit: contain; background: white; border-radius: 50%; padding: 5px;">
+            </div>
+
+            <div class="flex-grow-1 text-center text-md-start">
+                <h2 class="text-white fw-bold mb-1">{{ company.user.name }}</h2>
+                
+                <div class="d-flex flex-wrap justify-content-center justify-content-md-start gap-3 mb-2">
+                    <span class="text-success"><i class="bi bi-patch-check-fill me-1"></i> Verified Company</span>
+                    {% if company.is_approved %}
+                        <span class="badge bg-success-subtle rounded-pill">Status: Active</span>
+                    {% else %}
+                        <span class="badge bg-warning-subtle text-warning rounded-pill">Status: Pending</span>
+                    {% endif %}
+                </div>
+
+                <small class="text-white-50">
+                    <i class="bi bi-calendar-event me-1"></i> 
+                    Joined Platform: {{ company.user.created_at.strftime('%B %d, %Y') }}
+                </small>
+            </div>
+
+            <div class="d-flex flex-column gap-2 w-100 w-md-auto mt-3 mt-md-0">
+                {% if not company.is_approved %}
+                    <a href="{{ url_for('admin_bp.approve_company', id=company.id) }}" class="btn btn-success fw-bold rounded-pill">Approve Now</a>
+                {% endif %}
+                
+                {% if company.user.blacklisted %}
+                    <a href="{{ url_for('admin_bp.toggle_blacklist_company', id=company.id) }}" class="btn btn-outline-light rounded-pill">Un-Blacklist</a>
+                {% else %}
+                    <a href="{{ url_for('admin_bp.toggle_blacklist_company', id=company.id) }}" class="btn btn-outline-warning rounded-pill">Blacklist</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="glass-card mb-4">
+        <h4 class="text-white fw-bold mb-3 border-bottom border-secondary pb-2">Corporate Details</h4>
+        
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-globe fs-2 text-white-50"></i>
+                    <div class="overflow-hidden">
+                        <span class="d-block text-white-50 text-uppercase text-xs">Website</span>
+                        <a href="{{ company.website }}" target="_blank" class="text-white text-decoration-underline text-truncate d-block">
+                            {{ company.website }} <i class="bi bi-box-arrow-up-right ms-1 small"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-geo-alt-fill fs-2 text-white-50"></i>
+                    <div>
+                        <span class="d-block text-white-50 text-uppercase text-xs">Headquarters</span>
+                        <span class="fw-bold text-white">{{ company.location }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-person-badge-fill fs-2 text-white-50"></i>
+                    <div>
+                        <span class="d-block text-white-50 text-uppercase text-xs">HR Representative</span>
+                        <span class="text-white">{{ company.hr_name }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-people-fill fs-2 text-white-50"></i>
+                    <div>
+                        <span class="d-block text-white-50 text-uppercase text-xs">Organization Size</span>
+                        <span class="text-white">{{ company.employee_count }} Employees</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass-card mb-4">
+        <h4 class="text-white fw-bold mb-3 border-bottom border-secondary pb-2">About the Company</h4>
+        <div class="p-3 rounded" style="background: rgba(255,255,255,0.05);">
+            <p class="text-white lh-lg opacity-75 mb-0">
+                {{ company.description or "No description provided." }}
+            </p>
+        </div>
+    </div>
+
+    <div class="glass-card">
+        <h4 class="text-white fw-bold mb-3 border-bottom border-secondary pb-2">Contact Information</h4>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-envelope-fill fs-2 text-white-50"></i>
+                    <div>
+                        <span class="d-block text-white-50 text-uppercase text-xs">Official Email</span>
+                        <span class="text-white">{{ company.user.email }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-telephone-fill fs-2 text-white-50"></i>
+                    <div>
+                        <span class="d-block text-white-50 text-uppercase text-xs">Contact Number</span>
+                        <span class="text-white">+91 {{ company.user.contact }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

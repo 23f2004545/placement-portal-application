@@ -828,3 +828,52 @@ select.glass-input option {
     color: rgba(255, 255, 255, 0.6);
     min-height: 4.5em; /* Reserve space so buttons align */
 }
+
+/* --- ADMIN COMPANIES STYLES --- */
+
+/* Rotate arrow when collapsed */
+.btn-link[aria-expanded="true"] .transition-icon {
+    transform: rotate(180deg);
+}
+
+.transition-icon {
+    transition: transform 0.3s ease;
+}
+
+/* Semi-transparent overlay for blacklisted items */
+.bg-black-50 {
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(2px);
+}
+
+/* Ensure the delete button stays on top */
+.btn-icon-danger {
+    z-index: 10;
+}
+
+/* --- RESPONSIVE FIXES ---
+
+/* Ensure images don't squish */
+/* .rounded-circle {
+    flex-shrink: 0; 
+}
+
+
+@media (max-width: 768px) {
+    .glass-input-group {
+        width: 100% !important;
+    }
+    
+    .glass-card h5 {
+        font-size: 1.1rem;
+    }
+    .btn-sm {
+        padding-top: 8px;
+        padding-bottom: 8px;
+    }
+}
+@media (min-width: 768px) {
+    .w-md-auto {
+        width: auto !important;
+    }
+}  */
