@@ -1,0 +1,97 @@
+{% extends 'student/dashboard.html' %}
+
+{% block title %}Apply for {{ job.job_title }} - Apex{% endblock %}
+
+{% block dashboard_content %}
+<div class="d-flex justify-content-center fade-in">
+    <div class="glass-card p-0 overflow-hidden position-relative" style="width: 100%; max-width: 900px;">
+        <a href="{{ url_for('student_bp.job_postings') }}" class="btn btn-sm btn-outline-light rounded-circle close-absolute" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.3); border: none;">
+            <i class="bi bi-x-lg"></i>
+        </a>
+
+        <div class="row g-0">
+            
+            <div class="col-md-5 p-4 border-end border-secondary" style="background: rgba(255,255,255,0.02);">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <img src="{{ job.company.user.image_url }}" alt="Logo" class="rounded-circle bg-white" style="width: 60px; height: 60px; object-fit: contain; padding: 5px;">
+                    <div>
+                        <h5 class="text-white fw-bold mb-0">{{ job.company.user.name }}</h5>
+                        <small class="text-white-50">Hiring For</small>
+                    </div>
+                </div>
+
+                <h3 class="text-white fw-bold mb-2">{{ job.job_title }}</h3>
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    <span class="badge bg-success-subtle text-success rounded-pill">{{ job.job_type }}</span>
+                    <span class="badge glass-badge text-white-50">{{ job.job_location }}</span>
+                    <span class="badge glass-badge text-white-50">{{ job.job_pay }}</span>
+                </div>
+
+                <div class="mb-4">
+                    <label class="text-white-50 text-xs text-uppercase">Requirements</label>
+                    <p class="text-white small mt-1">{{ job.requirements }}</p>
+                </div>
+
+                <div class="alert alert-info border-0 small mb-0" style="background: rgba(13, 202, 240, 0.1); color: #6edff6;">
+                    <i class="bi bi-info-circle-fill me-1"></i>
+                    Applying places your profile in the recruiter's inbox immediately.
+                </div>
+            </div>
+
+            <div class="col-md-7 p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="text-white fw-bold mb-0">Complete Application</h4>
+                </div>
+
+                <form action="{{ url_for('student_bp.apply_job', id=job.id) }}" method="POST" enctype="multipart/form-data" onsubmit="return validateSetup()">
+                    
+                    <div class="mb-4">
+                        <label class="text-white-50 small mb-2">Cover Letter <span class="text-white-50">(Optional)</span></label>
+                        <textarea name="cover_letter" class="form-control glass-input" rows="6" placeholder="Why are you a good fit for this role?"></textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="text-white-50 small mb-2">Custom Resume (Optional)</label>
+                        <div class="col-12">
+                            <div class="input-group">
+                                <input type="file" name="resume" class="form-control glass-input" id="resume" accept=".pdf">
+                                <a href="{{user.student_details.resume}}" target="_blank" class="btn btn-outline-light d-flex align-items-center " title="Current Resume">
+                                    <i class="bi bi-file-earmark-pdf me-2"></i> 
+                                </a>
+                                
+                            </div>
+                            <small id="fileError" class="text-danger mt-1" style="display:none;">File too large (Max 2MB) or invalid
+                                format.</small>
+                        </div>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success rounded-pill fw-bold py-2 shadow-lg">
+                            Submit <i class="bi bi-send-fill ms-2"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    function validateSetup() {
+
+        // Validate Resume Size
+        const resume = document.getElementById('resume');
+        const maxSize = 2 * 1024 * 1024; // 2MB
+        if (resume.files.length > 0) {
+            if (resume.files[0].size > maxSize) {
+                document.getElementById('fileError').style.display = 'block';
+                return false;
+            }
+        }
+        return true;
+    }
+</script>
+{% endblock %}

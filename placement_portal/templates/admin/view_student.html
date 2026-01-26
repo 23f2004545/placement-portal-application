@@ -6,7 +6,11 @@
 <div class="container-fluid fade-in" style="max-width: 1000px;">
     
     <div class="d-flex align-items-center mb-4">
-        <a href="{{ url_for('admin_bp.students') }}" class="btn btn-outline-light btn-sm rounded-circle me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+        <a href="{% if request.args.get('source') == 'app_view' %}
+        {{ url_for('admin_bp.view_application', id=request.args.get('src_id')) }}
+     {% else %}
+        {{ url_for('admin_bp.students') }}
+     {% endif %}" class="btn btn-outline-light btn-sm rounded-circle me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
             <i class="bi bi-arrow-left fs-5"></i>
         </a>
         <h3 class="text-white fw-bold mb-0">Student Profile</h3>

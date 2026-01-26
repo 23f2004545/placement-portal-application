@@ -187,20 +187,76 @@ def view_job(id):
 
 
 
-# @student_bp.route('/job_postings')
-# def job_postings():
-#     user_id = session['user_id']
-#     current_user = User.query.filter_by(id=user_id).first()
-#     if not session.get('user_id', None):
-#         return redirect(url_for('auth_bp.login'))
-#     elif session.get('role') == 'student':
-#         if not current_user.student_details:
-#             flash('Please complete your profile first.', 'info')
-#             return redirect(url_for('student_bp.setup'))
-#         return render_template('student/job_postings.html' , user=current_user)
-#     else:
-#         flash('Unauthorized access', 'danger')
-#         return redirect(url_for('auth_bp.login'))
+@student_bp.route('/job/apply/<int:id>', methods=['GET', 'POST'])
+def apply_job(id):
+    user_id = session['user_id']
+    current_user = User.query.get(user_id)
+    student = current_user.student_details
+    # 1. AUTH CHECK
+    if not session.get('user_id', None):
+        return redirect(url_for('auth_bp.login'))
+    
+    elif session.get('role') == 'student':
+        
+        # 2. GET JOB DETAILS
+        job = JobPosition.query.get_or_404(id)
+        
+        # 3. CHECK DUPLICATE APPLICATION
+        # We check if this student has already applied to this specific job_position_id
+        existing_app = Application.query.filter_by(
+            student_id=student.id, 
+            job_position_id=job.id
+        ).first()
+
+        if existing_app:
+            flash(f'You have already applied for the {job.job_title} position.', 'warning')
+            return redirect(url_for('student_bp.job_postings'))
+
+        # 4. HANDLE POST REQUEST (Form Submission)
+        if request.method == 'POST':
+            try:
+                cover_letter_text = request.form.get('cover_letter')
+
+                 # --- RESUME SAVING LOGIC ---
+                resume = None 
+                if 'resume' in request.files:
+                    file = request.files['resume']
+                    if file and file.filename != '':
+                        filename = os.path.basename(file.filename) # Prevents directory traversal
+                        save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'Resumes' , filename)
+                        file.save(save_path)
+
+                    resume = f"/static/uploads/Resumes/{filename}"
+
+                # C. Create Application Entry
+                new_application = Application(
+                    student_id=student.id,
+                    job_position_id=job.id,
+                    application_status='Applied',
+                    cover_letter=cover_letter_text,
+                    custom_resume=resume 
+                )
+                
+                db.session.add(new_application)
+                db.session.commit()
+                
+                flash('Application submitted successfully! Good luck.', 'success')
+                return redirect(url_for('student_bp.job_postings')) 
+                
+            except Exception as e:
+                db.session.rollback()
+                flash(f'Error submitting application: {str(e)}', 'danger')
+                return redirect(url_for('student_bp.apply_job', id=id))
+
+        # 5. HANDLE GET REQUEST (Show Form)
+        return render_template('student/apply_job.html', 
+                               user=current_user, 
+                               job=job,
+                               active_page='dashboard')
+    
+    else:
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('auth_bp.login'))
     
     
     

@@ -329,9 +329,44 @@ def job_applications():
     if not session.get('user_id', None):
         return redirect(url_for('auth_bp.login'))  
     elif session.get('role') == 'admin':
-        return render_template('admin/job_applications.html')
+        
+        query = Application.query.join(JobPosition).join(Company).join(User)
+        
+        # 3. SEARCH LOGIC
+        search_query = request.args.get('q', '')
+        if search_query:
+            search = f"%{search_query}%"
+            query = query.filter(
+                    (JobPosition.job_title.ilike(search)) |   # Job Title
+                    (User.name.ilike(search)) |               # Company Name
+                    (Application.application_status.ilike(search))   # Status 
+            )
+        
+        all_applications = query.order_by(Application.applied_at.desc()).all()
+
+        return render_template('admin/job_applications.html', 
+                               user=User.query.get(session['user_id']),
+                               search=search_query,
+                               applications = all_applications,
+                               active_page='job_applications')       
     else:
         flash('Unauthorized access', 'danger')
         return redirect(url_for('auth_bp.login'))
     
+
+@admin_bp.route('/application/view/<int:id>')
+def view_application(id):
+    if not session.get('user_id', None):
+        return redirect(url_for('auth_bp.login'))  
+    elif session.get('role') == 'admin':
+        
+        # Fetch Application (Relationships will auto-load Student, Job, and Company)
+        app = Application.query.get_or_404(id)
+        
+        return render_template('admin/view_application.html', 
+                               application=app, 
+                               user=User.query.get(session['user_id']),
+                               active_page='applications') # Ensure you have an 'applications' active state
+    else:
+        return redirect(url_for('auth_bp.login'))
     

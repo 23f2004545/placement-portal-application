@@ -22,7 +22,11 @@
                 {% endif %}
             </div>
             
-            <a href="{{ url_for('admin_bp.job_postings') }}" class="btn btn-sm btn-outline-light rounded-circle" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+            <a href="{% if request.args.get('source') == 'app_view' %}
+            {{ url_for('admin_bp.view_application', id=request.args.get('src_id')) }}
+         {% else %}
+            {{ url_for('admin_bp.job_postings') }}
+         {% endif %}" class="btn btn-sm btn-outline-light rounded-circle" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
                 <i class="bi bi-x-lg"></i>
             </a>
         </div>
@@ -85,7 +89,11 @@
             </div>
 
             <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                <a href="{{ url_for('admin_bp.job_postings') }}" class="btn btn-outline-light px-4 rounded-pill">Back to List</a>
+                <a href="{% if request.args.get('source') == 'app_view' %}
+                {{ url_for('admin_bp.view_application', id=request.args.get('src_id')) }}
+             {% else %}
+                {{ url_for('admin_bp.job_postings') }}
+             {% endif %}" class="btn btn-outline-light px-4 rounded-pill">Back to List</a>
                 
                 {% if not job.is_approved %}
                     <a href="{{ url_for('admin_bp.approve_job', id=job.id) }}" class="btn btn-success px-5 rounded-pill fw-bold">

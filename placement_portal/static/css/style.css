@@ -851,29 +851,16 @@ select.glass-input option {
     z-index: 10;
 }
 
-/* --- RESPONSIVE FIXES ---
-
-/* Ensure images don't squish */
-/* .rounded-circle {
-    flex-shrink: 0; 
+/* --- RESPONSIVE CLOSE BUTTON --- */
+.close-absolute {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 100; /* Ensure it stays on top of images/content */
 }
 
-
-@media (max-width: 768px) {
-    .glass-input-group {
-        width: 100% !important;
-    }
-    
-    .glass-card h5 {
-        font-size: 1.1rem;
-    }
-    .btn-sm {
-        padding-top: 8px;
-        padding-bottom: 8px;
-    }
+/* Ensure the main card handles the positioning context */
+.position-relative {
+    position: relative !important;
 }
-@media (min-width: 768px) {
-    .w-md-auto {
-        width: auto !important;
-    }
-}  */
+

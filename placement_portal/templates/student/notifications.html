@@ -123,6 +123,23 @@
         document.getElementById('jsEmptyState').style.display = 'block';
         document.getElementById('clearAllBtn').style.display = 'none';
     }
+
+    const Btn = document.getElementById('sidebarToggle');
+        const Sidebar = document.getElementById('sidebar');
+    
+            // Add the click listener
+            Btn.addEventListener('click', function(e) {
+                e.preventDefault(); 
+                e.stopPropagation(); // Stop anything else from interfering
+                
+                if (window.innerWidth <= 1024) {
+                // Mobile/Tablet: We toggle the 'expanded' class we just wrote CSS for
+                    Sidebar.classList.toggle('expanded');
+                } else {
+                // Desktop: We toggle 'collapsed'
+                    Sidebar.classList.toggle('collapsed');
+                }
+            });
 </script>
 
 {% endblock %}

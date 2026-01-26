@@ -80,6 +80,7 @@ class Application(db.Model):
     custom_resume = db.Column(db.String(225)) #url
     
     placements = db.relationship('Placement', backref='application', lazy=True, uselist=False)
+    job_position = db.relationship('JobPosition', backref='applications', lazy=True, uselist=False)
     
 class Placement(db.Model):
     
