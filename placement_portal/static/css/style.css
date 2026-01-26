@@ -685,7 +685,7 @@ select.glass-input option {
         height: 50px;
     }
     .d-flex.flex-column.gap-2 {
-        flex-direction: row !important; /* Buttons side-by-side on mobile */
+        /* flex-direction: row !important;*/ /* Buttons side-by-side on mobile */
         width: 100%;
         margin-top: 10px;
     }

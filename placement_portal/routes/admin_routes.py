@@ -26,7 +26,7 @@ def companies():
         # 2. LOGIC START
         search_query = request.args.get('q', '')
         
-        # Join student with User to access name, email, image, etc.
+        # Join Company with User to access name, email, image, etc.
         query = Company.query.join(User)
 
         if search_query:
@@ -35,7 +35,7 @@ def companies():
             query = query.filter(
                 (User.name.ilike(search)) | 
                 (Company.hr_name.ilike(search)) |
-                (User.id.ilike(search))
+                (Company.id.ilike(search))
             )
 
         all_companies = query.all()
@@ -49,12 +49,13 @@ def companies():
                                pending_companies=pending_list,
                                approved_companies=approved_list,
                                companies=all_companies,
+                               search = search_query,
                                active_page='companies')
     else:
         flash('Unauthorized access', 'danger')
         return redirect(url_for('auth_bp.login'))
 
-# --- ACTION: APPROVE student ---
+# --- ACTION: APPROVE COMPANY ---
 @admin_bp.route('/company/approve/<int:id>')
 def approve_company(id):
     if not session.get('user_id', None):
@@ -88,7 +89,7 @@ def toggle_blacklist_company(id):
     else:
         return redirect(url_for('auth_bp.login'))
 
-# --- ACTION: DELETE student ---
+# --- ACTION: DELETE COMPANY ---
 @admin_bp.route('/company/delete/<int:id>')
 def delete_company(id):
     if not session.get('user_id', None):
@@ -128,7 +129,7 @@ def view_company_profile(id):
         return redirect(url_for('auth_bp.login'))
     
     
-    
+# --- MANAGE STUDENTS ROUTE ---
 @admin_bp.route('/students')
 def students():
     # 1. AUTHENTICATION CHECK (As requested)
@@ -147,8 +148,8 @@ def students():
             # Search by Student Name (User.name) or ID or contact
             query = query.filter(
                 (User.name.ilike(search)) | 
-                (User.contact.ilike(search)) |
-                (User.id.ilike(search))
+                (User.email.ilike(search)) |
+                (Student.id.ilike(search))
             )
 
         all_students = query.all()
@@ -156,6 +157,7 @@ def students():
         return render_template('admin/students.html', 
                                user=User.query.get(session['user_id']), # Current Admin User
                                students=all_students,
+                               search = search_query,
                                active_page='students')
     else:
         flash('Unauthorized access', 'danger')
@@ -220,15 +222,105 @@ def view_student_profile(id):
     
     
     
+# --- MANAGE JOB_POSTINGS ROUTE ---
 @admin_bp.route('/job_postings')
 def job_postings():
+    # 1. AUTHENTICATION
     if not session.get('user_id', None):
         return redirect(url_for('auth_bp.login'))  
     elif session.get('role') == 'admin':
-        return render_template('admin/job_postings.html')
+        
+        # 2. QUERY & JOINS
+        # Join Job -> Company -> User (to get Company Name & Logo)
+        query = JobPosition.query.join(Company).join(User)
+        
+        # 3. SEARCH LOGIC
+        search_query = request.args.get('q', '')
+        if search_query:
+            search = f"%{search_query}%"
+            query = query.filter(
+                    (JobPosition.job_title.ilike(search)) |   # Job Title
+                    (User.name.ilike(search)) |               # Company Name
+                    (JobPosition.job_type.ilike(search)) |    # Type (Remote/Hybrid)
+                    (JobPosition.job_status.ilike(search))   # Status (Hiring/Closed)
+            )
+        
+        all_jobs = query.order_by(JobPosition.created_at.desc()).all()
+
+        # 4. SEPARATE LISTS
+        pending_jobs = [job for job in all_jobs if not job.is_approved]
+        active_jobs = [job for job in all_jobs if job.is_approved]
+
+        return render_template('admin/job_postings.html', 
+                               user=User.query.get(session['user_id']),
+                               pending_jobs=pending_jobs,
+                               active_jobs=active_jobs,
+                               search=search_query,
+                               jobs = all_jobs,
+                               active_page='job_postings')
     else:
-        flash('Unauthorized access', 'danger')
         return redirect(url_for('auth_bp.login'))
+
+# --- ACTION: APPROVE JOB ---
+@admin_bp.route('/job/approve/<int:id>')
+def approve_job(id):
+    if not session.get('user_id', None):
+        return redirect(url_for('auth_bp.login'))  
+    elif session.get('role') == 'admin':
+        
+        job = JobPosition.query.get_or_404(id)
+        job.is_approved = True
+        db.session.commit()
+        
+        flash(f'Job "{job.job_title}" has been approved.', 'success')
+        return redirect(url_for('admin_bp.job_postings'))
+    else:
+        return redirect(url_for('auth_bp.login'))
+
+# --- ACTION: VIEW JOB DETAILS (Route Placeholder) ---
+@admin_bp.route('/job/view/<int:id>')
+def view_job(id):
+    if not session.get('user_id', None):
+        return redirect(url_for('auth_bp.login'))  
+    elif session.get('role') == 'admin':
+        job = JobPosition.query.get_or_404(id)
+        return render_template('admin/view_job.html', 
+                               job=job, 
+                               user=User.query.get(session['user_id']),
+                               active_page='job_postings')
+    else:
+        return redirect(url_for('auth_bp.login'))
+    
+# --- ACTION: DELETE JOB ---
+@admin_bp.route('/job/delete/<int:id>')
+def delete_job(id):
+    if not session.get('user_id', None):
+        return redirect(url_for('auth_bp.login'))  
+    elif session.get('role') == 'admin':
+        
+        job = job.query.get_or_404(id)
+        
+        try:
+            db.session.delete(job)
+            db.session.commit()
+            flash('Job deleted.', 'warning')
+        except Exception as e:
+            db.session.rollback()
+            flash('Error deleting Job.', 'danger')
+            
+        return redirect(url_for('admin_bp.job_postings'))
+    else:
+        return redirect(url_for('auth_bp.login'))
+    
+# @admin_bp.route('/job_postings')
+# def job_postings():
+#     if not session.get('user_id', None):
+#         return redirect(url_for('auth_bp.login'))  
+#     elif session.get('role') == 'admin':
+#         return render_template('admin/job_postings.html')
+#     else:
+#         flash('Unauthorized access', 'danger')
+#         return redirect(url_for('auth_bp.login'))
     
     
     

@@ -1,0 +1,88 @@
+{% extends 'student/dashboard.html' %}
+
+{% block title %}View Job{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="d-flex justify-content-center fade-in">
+    <div class="glass-card p-4" style="width: 100%; max-width: 800px;">
+        
+        <div class="d-flex justify-content-between align-items-start mb-4">
+            <div>
+                <h3 class="text-white fw-bold mb-1">Job Position Details</h3>
+                    <span class="badge bg-success-subtle text-success rounded-pill border border-success">
+                        <i class="bi bi-check-circle me-1"></i> Active / Approved
+                    </span>
+            </div>
+            
+            <a href="{{ url_for('student_bp.job_postings') }}" class="btn btn-sm btn-outline-light rounded-circle" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                <i class="bi bi-x-lg"></i>
+            </a>
+        </div>
+
+        <div class="d-flex align-items-center gap-3 p-3 mb-4 rounded border border-secondary" style="background: rgba(255, 255, 255, 0.05);">
+            <img src="{{ job.company.user.image_url }}" alt="Logo" class="rounded-circle bg-white" style="width: 50px; height: 50px; object-fit: contain; padding: 2px;">
+            <div>
+                <small class="text-white-50 text-uppercase text-xs d-block">Posted By</small>
+                <h5 class="text-white fw-bold mb-0">{{ job.company.user.name }}</h5>
+            </div>
+            <div class="ms-auto text-end d-none d-sm-block">
+                <small class="text-white-50 text-uppercase text-xs d-block">Date Posted</small>
+                <span class="text-white">{{ job.created_at.strftime('%b %d, %Y') }}</span>
+            </div>
+        </div>
+
+        <form> <h5 class="text-light mb-3 border-bottom border-secondary pb-2">Job Details</h5>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="text-white-50 small mb-1">Job Title</label>
+                    <input type="text" class="form-control glass-input text-white" value="{{ job.job_title }}" readonly>
+                </div>
+                <div class="col-md-6">
+                    <label class="text-white-50 small mb-1">Job Type</label>
+                    <input type="text" class="form-control glass-input text-white" value="{{ job.job_type }}" readonly>
+                </div>
+            </div>
+
+            <h5 class="text-light mb-3 border-bottom border-secondary pb-2">Logistics</h5>
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label class="text-white-50 small mb-1">Pay Range</label>
+                    <input type="text" class="form-control glass-input text-white" value="{{ job.job_pay }}" readonly>
+                </div>
+                <div class="col-md-4">
+                    <label class="text-white-50 small mb-1">Timing / Schedule</label>
+                    <input type="text" class="form-control glass-input text-white" value="{{ job.job_timing }}" readonly>
+                </div>
+                <div class="col-md-4">
+                    <label class="text-white-50 small mb-1">Location</label>
+                    <input type="text" class="form-control glass-input text-white" value="{{ job.job_location }}" readonly>
+                </div>
+            </div>
+
+            <h5 class="text-light mb-3 border-bottom border-secondary pb-2">Description</h5>
+            <label class="text-white-50 small mb-1">Job Requirements</label>
+            <div class=" mb-3" >
+                <div class="p-3 rounded" style="background: rgba(255,255,255,0.05);">
+                    <p class="text-white fw-bold lh-lg opacity-75 mb-0">
+                    {{ job.requirements }}
+                    </p>
+                </div>
+            </div>
+            
+            <label class="text-white-50 small mb-1">Full Job Description</label>
+            <div class="mb-4">
+                <div class="p-3 rounded" style="background: rgba(255,255,255,0.05);">
+                <p class="text-white lh-lg opacity-75 mb-0">{{ job.job_description }}</p>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a href="{{ url_for('student_bp.job_postings') }}" class="btn btn-outline-light px-4 rounded-pill">Back to List</a>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+{% endblock %}
