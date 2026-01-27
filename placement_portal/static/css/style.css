@@ -872,3 +872,36 @@ select.glass-input option {
     position: relative !important;
 }
 
+/* --- FIXED DROPDOWN STYLING --- */
+.glass-dropdown {
+    /* 1. Darker Background: Fixes the readability issue */
+    background: rgba(0, 0, 0, 0.68) ;
+    
+    /* 2. Strong Blur: Keeps the aesthetic but makes it usable */
+    /* backdrop-filter: blur(100px) !important; */
+    /* -webkit-backdrop-filter: blur(20px) !important; */
+    
+    /* 3. Depth: Adds a shadow so it "floats" above the table */
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    
+    /* 4. Spacing & Positioning */
+    margin-top: 10px !important; /* Pushes it slightly down from button */
+    padding: 10px 0;
+    z-index: 1050; /* Ensures it sits ON TOP of everything */
+}
+
+/* Item Styling */
+.glass-dropdown .dropdown-item {
+    color: rgba(255, 255, 255, 0.7);
+    padding: 8px 20px;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+/* Hover Effect */
+.glass-dropdown .dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    padding-left: 25px; /* Subtle slide animation */
+}

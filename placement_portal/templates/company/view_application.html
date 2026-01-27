@@ -1,0 +1,141 @@
+{% extends 'company/dashboard.html' %}
+
+{% block title %}View Applicant{% endblock %}
+
+{% block dashboard_content %}
+<div class="container-fluid fade-in" style="max-width: 1000px;">
+    
+    <div class="d-flex align-items-center mb-4">
+        <a href="{{ url_for('company_bp.reviewed') }}" class="btn btn-outline-light btn-sm rounded-circle me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+            <i class="bi bi-arrow-left fs-5"></i>
+        </a>
+        <h3 class="text-white fw-bold mb-0">Student Profile</h3>
+    </div>
+
+    <div class="glass-card profile-header-card mb-3">
+        <div class="d-flex flex-column flex-md-row align-items-center align-items-md-start gap-4">
+            
+
+            <div class="profile-img-container">
+                <img src="{{ application.student.user.image_url }}" alt="Student Logo" class="{{ 'profile-img-lg-blacklist' if application.student.user.blacklisted else 'profile-img-lg' }}" style="width: 120px; height: 120px; object-fit: contain; background: white; border-radius: 50%; padding: 5px;">
+            </div>
+
+            <div class="flex-grow-1 text-center text-md-start">
+                <h2 class="text-white fw-bold mb-1">{{ application.student.user.name }}</h2>
+                <div class="d-flex flex-wrap justify-content-center align-items-center justify-content-md-start gap-3 mb-2">
+                    <span class="text-success fw-bold">Student</span>
+                    {% if application.student.user.blacklisted %}
+                        <span class="badge bg-danger text-white rounded-pill">Status: Blacklisted</span>
+                    {% else %}
+                        <span class="badge bg-success-subtle rounded-pill">Status: Active</span>
+                    {% endif %}
+                </div>
+                <small class="text-white-50">
+                    <i class="bi bi-calendar-event me-1"></i> 
+                    Joined Platform: {{ application.student.user.created_at.strftime('%b %d, %Y') }}
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass-card mb-3">
+        <h4 class="text-white fw-bold mb-3 border-bottom border-secondary pb-2">Academic & Skills</h4>
+        
+        <div class="row g-4 ">
+            <div class="col-md-4">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-mortarboard-fill fs-2 text-white-50"></i>
+                    <div>
+                        <span class="d-block text-white-50 text-uppercase text-xs">CGPA</span>
+                        <span class="fw-bold text-white fs-5">{{ application.student.cgpa }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-briefcase-fill fs-2 text-white-50"></i>
+                    <div>
+                        <span class="d-block text-white-50 text-uppercase text-xs">Experience</span>
+                        <span class="fw-bold text-white fs-5">{{ application.student.experience }} Years</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-12">
+                <div class="d-flex align-items-start gap-3">
+                    <i class="bi bi-cpu-fill fs-2 text-white-50"></i>
+                    <div class="flex-grow-1">
+                        <span class="d-block text-white-50 text-uppercase text-xs mb-1">Skill Set</span>
+                            <span class="text-white">{{ application.student.skill_set }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass-card mb-3">
+        <h4 class="text-white fw-bold mb-3 border-bottom border-secondary pb-2">Achievements & Resume</h4>
+
+        <div class="row align-items-start g-4">
+            <div class="col-md-8">
+                <label class="text-white-50 text-xs text-uppercase mb-2">Milestones / Achievements</label>
+                <div class="p-3 rounded h-100" style="background: rgba(255,255,255,0.05);">
+                    <p class="text-white mb-0" style="white-space: pre-wrap;">{{ application.student.milestones or "No milestones added yet." }}</p>
+                </div>
+            </div>
+
+            <div class="col-md-4 text-center ">
+                <label class="text-white-50 text-xs text-uppercase mb-2 d-block">Resume</label>
+                    {% if application.custom_resume %}
+                        <a href="{{ application.custom_resume }}" target="_blank" class="btn btn-outline-light btn-sm rounded-pill w-100">
+                            Download PDF
+                        </a>
+                    {% else %}
+                    <a href="{{ application.student.resume }}" target="_blank" class="btn btn-outline-light btn-sm rounded-pill w-100">
+                        Download PDF
+                    </a>
+                    {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="glass-card mb-3">
+        <h4 class="text-white fw-bold mb-3 border-bottom border-secondary pb-2">Contact Information</h4>
+
+        <div class="row g-4 ">
+            <div class="col-md-6">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-envelope-fill fs-2 text-white-50"></i>
+                    <div>
+                        <span class="d-block text-white-50 text-uppercase text-xs">Email</span>
+                        <span class="text-white">{{ application.student.user.email }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-telephone-fill fs-2 text-white-50"></i>
+                    <div>
+                        <span class="d-block text-white-50 text-uppercase text-xs">Contact</span>
+                        <span class="text-white">+91 {{ application.student.user.contact }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if application.cover_letter %}
+    <div class="col-12">
+        <div class="glass-card">
+            <h5 class="text-white fw-bold mb-2">Cover Letter</h5>
+            <div class="p-3 rounded" style="background: rgba(255,255,255,0.05);">
+                <p class="text-white-50 mb-0 fst-italic">"{{ application.cover_letter }}"</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

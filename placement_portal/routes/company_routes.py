@@ -210,38 +210,173 @@ def close_job(id):
         return redirect(url_for('auth_bp.login'))
     
     
+    
+# --- 4. THE APPLICATIONS ROUTE ---
 @company_bp.route('/applications')
 def applications():
-    user_id = session['user_id']
-    current_user = User.query.filter_by(id=user_id).first()
+    # 1. AUTH CHECK
     if not session.get('user_id', None):
         return redirect(url_for('auth_bp.login'))
+    
     elif session.get('role') == 'company':
+        user_id = session['user_id']
+        current_user = User.query.get(user_id)
+        
         if not current_user.company_details:
             flash('Please complete your profile first.', 'info')
             return redirect(url_for('company_bp.setup'))
-        return render_template('company/applications.html' , user=current_user)
+
+        # 2. QUERY: Get applications ONLY for this company's jobs
+        # Logic: Join Application -> JobPosition -> Filter by Company ID
+        my_company_id = current_user.company_details.id
+        
+        query = Application.query.join(JobPosition).filter(
+            JobPosition.company_id == my_company_id
+        )
+
+        # 3. SEARCH & FILTER
+        search_query = request.args.get('q', '')
+
+        if search_query:
+            search = f"%{search_query}%"
+            # We need to join Student & User to search by applicant Name
+            query = query.join(Student).join(User).filter(
+                (User.name.ilike(search)) |               # Applicant Name
+                (JobPosition.job_title.ilike(search))     # Job Title
+            )
+
+        # Execute Query (Newest First)
+        my_applications = query.filter(Application.application_status=="Applied").order_by(Application.applied_at.desc()).all()
+
+        return render_template('company/applications.html', 
+                               user=current_user,
+                               applications=my_applications,
+                               search=search_query,
+                               active_page='applications')
     else:
         flash('Unauthorized access', 'danger')
+        return redirect(url_for('auth_bp.login'))    
+    
+
+@company_bp.route('/application/shortlist/<int:id>')
+def shortlist_application(id):
+    if not session.get('user_id', None):
+        return redirect(url_for('auth_bp.login'))  
+    elif session.get('role') == 'company':
+        
+        application = Application.query.get_or_404(id)
+        application.application_status = "Shortlisted"
+        db.session.commit()
+        
+        flash(f'Application has been shortlisted.', 'info')     
+        return redirect(url_for('company_bp.applications'))
+    else:
         return redirect(url_for('auth_bp.login'))
     
     
-    
-@company_bp.route('/shortlisted')
-def shortlisted():
-    user_id = session['user_id']
-    current_user = User.query.filter_by(id=user_id).first()
+@company_bp.route('/application/reject/<int:id>')
+def reject_application(id):
+    if not session.get('user_id', None):
+        return redirect(url_for('auth_bp.login'))  
+    elif session.get('role') == 'company':
+        
+        application = Application.query.get_or_404(id)
+        application.application_status = "Rejected"
+        db.session.commit()
+        
+        flash(f'Application has been rejected.', 'danger')     
+        return redirect(url_for('company_bp.reviewed'))
+    else:
+        return redirect(url_for('auth_bp.login'))
+
+        
+
+# --- 4. THE REVIEWED APPLICATIONS ROUTE ---
+@company_bp.route('/reviewed')
+def reviewed():
+    # 1. AUTH CHECK
     if not session.get('user_id', None):
         return redirect(url_for('auth_bp.login'))
+    
     elif session.get('role') == 'company':
+        user_id = session['user_id']
+        current_user = User.query.get(user_id)
+        
         if not current_user.company_details:
             flash('Please complete your profile first.', 'info')
             return redirect(url_for('company_bp.setup'))
-        return render_template('company/shortlisted.html' , user=current_user)
+
+        # 2. QUERY: Get applications ONLY for this company's jobs
+        # Logic: Join Application -> JobPosition -> Filter by Company ID
+        my_company_id = current_user.company_details.id
+        
+        query = Application.query.join(JobPosition).filter(
+            JobPosition.company_id == my_company_id
+        )
+
+        # 3. SEARCH & FILTER
+        search_query = request.args.get('q', '')
+        status_filter = request.args.get('status', '')
+
+        if search_query:
+            search = f"%{search_query}%"
+            # We need to join Student & User to search by applicant Name
+            query = query.join(Student).join(User).filter(
+                (User.name.ilike(search)) |               # Applicant Name
+                (JobPosition.job_title.ilike(search))     # Job Title
+            )
+        
+        if status_filter:
+            query = query.filter(Application.application_status == status_filter)
+
+        # Execute Query (Newest First)
+        my_applications = query.filter(Application.application_status!="Applied").order_by(Application.applied_at.desc()).all()
+
+        return render_template('company/reviewed.html', 
+                               user=current_user,
+                               applications=my_applications,
+                               search=search_query,
+                               active_page='reviewed')
     else:
         flash('Unauthorized access', 'danger')
         return redirect(url_for('auth_bp.login'))
+
+
+
+@company_bp.route('/application/select/<int:id>')
+def select_application(id):
+    if not session.get('user_id', None):
+        return redirect(url_for('auth_bp.login'))  
+    elif session.get('role') == 'company':
+        
+        application = Application.query.get_or_404(id)
+        application.application_status = "Selected"
+        db.session.commit()
+        
+        flash(f'Application has been selected.', 'success')     
+        return redirect(url_for('company_bp.reviewed'))
+    else:
+        return redirect(url_for('auth_bp.login'))
     
+    
+
+
+@company_bp.route('/application/view/<int:id>')
+def view_application(id):
+    user_id = session['user_id']
+    current_user = User.query.filter_by(id=user_id).first()
+    if not session.get('user_id', None):
+        return redirect(url_for('auth_bp.login'))  
+    elif session.get('role') == 'company':
+        application = Application.query.get_or_404(id)
+        return render_template('company/view_application.html', 
+                               application=application,
+                               user=current_user,
+                               active_page='job_postings')
+    else:
+        return redirect(url_for('auth_bp.login'))
+
+
 
 
 @company_bp.route('/jobs/create', methods=['GET', 'POST'])

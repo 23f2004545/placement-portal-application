@@ -313,16 +313,7 @@ def delete_job(id):
     else:
         return redirect(url_for('auth_bp.login'))
     
-# @admin_bp.route('/job_postings')
-# def job_postings():
-#     if not session.get('user_id', None):
-#         return redirect(url_for('auth_bp.login'))  
-#     elif session.get('role') == 'admin':
-#         return render_template('admin/job_postings.html')
-#     else:
-#         flash('Unauthorized access', 'danger')
-#         return redirect(url_for('auth_bp.login'))
-    
+
     
     
 @admin_bp.route('/job_applications')
@@ -335,13 +326,17 @@ def job_applications():
         
         # 3. SEARCH LOGIC
         search_query = request.args.get('q', '')
+        status_filter = request.args.get('status', '')
+        
         if search_query:
             search = f"%{search_query}%"
             query = query.filter(
                     (JobPosition.job_title.ilike(search)) |   # Job Title
-                    (User.name.ilike(search)) |               # Company Name
-                    (Application.application_status.ilike(search))   # Status 
+                    (User.name.ilike(search))               # Company Name 
             )
+        
+        if status_filter:
+            query = query.filter(Application.application_status == status_filter)
         
         all_applications = query.order_by(Application.applied_at.desc()).all()
 
