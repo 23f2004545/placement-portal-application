@@ -106,9 +106,18 @@
                             <a href="{{ url_for('company_bp.view_job', id=job.id) }}" class="btn btn-outline-light btn-sm px-4 rounded-pill glass-btn flex-grow-1 flex-md-grow-0">
                                 View Details
                             </a>
-                            <a href="{{ url_for('company_bp.close_job', id=job.id) }}" class="btn btn-danger btn-sm px-3 rounded-pill flex-grow-1 flex-md-grow-0" onclick="return confirm('Permanently close this job?');">
+                            <button 
+                                class="btn btn-danger btn-sm px-3 rounded-pill flex-grow-1 flex-md-grow-0"
+                                
+                                data-url="{{ url_for('company_bp.view_job', id=job.id) }}"
+                                data-title="Close Job Posting"
+                                data-message="Are you sure you want to permanently close the role for '{{ job.job_title }}'?"
+                                data-btn-class="btn-danger"
+                                data-btn-text="Close"
+                                
+                                onclick="openConfirmModal(this)">
                                 Close
-                            </a>
+                            </button>
 
                         </div>
                     </div>

@@ -493,6 +493,14 @@ select.glass-input option {
     border: 3px solid var(--light-green);
     box-shadow: 0 0 20px rgba(25, 135, 84, 0.4);
 }
+.profile-img-lg-blacklist {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid red;
+    box-shadow: 0 0 20px rgba(25, 135, 84, 0.4);
+}
 
 /* The Glowing Status Badge */
 .status-badge {
@@ -507,7 +515,7 @@ select.glass-input option {
 .danger-glow {
     background: rgba(220, 53, 69, 0.2); /* Bootstrap Danger Red transparent */
     border: 1px solid rgba(220, 53, 69, 0.4);
-    color: #ffcccc;
+    color: #692424;
     box-shadow: 0 0 15px rgba(220, 53, 69, 0.5); /* The Red Glow */
 }
 

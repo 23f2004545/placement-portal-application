@@ -69,9 +69,7 @@
                 <div class="d-grid gap-2">
                     <a href="{{ url_for('admin_bp.view_student_profile', id=application.student.id , source='app_view', src_id=application.id) }}" class="btn btn-outline-light btn-sm rounded-pill glass-btn">View Profile</a>
                     {% if application.custom_resume %}
-                        <a href="{{ url_for('static', filename=application.custom_resume) }}" target="_blank" class="btn btn-success btn-sm rounded-pill fw-bold">View Custom Resume</a>
-                    {% else %}
-                        <a href="{{ url_for('static', filename=application.student.resume) }}" target="_blank" class="btn btn-outline-success btn-sm rounded-pill">View Profile Resume</a>
+                        <a href="{{ application.custom_resume }}" target="_blank" class="btn btn-success btn-sm rounded-pill fw-bold">View Custom Resume</a>
                     {% endif %}
                 </div>
             </div>

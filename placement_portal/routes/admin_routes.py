@@ -74,11 +74,12 @@ def approve_company(id):
 # --- ACTION: BLACKLIST TOGGLE ---
 @admin_bp.route('/company/blacklist/<int:id>')
 def toggle_blacklist_company(id):
+
     if not session.get('user_id', None):
         return redirect(url_for('auth_bp.login'))  
     elif session.get('role') == 'admin':
         
-        company = company.query.get_or_404(id)
+        company = Company.query.get_or_404(id)
         # Toggle the User's blacklist status
         company.user.blacklisted = not company.user.blacklisted
         db.session.commit()
@@ -96,7 +97,7 @@ def delete_company(id):
         return redirect(url_for('auth_bp.login'))  
     elif session.get('role') == 'admin':
         
-        company = company.query.get_or_404(id)
+        company = Company.query.get_or_404(id)
         user = company.user # Get the associated User account
         
         try:
@@ -298,7 +299,7 @@ def delete_job(id):
         return redirect(url_for('auth_bp.login'))  
     elif session.get('role') == 'admin':
         
-        job = job.query.get_or_404(id)
+        job = JobPosition.query.get_or_404(id)
         
         try:
             db.session.delete(job)
@@ -370,3 +371,22 @@ def view_application(id):
     else:
         return redirect(url_for('auth_bp.login'))
     
+@admin_bp.route('/application/delete/<int:id>')
+def delete_application(id):
+    if not session.get('user_id', None):
+        return redirect(url_for('auth_bp.login'))  
+    elif session.get('role') == 'admin':
+        
+        application = Application.query.get_or_404(id)
+        
+        try:
+            db.session.delete(application)
+            db.session.commit()
+            flash('Application deleted.', 'warning')
+        except Exception as e:
+            db.session.rollback()
+            flash('Error deleting application.', 'danger')
+            
+        return redirect(url_for('admin_bp.job_applications'))
+    else:
+        return redirect(url_for('auth_bp.login'))

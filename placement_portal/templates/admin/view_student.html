@@ -19,8 +19,9 @@
     <div class="glass-card profile-header-card mb-4">
         <div class="d-flex flex-column flex-md-row align-items-center align-items-md-start gap-4">
             
+
             <div class="profile-img-container">
-                <img src="{{ student.user.image_url }}" alt="Student Profile" class="profile-img-lg" style="width: 120px; height: 120px; object-fit: cover; border-radius: 50%; border: 3px solid var(--primary-green); padding: 2px;">
+                <img src="{{ student.user.image_url }}" alt="Student Logo" class="{{ 'profile-img-lg-blacklist' if student.user.blacklisted else 'profile-img-lg' }}" style="width: 120px; height: 120px; object-fit: contain; background: white; border-radius: 50%; padding: 5px;">
             </div>
 
             <div class="flex-grow-1 text-center text-md-start">
@@ -41,11 +42,32 @@
 
             <div class="d-flex flex-column gap-2 w-100 w-md-auto mt-3 mt-md-0">
                 {% if student.user.blacklisted %}
-                    <a href="{{ url_for('admin_bp.toggle_blacklist_student', id=student.id) }}" class="btn btn-outline-light rounded-pill">Un-Blacklist</a>
+                    <button 
+                        class="btn btn-success btn-sm px-3 rounded-pill flex-grow-1 flex-md-grow-0"
+                        
+                        data-url="{{ url_for('admin_bp.toggle_blacklist_student', id=student.id) }}"
+                        data-title="Whitelist student"
+                        data-message="Are you sure you want to whitelist the student : '{{ student.user.name }}'?"
+                        data-btn-class="btn-success"
+                        data-btn-text="Whitelist"
+                        
+                        onclick="openConfirmModal(this)">
+                        Whitelist
+                    </button>
                 {% else %}
-                    <a href="{{ url_for('admin_bp.toggle_blacklist_student', id=student.id) }}" class="btn btn-outline-warning rounded-pill">Blacklist</a>
-                {% endif %}
-                
+                    <button 
+                        class="btn btn-warning btn-sm px-3 rounded-pill flex-grow-1 flex-md-grow-0"
+                        
+                        data-url="{{ url_for('admin_bp.toggle_blacklist_student', id=student.id) }}"
+                        data-title="Blacklist student"
+                        data-message="Are you sure you want to blacklist the student : '{{ student.user.name }}'?"
+                        data-btn-class="btn-warning"
+                        data-btn-text="Blacklist"
+                        
+                        onclick="openConfirmModal(this)">
+                        Blacklist
+                    </button>
+                {% endif %} 
             </div>
         </div>
     </div>
@@ -99,8 +121,6 @@
 
             <div class="col-md-4 text-center ">
                 <label class="text-white-50 text-xs text-uppercase mb-2 d-block">Resume</label>
-                <!-- <div class="p-4 rounded border border-secondary d-flex flex-column align-items-center justify-content-center bg-black-20"> -->
-                    <!-- <i class="bi bi-file-earmark-pdf fs-1 text-danger mb-2"></i> -->
                     {% if student.resume %}
                         <a href="{{ url_for('static', filename=student.resume) }}" target="_blank" class="btn btn-outline-light btn-sm rounded-pill w-100">
                             Download PDF
@@ -108,7 +128,6 @@
                     {% else %}
                         <span class="text-white-50 small">No Resume Uploaded</span>
                     {% endif %}
-                <!-- </div> -->
             </div>
         </div>
     </div>

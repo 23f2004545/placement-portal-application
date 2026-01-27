@@ -52,15 +52,33 @@
                             
                             <div class="col-12 col-md-auto">
                                 <div class="d-flex flex-wrap justify-content-center justify-content-md-end gap-2">
-                                    <a href="{{ url_for('admin_bp.approve_company', id=company.id) }}" class="btn btn-outline-success btn-sm px-4 rounded-pill fw-bold flex-grow-1 flex-md-grow-0">
-                                        Approve
+                                    <button 
+                                        class="btn btn-success btn-sm px-4 rounded-pill fw-bold flex-grow-1 flex-md-grow-0"
+                                        
+                                        data-url="{{ url_for('admin_bp.approve_company', id=company.id) }}"
+                                        data-title="Approve Company"
+                                        data-message="Are you sure you want to approve the Company : '{{ company.user.name }}'?"
+                                        data-btn-class="btn-success"
+                                        data-btn-text="Approve"
+                                        
+                                        onclick="openConfirmModal(this)">
+                                        Approve 
+                                    </button>
+                                    <a href="{{ url_for('admin_bp.view_company', id=company.id) }}" class="btn btn-outline-light btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0">
+                                        View Details
                                     </a>
-                                    <a href="{{ url_for('admin_bp.view_company_profile', id=company.id) }}" class="btn btn-outline-light btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0">
-                                        View Profile
-                                    </a>
-                                    <a href="{{ url_for('admin_bp.delete_company', id=company.id) }}" class="btn btn-outline-danger btn-sm px-3 rounded-pill flex-grow-1 flex-md-grow-0" onclick="return confirm('Reject and Delete this request?');">
+                                    <button 
+                                        class="btn btn-outline-danger btn-sm px-3 rounded-pill flex-grow-1 flex-md-grow-0"
+                                        
+                                        data-url="{{ url_for('admin_bp.delete_company', id=company.id) }}"
+                                        data-title="Reject Company"
+                                        data-message="Are you sure you want to reject the Company : '{{ company.user.name }}'?"
+                                        data-btn-class="btn-danger"
+                                        data-btn-text="Reject"
+                                        
+                                        onclick="openConfirmModal(this)">
                                         Reject
-                                    </a>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -77,11 +95,24 @@
             <div class="glass-card p-3 position-relative">
                 
                 {% if company.user.blacklisted %}
-                <div class="position-absolute start-0 top-0 w-100 h-100 bg-black-50 d-flex align-items-center justify-content-center rounded-3" style="z-index: 5;">
+                <div class="position-absolute start-0 top-0 w-100 h-100 bg-black-50 d-flex align-items-center justify-content-center glass-card border border-danger" style="z-index: 5;">
                     <div class="text-center p-3">
-                        <span class="badge bg-danger mb-2">BLACKLISTED</span>
-                        <br>
-                        <a href="{{ url_for('admin_bp.toggle_blacklist_company', id=company.id) }}" class="btn btn-sm btn-outline-light rounded-pill mt-2">Reactivate Access</a>
+                        <span class="btn btn-danger btn-sm px-4 rounded-pill flex-grow-1 flex-md-grow-0 ">Blacklisted</span>
+                        <a href="{{ url_for('admin_bp.view_company_profile', id=company.id) }}" class="btn btn-outline-light btn-sm px-4 rounded-pill glass-btn flex-grow-1 flex-md-grow-0">
+                            View Details
+                        </a>
+                        <button 
+                            class="btn btn-outline-success btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0"
+                            
+                            data-url="{{ url_for('admin_bp.toggle_blacklist_company', id=company.id) }}"
+                            data-title="Whitelist Company"
+                            data-message="Are you sure you want to whitelist the Company : '{{ company.user.name }}'?"
+                            data-btn-class="btn-success"
+                            data-btn-text="Whitelist"
+                            
+                            onclick="openConfirmModal(this)">
+                            Whitelist
+                        </button>
                     </div>
                 </div>
                 {% endif %}
@@ -106,14 +137,32 @@
                             </a>
                             
                             {% if not company.user.blacklisted %}
-                            <a href="{{ url_for('admin_bp.toggle_blacklist_company', id=company.id) }}" class="btn btn-outline-warning btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0" title="Restrict Access">
+                            <button 
+                                class="btn btn-outline-warning btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0"
+                                
+                                data-url="{{ url_for('admin_bp.toggle_blacklist_company', id=company.id) }}"
+                                data-title="Blacklist Company"
+                                data-message="Are you sure you want to blacklist the Company : '{{ company.user.name }}'?"
+                                data-btn-class="btn-warning"
+                                data-btn-text="Blacklist"
+                                
+                                onclick="openConfirmModal(this)">
                                 Blacklist
-                            </a>
+                            </button>
                             {% endif %}
                             
-                            <a href="{{ url_for('admin_bp.delete_company', id=company.id) }}" class="btn btn-outline-danger btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0" onclick="return confirm('Permanently delete this company?');">
+                            <button 
+                                class="btn btn-outline-danger btn-sm px-3 rounded-pill flex-grow-1 flex-md-grow-0"
+                                
+                                data-url="{{ url_for('admin_bp.delete_company', id=company.id) }}"
+                                data-title="Delete Company"
+                                data-message="Are you sure you want to delete the Company : '{{ company.user.name }}'?"
+                                data-btn-class="btn-danger"
+                                data-btn-text="Delete"
+                                
+                                onclick="openConfirmModal(this)">
                                 Delete
-                            </a>
+                            </button>
                         </div>
                     </div>
                     

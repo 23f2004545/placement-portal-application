@@ -64,11 +64,55 @@
                 {% endblock %}
             </main>
         </div>
+
+        <!-- Modal for confirmation dialogs -->
+        <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content glass-card border-0" style="background: rgba(20, 20, 20, 0.95); backdrop-filter: blur(15px);">
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="modal-title text-white fw-bold" id="confirmTitle">Confirm Action</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-white-50 mb-0" id="confirmMessage">Are you sure you want to proceed?</p>
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="button" class="btn btn-sm btn-outline-light rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                        <a href="#" id="confirmBtn" class="btn btn-sm btn-danger rounded-pill fw-bold px-4">Confirm</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
     {% endblock %}
 
 {% block script %}
     <script>
+
+        function openConfirmModal(button) {
+        // 1. Get data from the clicked button's attributes
+            const url = button.getAttribute('data-url');
+            const title = button.getAttribute('data-title') || 'Confirm Action';
+            const message = button.getAttribute('data-message') || 'Are you sure?';
+            const btnClass = button.getAttribute('data-btn-class') || 'btn-danger';
+            const btnText = button.getAttribute('data-btn-text') || 'Confirm';
+
+            // 2. Update Modal Content
+            document.getElementById('confirmTitle').innerText = title;
+            document.getElementById('confirmMessage').innerText = message;
+            
+            // 3. Update the "Confirm" Button
+            const confirmBtn = document.getElementById('confirmBtn');
+            confirmBtn.href = url; 
+            confirmBtn.innerText = btnText;
+            confirmBtn.className = `btn btn-sm rounded-pill fw-bold px-4 ${btnClass}`;
+
+            // 4. Show the Modal
+            const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+            modal.show();
+            }
+
         const Btn = document.getElementById('sidebarToggle');
         const Sidebar = document.getElementById('sidebar');
     

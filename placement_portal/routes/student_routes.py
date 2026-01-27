@@ -158,7 +158,7 @@ def job_postings():
                     (JobPosition.requirements.ilike(search))     
             )
         
-        all_jobs = query.order_by(JobPosition.created_at.desc()).all()
+        all_jobs = query.filter(JobPosition.is_approved).order_by(JobPosition.created_at.desc()).all()
 
         return render_template('student/job_postings.html', 
                                user=current_user,
@@ -226,7 +226,7 @@ def apply_job(id):
                         save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'Resumes' , filename)
                         file.save(save_path)
 
-                    resume = f"/static/uploads/Resumes/{filename}"
+                        resume = f"/static/uploads/Resumes/{filename}"
 
                 # C. Create Application Entry
                 new_application = Application(

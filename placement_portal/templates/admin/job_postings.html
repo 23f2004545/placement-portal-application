@@ -57,12 +57,33 @@
 
                             <div class="col-12 col-md-auto">
                                 <div class="d-flex flex-wrap justify-content-center justify-content-md-end gap-2">
-                                    <a href="{{ url_for('admin_bp.approve_job', id=job.id) }}" class="btn btn-success btn-sm px-4 rounded-pill fw-bold flex-grow-1 flex-md-grow-0">
-                                        Approve
-                                    </a>
+                                    <button 
+                                        class="btn btn-success btn-sm px-4 rounded-pill fw-bold flex-grow-1 flex-md-grow-0"
+                                        
+                                        data-url="{{ url_for('admin_bp.approve_job', id=job.id) }}"
+                                        data-title="Approve Application"
+                                        data-message="Are you sure you want to approve the role for '{{ job.job_title }}'?"
+                                        data-btn-class="btn-success"
+                                        data-btn-text="Approve"
+                                        
+                                        onclick="openConfirmModal(this)">
+                                        Approve 
+                                    </button>
                                     <a href="{{ url_for('admin_bp.view_job', id=job.id) }}" class="btn btn-outline-light btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0">
                                         View Details
                                     </a>
+                                    <button 
+                                        class="btn btn-outline-danger btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0"
+                                        
+                                        data-url="{{ url_for('admin_bp.delete_job', id=job.id) }}"
+                                        data-title="Delete Application"
+                                        data-message="Are you sure you want to delete the role for '{{ job.job_title }}'?"
+                                        data-btn-class="btn-danger"
+                                        data-btn-text="Delete"
+                                        
+                                        onclick="openConfirmModal(this)">
+                                        Delete
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -108,9 +129,18 @@
                             <a href="{{ url_for('admin_bp.view_job', id=job.id) }}" class="btn btn-outline-light btn-sm px-4 rounded-pill glass-btn flex-grow-1 flex-md-grow-0">
                                 View Details
                             </a>
-                            <a href="{{ url_for('admin_bp.delete_job', id=job.id) }}" class="btn btn-outline-danger btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0" onclick="return confirm('Permanently delete this company?');">
+                            <button 
+                                class="btn btn-outline-danger btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0"
+                                
+                                data-url="{{ url_for('admin_bp.delete_job', id=job.id) }}"
+                                data-title="Delete Application"
+                                data-message="Are you sure you want to delete the role for '{{ job.job_title }}'?"
+                                data-btn-class="btn-danger"
+                                data-btn-text="Delete"
+                                
+                                onclick="openConfirmModal(this)">
                                 Delete
-                            </a>
+                            </button>
                         </div>
                     </div>
 

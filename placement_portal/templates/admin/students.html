@@ -31,11 +31,24 @@
             <div class="glass-card p-3 position-relative">
                 
                 {% if student.user.blacklisted %}
-                <div class="position-absolute start-0 top-0 w-100 h-100 bg-black-50 d-flex align-items-center justify-content-center rounded-3" style="z-index: 5;">
+                <div class="position-absolute start-0 top-0 w-100 h-100 bg-black-50 d-flex align-items-center justify-content-center glass-card border border-danger" style="z-index: 5;">
                     <div class="text-center p-3">
-                        <span class="badge bg-danger mb-2">BLACKLISTED</span>
-                        <br>
-                        <a href="{{ url_for('admin_bp.toggle_blacklist_student', id=student.id) }}" class="btn btn-sm btn-outline-light rounded-pill mt-2">Reactivate Access</a>
+                        <span class="btn btn-danger btn-sm px-4 rounded-pill flex-grow-1 flex-md-grow-0 ">Blacklisted</span>
+                        <a href="{{ url_for('admin_bp.view_student_profile', id=student.id) }}" class="btn btn-outline-light btn-sm px-4 rounded-pill glass-btn flex-grow-1 flex-md-grow-0">
+                            View Details
+                        </a>
+                        <button 
+                            class="btn btn-outline-success btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0"
+                            
+                            data-url="{{ url_for('admin_bp.toggle_blacklist_student', id=student.id) }}"
+                            data-title="Whitelist student"
+                            data-message="Are you sure you want to whitelist the Student : '{{ student.user.name }}'?"
+                            data-btn-class="btn-success"
+                            data-btn-text="Whitelist"
+                            
+                            onclick="openConfirmModal(this)">
+                            Whitelist
+                        </button>
                     </div>
                 </div>
                 {% endif %}
@@ -58,16 +71,34 @@
                             <a href="{{ url_for('admin_bp.view_student_profile', id=student.id) }}" class="btn btn-outline-light btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0">
                                 View Profile
                             </a>
-                            
+    
                             {% if not student.user.blacklisted %}
-                            <a href="{{ url_for('admin_bp.toggle_blacklist_student', id=student.id) }}" class="btn btn-outline-warning btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0" title="Restrict Access">
-                                Blacklist
-                            </a>
+                                <button 
+                                    class="btn btn-outline-warning btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0"
+                                    
+                                    data-url="{{ url_for('admin_bp.toggle_blacklist_student', id=student.id) }}"
+                                    data-title="Blacklist student"
+                                    data-message="Are you sure you want to blacklist the Student : '{{ student.user.name }}'?"
+                                    data-btn-class="btn-warning"
+                                    data-btn-text="Blacklist"
+                                    
+                                    onclick="openConfirmModal(this)">
+                                    Blacklist
+                                </button>
                             {% endif %}
                             
-                            <a href="{{ url_for('admin_bp.delete_student', id=student.id) }}" class="btn btn-outline-danger btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0" onclick="return confirm('Permanently delete this student?');">
+                            <button 
+                                class="btn btn-outline-danger btn-sm px-3 rounded-pill flex-grow-1 flex-md-grow-0"
+                                
+                                data-url="{{ url_for('admin_bp.delete_student', id=student.id) }}"
+                                data-title="Delete student"
+                                data-message="Are you sure you want to delete the Student : '{{ student.user.name }}'?"
+                                data-btn-class="btn-danger"
+                                data-btn-text="Delete"
+                                
+                                onclick="openConfirmModal(this)">
                                 Delete
-                            </a>
+                            </button>
                         </div>
                     </div>
                     
