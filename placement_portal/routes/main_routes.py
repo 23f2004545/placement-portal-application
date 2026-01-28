@@ -1,5 +1,7 @@
 from app import app
 from flask import  render_template , session , flash , redirect , url_for
+from controller.db import db
+from controller.models import User,Application
 
 @app.route('/')
 def home():
@@ -23,3 +25,19 @@ def internal_server_error(e):
 def method_not_allowed(e):
     flash('Invalid request method.', 'danger')
     return redirect(url_for('auth_bp.login'))  # Handle 405 (Method Not Allowed)
+
+
+@app.context_processor
+def inject_notifications():
+    if session.get('role') == 'student':
+        user_id = session['user_id']
+        current_user = User.query.get(user_id)
+        if current_user and current_user.student_details:
+            # Count apps that are NOT cleared and NOT read
+            count = Application.query.filter_by(
+                student_id=current_user.student_details.id 
+                # is_read=False,
+                # is_cleared=False
+            ).count()
+            return dict(unread_count=count)
+    return dict(unread_count=0)

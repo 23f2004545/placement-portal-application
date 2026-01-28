@@ -336,6 +336,7 @@ def reviewed():
                                user=current_user,
                                applications=my_applications,
                                search=search_query,
+                               status=status_filter,
                                active_page='reviewed')
     else:
         flash('Unauthorized access', 'danger')

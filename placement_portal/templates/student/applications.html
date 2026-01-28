@@ -6,95 +6,101 @@
 
 <div class="container-fluid fade-in">
     
-    <h3 class="text-white fw-bold mb-4">My Applications</h3>
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+        <h3 class="text-white fw-bold mb-0">My Applications</h3>
+        
+        <div class="d-flex ">
+            <form action="{{ url_for('student_bp.applications') }}" method="GET" class="flex-grow-1 container-fluid" style="max-width: 400px;">
+                <div class="glass-input-group">
+                    <span class="input-group-text bg-transparent border-0 text-white-50"><i class="bi bi-search"></i>
+                        <input type="text" name="q" class="form-control bg-transparent border-0 text-white shadow-none" placeholder="Search by Job Title / Student">
+                    </span>
+                </div>
+            </form>
+            <div class="dropdown">
+                <button class="btn btn-outline-light glass-btn dropdown-toggle h-100" type="button" data-bs-toggle="dropdown">
+                    <i class="bi bi-filter"></i>
+                </button>
+            
+                <ul class="dropdown-menu dropdown-menu-end glass-dropdown border-secondary">
+                    <li><a class="dropdown-item" href="{{ url_for('student_bp.applications') }}">All</a></li>
+                    <li><hr class="dropdown-divider border-secondary opacity-25"></li>
+                    <li><a class="dropdown-item text-warning" href="{{ url_for('student_bp.applications', status='Applied') }}">Applied</a></li>
+                    <li><a class="dropdown-item text-info" href="{{ url_for('student_bp.applications', status='Shortlisted') }}">Shortlisted</a></li>
+                    <li><a class="dropdown-item text-success" href="{{ url_for('student_bp.applications', status='Selected') }}">Selected</a></li>
+                    <li><a class="dropdown-item text-danger" href="{{ url_for('student_bp.applications', status='Rejected') }}">Rejected</a></li>
+                </ul>
+            </div>
+        </div>
 
-    <div class="application-list">
-        {% if applications %}
-            {% for app in applications %}
-            <div class="glass-card mb-3 p-3">
-                <div class="d-flex align-items-center flex-wrap gap-3">
+    </div>
+
+    <hr class="border-secondary opacity-25 mb-4">
+    {% if search and applications %}
+    <div class="mb-3 text-white-50">
+        Showing results for "{{ search }}" 
+        <a href="{{ url_for('student_bp.applications') }}" class="text-success ms-2">Clear Search</a>
+    </div>
+    {% endif %}
+    {% if status and applications %}
+    <div class="mb-3 text-white-50">
+        Showing results for "{{ status }}" 
+        <a href="{{ url_for('student_bp.applications') }}" class="text-success ms-2">Clear Search</a>
+    </div>
+    {% endif %}
+    
+
+    {% if applications %}
+    <div class="d-flex flex-column gap-3">
+            {% for application in applications %}
+            <div class="glass-card p-3 position-relative transition-hover">
+                
+                <div class="row g-3 align-items-center text-center text-md-start">
                     
-                    <div class="job-logo-container" style="width: 50px; height: 50px;">
-                        <img src="{{ url_for('static', filename=app.job.company.user.image_url) }}" alt="Logo" class="job-logo">
-                    </div>
-
-                    <div class="flex-grow-1">
-                        <h5 class="text-white fw-bold mb-0">{{ app.job.title }}</h5>
-                        <p class="text-white-50 mb-0 small">
-                            {{ app.job.company.company_name }} • Applied: {{ app.applied_at.strftime('%b %d, %Y') }}
-                        </p>
-                    </div>
-
-                    <div class="status-badge-container">
-                        {% if app.status == 'Selected' %}
-                            <span class="status-badge success-glow"><i class="bi bi-check-circle-fill me-1"></i> Selected</span>
-                        
-                        {% elif app.status == 'Rejected' %}
-                            <span class="status-badge danger-glow"><i class="bi bi-x-circle-fill me-1"></i> Rejected</span>
-                        
-                        {% elif app.status == 'Interviewed' %}
-                            <span class="status-badge info-glow"><i class="bi bi-camera-video-fill me-1"></i> Interviewed</span>
-                        
-                        {% elif app.status == 'Reviewed' %}
-                            <span class="status-badge primary-glow"><i class="bi bi-eye-fill me-1"></i> Reviewed</span>
-                        
-                        {% else %} <span class="status-badge warning-glow"><i class="bi bi-clock-fill me-1"></i> Applied</span>
-                        {% endif %}
-                    </div>
-
-                    <div>
-                        <button class="btn btn-outline-light btn-sm rounded-pill px-3 glass-btn" data-bs-toggle="modal" data-bs-target="#appModal{{ app.id }}">
-                            Details
-                        </button>
-                    </div>
-
-                </div>
-            </div>
-
-            <div class="modal fade" id="appModal{{ app.id }}" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content glass-card border-0">
-                        <div class="modal-header border-0 pb-0">
-                            <h5 class="modal-title text-white">{{ app.job.title }}</h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body pt-2">
-                            <p class="text-success small mb-3">{{ app.job.company.company_name }}</p>
-                            
-                            <div class="p-3 rounded mb-3" style="background: rgba(255,255,255,0.05);">
-                                <label class="text-white-50 text-xs text-uppercase">Current Status</label>
-                                <p class="text-white fw-bold mb-0">{{ app.status }}</p>
-                            </div>
-
-                            {% if app.cover_letter %}
-                            <div class="mb-3">
-                                <label class="text-white-50 text-xs text-uppercase">Your Cover Letter</label>
-                                <p class="text-white small fst-italic">"{{ app.cover_letter }}"</p>
-                            </div>
-                            {% endif %}
-                            
-                            {% if app.status == 'Applied' %}
-                                <div class="alert alert-warning border-0 small py-2" style="background: rgba(255,193,7,0.1); color: #ffca2c;">
-                                    <i class="bi bi-info-circle me-1"></i> You can still withdraw this application.
-                                </div>
+                    <!-- <div class="col-12 col-md-auto">
+                        <img src="{{ application.job_position.company.user.image_url }}" class="rounded-circle bg-white border border-secondary mx-auto mx-md-0" style="width: 60px; height: 60px; object-fit: contain; padding: 2px;">
+                    </div> -->
+                    <div class="col-12 col-md">
+                        <div class="d-flex flex-column flex-md-row align-items-center gap-2">
+                            <h5 class="text-white fw-bold mb-0">{{ application.job_position.company.user.name }}</h5>
+                            {% if application.application_status=="Applied" %}
+                            <span class="badge bg-warning rounded-pill text-xs">{{ application.application_status }}</span>
+                            {% elif application.application_status=="Shortlisted" %}
+                            <span class="badge bg-info rounded-pill text-xs">{{ application.application_status }}</span>
+                            {% elif application.application_status=="Selected" %}
+                            <span class="badge bg-success rounded-pill text-xs">{{ application.application_status }}</span>
+                            {% else %}
+                            <span class="badge bg-danger rounded-pill text-xs">{{ application.application_status }}</span>
                             {% endif %}
                         </div>
-                        <div class="modal-footer border-0 pt-0">
-                             <a href="{{ url_for('static', filename=app.custom_resume if app.custom_resume else user.student_details.resume) }}" target="_blank" class="btn btn-sm btn-outline-light">View Resume Sent</a>
+                        
+                        <span class="text-info text-opacity-50">{{ application.job_position.job_title }}</span>
+
+                        <div class="d-flex flex-wrap justify-content-center justify-content-md-start gap-2 text-white-50 text-xs mt-2">
+                            <!-- <span><i class="bi bi-mortarboard-fill "></i> CGPA: {{ application.student.cgpa }}</span>
+                            <span><i class="bi bi-briefcase "></i> Exp: {{ application.student.experience }}Y</span> -->
+                            <span><i class="bi bi-calendar3 "></i> {{ application.applied_at.strftime('%b %d, %Y') }}</span>
                         </div>
+                    </div>
+
+                    <div class="col-12 col-md-auto">
+                        <a href="{{ url_for('student_bp.view_job', id=application.student.id , source='app_view', src_id=application.id) }}" class="btn btn-outline-light btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0">
+                            View Details
+                        </a>
                     </div>
                 </div>
             </div>
-
             {% endfor %}
+
         {% else %}
             <div class="text-center text-white-50 mt-5">
-                <i class="bi bi-folder2-open fs-1 d-block mb-3 opacity-50"></i>
-                <p>You haven't applied to any jobs yet.</p>
-                <a href="{{ url_for('student_bp.job_postings') }}" class="btn btn-success btn-sm rounded-pill px-4">Find Jobs</a>
+                <i class="bi bi-inbox fs-1 text-white-50"></i>
+                <p>No applications found matching your search.</p>
+                <a href="{{ url_for('student_bp.applications') }}" class="text-success">Clear Search</a>
             </div>
         {% endif %}
     </div>
+
 </div>
 
 {% endblock %}

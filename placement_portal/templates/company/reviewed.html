@@ -40,6 +40,12 @@
         <a href="{{ url_for('company_bp.reviewed') }}" class="text-success ms-2">Clear Search</a>
     </div>
     {% endif %}
+    {% if status and applications %}
+    <div class="mb-3 text-white-50">
+        Showing results for "{{ status }}" 
+        <a href="{{ url_for('student_bp.applications') }}" class="text-success ms-2">Clear Search</a>
+    </div>
+    {% endif %}
 
     {% if applications %}
     <div class="d-flex flex-column gap-3">

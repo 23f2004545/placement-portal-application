@@ -343,6 +343,7 @@ def job_applications():
         return render_template('admin/job_applications.html', 
                                user=User.query.get(session['user_id']),
                                search=search_query,
+                               status=status_filter,
                                applications = all_applications,
                                active_page='job_applications')       
     else:

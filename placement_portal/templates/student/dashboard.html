@@ -39,9 +39,16 @@
                         <span class="nav-text">&nbsp;Applications</span>
                     </a>
 
-                    <a href="{{ url_for('student_bp.notifications') }}" class="sidebar-link {% if active_page == 'notifications' %}active{% endif %}">
+                    <a href="{{ url_for('student_bp.notifications') }}" class="sidebar-link position-relative {% if active_page == 'notifications' %}active{% endif %}">
                         <i class="bi bi-bell"></i>
                         <span class="nav-text">&nbsp;Notifications</span>
+                        
+                        {% if unread_count > 0 %}
+                        <span class="position-absolute top-50 end-0 translate-middle-y me-3 badge rounded-pill bg-danger shadow-sm pulse-badge ">
+                            {{ unread_count }}
+                            <span class="visually-hidden">unread messages</span>
+                        </span>
+                        {% endif %}
                     </a>
 
                     <a href="{{ url_for('student_bp.history') }}" class="sidebar-link {% if active_page == 'history' %}active{% endif %}">
