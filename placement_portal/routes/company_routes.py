@@ -405,6 +405,11 @@ def create_job():
         if not session.get('user_id', None):
             return redirect(url_for('auth_bp.login'))    
         elif session.get('role') == 'company':
+            if not current_user.company_details:
+                flash('Please complete your profile first.', 'info')
+                return redirect(url_for('company_bp.setup'))
+            if current_user.company_details.status != "Approved":
+                return redirect(url_for('company_bp.verification'))
             return render_template('company/create_job.html' , user=current_user)
         else :
             flash('Unauthorized access', 'danger')

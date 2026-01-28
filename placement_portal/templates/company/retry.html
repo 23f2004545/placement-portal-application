@@ -5,11 +5,9 @@
 {% block navbar %}{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
+    <div class="d-flex align-items-center justify-content-center" style="min-height: 90vh;">
             
-            <div class="glass-card p-5 text-center border-danger border-opacity-50 position-relative overflow-hidden" style="box-shadow: 0 0 50px rgba(220, 53, 69, 0.1);">
+            <div class="auth-wrapper p-5 text-center border-danger" style="max-width: 600px;">
                 
                 <div class="position-absolute top-0 start-50 translate-middle" style="width: 150px; height: 150px; background: rgba(220, 53, 69, 0.4); filter: blur(60px); z-index: -1;"></div>
 
@@ -38,12 +36,6 @@
                 </div>
 
             </div>
-            
-            <!-- <div class="text-center mt-4">
-                <small class="text-white-50">Need help? <a href="#" class="text-danger text-decoration-none">Contact Support</a></small>
-            </div> -->
-
-        </div>
+        
     </div>
-</div>
 {% endblock %}
