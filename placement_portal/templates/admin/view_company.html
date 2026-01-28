@@ -43,7 +43,7 @@
             </div>
 
             <div class="d-flex flex-column gap-2 w-100 w-md-auto mt-3 mt-md-0">
-                {% if not company.is_approved %}
+                {% if company.status == "Pending" %}
                     <button 
                         class="btn btn-success btn-sm px-4 rounded-pill fw-bold flex-grow-1 flex-md-grow-0"
                         
@@ -56,9 +56,19 @@
                         onclick="openConfirmModal(this)">
                         Approve 
                     </button>
-                {% endif %}
-                
-                {% if company.user.blacklisted %}
+                    <button 
+                        class="btn btn-danger btn-sm px-4 rounded-pill fw-bold flex-grow-1 flex-md-grow-0"
+                        
+                        data-url="{{ url_for('admin_bp.reject_company', id=company.id) }}"
+                        data-title="Reject Company"
+                        data-message="Are you sure you want to reject the Company : '{{ company.user.name }}'?"
+                        data-btn-class="btn-danger"
+                        data-btn-text="Reject"
+                        
+                        onclick="openConfirmModal(this)">
+                        Reject 
+                    </button>            
+                {% elif company.user.blacklisted %}
                     <button 
                         class="btn btn-success btn-sm px-3 rounded-pill flex-grow-1 flex-md-grow-0"
                         

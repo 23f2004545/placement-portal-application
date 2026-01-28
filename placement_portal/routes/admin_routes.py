@@ -40,9 +40,9 @@ def companies():
 
         all_companies = query.all()
 
-        # Separate into lists based on 'is_approved'
-        pending_list = [c for c in all_companies if not c.is_approved]
-        approved_list = [c for c in all_companies if c.is_approved]
+        # Separate into lists based on 'status'
+        pending_list = [c for c in all_companies if c.status=="Pending"]
+        approved_list = [c for c in all_companies if c.status=="Approved"]
 
         return render_template('admin/companies.html', 
                                user=User.query.get(session['user_id']), # Current Admin User
@@ -62,11 +62,28 @@ def approve_company(id):
         return redirect(url_for('auth_bp.login'))  
     elif session.get('role') == 'admin':
         
-        company = company.query.get_or_404(id)
-        company.is_approved = True
+        company = Company.query.get_or_404(id)
+        company.status = "Approved"
         db.session.commit()
         
         flash(f'{company.user.name} has been approved.', 'success')
+        return redirect(url_for('admin_bp.companies'))
+    else:
+        return redirect(url_for('auth_bp.login'))
+    
+    
+# --- ACTION: REJECT COMPANY ---
+@admin_bp.route('/company/reject/<int:id>')
+def reject_company(id):
+    if not session.get('user_id', None):
+        return redirect(url_for('auth_bp.login'))  
+    elif session.get('role') == 'admin':
+        
+        company = Company.query.get_or_404(id)
+        company.status = "Rejected"
+        db.session.commit()
+        
+        flash(f'{company.user.name} has been rejected.', 'danger')
         return redirect(url_for('admin_bp.companies'))
     else:
         return redirect(url_for('auth_bp.login'))
@@ -249,8 +266,8 @@ def job_postings():
         all_jobs = query.order_by(JobPosition.created_at.desc()).all()
 
         # 4. SEPARATE LISTS
-        pending_jobs = [job for job in all_jobs if not job.is_approved]
-        active_jobs = [job for job in all_jobs if job.is_approved]
+        pending_jobs = [job for job in all_jobs if job.status=="Pending"]
+        active_jobs = [job for job in all_jobs if job.status=="Approved"]
 
         return render_template('admin/job_postings.html', 
                                user=User.query.get(session['user_id']),
@@ -270,10 +287,26 @@ def approve_job(id):
     elif session.get('role') == 'admin':
         
         job = JobPosition.query.get_or_404(id)
-        job.is_approved = True
+        job.status = "Approved"
         db.session.commit()
         
         flash(f'Job "{job.job_title}" has been approved.', 'success')
+        return redirect(url_for('admin_bp.job_postings'))
+    else:
+        return redirect(url_for('auth_bp.login'))
+    
+# --- ACTION: REJECT JOB ---
+@admin_bp.route('/job/reject/<int:id>')
+def reject_job(id):
+    if not session.get('user_id', None):
+        return redirect(url_for('auth_bp.login'))  
+    elif session.get('role') == 'admin':
+        
+        job = JobPosition.query.get_or_404(id)
+        job.status = "Rejected"
+        db.session.commit()
+        
+        flash(f'Job "{job.job_title}" has been rejected.', 'danger')
         return redirect(url_for('admin_bp.job_postings'))
     else:
         return redirect(url_for('auth_bp.login'))

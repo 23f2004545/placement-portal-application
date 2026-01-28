@@ -14,7 +14,7 @@ def profile():
         if not current_user.company_details:
             flash('Please complete your profile first.', 'info')
             return redirect(url_for('company_bp.setup'))
-        if current_user.company_details.is_approved == False:
+        if current_user.company_details.status != "Approved":
             return redirect(url_for('company_bp.verification'))
         return render_template('company/profile.html' , user=current_user)
     else:
@@ -31,6 +31,8 @@ def setup():
         if not session.get('user_id', None):
             return redirect(url_for('auth_bp.login'))    
         elif session.get('role') == 'company':
+            if current_user.company_details.status != "Approved":
+                return render_template('company/setup.html' , user=current_user)
             if current_user.company_details:
                 return render_template('company/profile.html' , user=current_user)
             return render_template('company/setup.html' , user=current_user)
@@ -39,27 +41,38 @@ def setup():
             return redirect(url_for('auth_bp.login'))
 
     if request.method == 'POST':
-        hr_name = request.form.get('hr_name')
-        employee_count = request.form.get('employee_count')
-        location = request.form.get('location')
-        website = request.form.get('website') 
-        description = request.form.get('description')
-        
-        hr_name = hr_name.strip().title()        
-        location = location.strip().title()        
-        # --- CREATE company RECORD ---
-        user_id = session['user_id']
-        new_company = Company(
-            user_id=user_id, # Link to the currently logged in User
-            hr_name=hr_name,
-            employee_count=employee_count,
-            location=location,
-            website=website,
-            description=description
-        )
-        
-        db.session.add(new_company)
-        db.session.commit()
+        if current_user.company_details and current_user.company_details.status == "Rejected":
+            current_user.company_details.user_id=user_id, # Link to the currently logged in User
+            current_user.company_details.hr_name=hr_name,
+            current_user.company_details.employee_count=employee_count,
+            current_user.company_details.location=location,
+            current_user.company_details.website=website,
+            current_user.company_details.description=description
+            current_user.company_details.status = "Pending"
+            db.session.commit()
+            return redirect(url_for('company_bp.verification'))
+        else:    
+            hr_name = request.form.get('hr_name')
+            employee_count = request.form.get('employee_count')
+            location = request.form.get('location')
+            website = request.form.get('website') 
+            description = request.form.get('description')
+            
+            hr_name = hr_name.strip().title()        
+            location = location.strip().title()        
+            # --- CREATE company RECORD ---
+            user_id = session['user_id']
+            new_company = Company(
+                user_id=user_id, # Link to the currently logged in User
+                hr_name=hr_name,
+                employee_count=employee_count,
+                location=location,
+                website=website,
+                description=description
+            )
+            
+            db.session.add(new_company)
+            db.session.commit()
         
         flash('Profile Completed.', 'success')
         return redirect(url_for('company_bp.verification'))
@@ -74,10 +87,14 @@ def verification():
     if not session.get('user_id', None):
             return redirect(url_for('auth_bp.login'))    
     elif session.get('role') == 'company':
-        if current_user.company_details and current_user.company_details.is_approved:
+        if current_user.company_details and current_user.company_details.status == "Approved":
             flash('Your account is already approved!', 'success')
             return render_template('company/profile.html' , user=current_user)
-        return render_template('company/wait.html' , user=current_user)
+        if current_user.company_details.status == "Rejected" :
+            flash('Your company profile was rejected. Please retry.', 'danger')
+            return render_template('company/retry.html' , user=current_user)
+        flash('Your company profile is under review. Please wait for approval.', 'info')
+        return render_template('company/wait.html' , user=current_user)    
     else :
         flash('Unauthorized access', 'danger')
         return redirect(url_for('auth_bp.login'))
@@ -165,8 +182,8 @@ def job_postings():
         all_jobs = query.order_by(JobPosition.created_at.desc()).all()
         
         # 4. SEPARATE LISTS
-        pending_jobs = [job for job in all_jobs if not job.is_approved]
-        active_jobs = [job for job in all_jobs if job.is_approved]
+        pending_jobs = [job for job in all_jobs if job.status == "Pending"]
+        active_jobs = [job for job in all_jobs if job.status == "Approved"]
 
         return render_template('company/job_postings.html', 
                                user=current_user,

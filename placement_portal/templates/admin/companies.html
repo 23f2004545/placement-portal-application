@@ -64,13 +64,13 @@
                                         onclick="openConfirmModal(this)">
                                         Approve 
                                     </button>
-                                    <a href="{{ url_for('admin_bp.view_company', id=company.id) }}" class="btn btn-outline-light btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0">
+                                    <a href="{{ url_for('admin_bp.view_company_profile', id=company.id) }}" class="btn btn-outline-light btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0">
                                         View Details
                                     </a>
                                     <button 
                                         class="btn btn-outline-danger btn-sm px-3 rounded-pill flex-grow-1 flex-md-grow-0"
                                         
-                                        data-url="{{ url_for('admin_bp.delete_company', id=company.id) }}"
+                                        data-url="{{ url_for('admin_bp.reject_company', id=company.id) }}"
                                         data-title="Reject Company"
                                         data-message="Are you sure you want to reject the Company : '{{ company.user.name }}'?"
                                         data-btn-class="btn-danger"

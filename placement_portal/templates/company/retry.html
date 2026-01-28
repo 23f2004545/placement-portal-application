@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Verification Failed{% endblock %}
+
+{% block navbar %}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            
+            <div class="glass-card p-5 text-center border-danger border-opacity-50 position-relative overflow-hidden" style="box-shadow: 0 0 50px rgba(220, 53, 69, 0.1);">
+                
+                <div class="position-absolute top-0 start-50 translate-middle" style="width: 150px; height: 150px; background: rgba(220, 53, 69, 0.4); filter: blur(60px); z-index: -1;"></div>
+
+                <div class="mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-danger bg-opacity-10 border border-danger border-opacity-25" style="width: 80px; height: 80px;">
+                        <i class="bi bi-exclamation-triangle-fill text-danger fs-1"></i>
+                    </div>
+                </div>
+
+                <h2 class="text-white fw-bold mb-2">Application Returned</h2>
+                <p class="text-white-50 mb-4">Your company profile requires attention before it can be approved.</p>
+
+                <div class="p-3 rounded mb-4 text-start border border-danger border-opacity-25" style="background: rgba(220, 53, 69, 0.05);">
+                    <small class="text-danger fw-bold text-uppercase text-xs d-block mb-1">Admin Feedback:</small>
+                    <p class="text-white mb-0 fst-italic">"{{ reason or 'Profile information does not meet our platform criteria.' }}"</p>
+                </div>
+
+                <div class="d-grid gap-3">
+                    <a href="{{ url_for('company_bp.setup') }}" class="btn btn-danger btn-lg rounded-pill fw-bold shadow-lg">
+                        Fix & Resubmit Application <i class="bi bi-arrow-right ms-2"></i>
+                    </a>
+                    
+                    <a href="{{ url_for('auth_bp.logout') }}" class="btn btn-outline-light px-4 rounded-pill">
+                        Cancel & Logout
+                    </a>
+                </div>
+
+            </div>
+            
+            <!-- <div class="text-center mt-4">
+                <small class="text-white-50">Need help? <a href="#" class="text-danger text-decoration-none">Contact Support</a></small>
+            </div> -->
+
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -75,14 +75,14 @@
                                     <button 
                                         class="btn btn-outline-danger btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0"
                                         
-                                        data-url="{{ url_for('admin_bp.delete_job', id=job.id) }}"
-                                        data-title="Delete Application"
-                                        data-message="Are you sure you want to delete the role for '{{ job.job_title }}'?"
+                                        data-url="{{ url_for('admin_bp.reject_job', id=job.id) }}"
+                                        data-title="Reject Application"
+                                        data-message="Are you sure you want to reject the role for '{{ job.job_title }}'?"
                                         data-btn-class="btn-danger"
-                                        data-btn-text="Delete"
+                                        data-btn-text="Reject"
                                         
                                         onclick="openConfirmModal(this)">
-                                        Delete
+                                        Reject
                                     </button>
                                 </div>
                             </div>

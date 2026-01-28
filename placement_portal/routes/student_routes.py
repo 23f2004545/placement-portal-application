@@ -158,7 +158,7 @@ def job_postings():
                     (JobPosition.requirements.ilike(search))     
             )
         
-        all_jobs = query.filter(JobPosition.is_approved).order_by(JobPosition.created_at.desc()).all()
+        all_jobs = query.filter(JobPosition.status=="Approved").order_by(JobPosition.created_at.desc()).all()
 
         return render_template('student/job_postings.html', 
                                user=current_user,
