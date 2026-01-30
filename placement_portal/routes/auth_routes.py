@@ -1,7 +1,7 @@
 from flask import Blueprint ,current_app , render_template , request , session , flash , redirect , url_for
 from flask_login import login_user, logout_user, login_required, current_user
 from controller.models import *
-import os 
+import os , re
 from datetime import datetime , timezone
 
 auth_bp = Blueprint('auth_bp', __name__) 
@@ -80,9 +80,32 @@ def register():
             profile_pic = f"/static/uploads/Profile_pics/{role_name}.png"
             
         name = name.strip().title() 
+
+        # BACKEND VALIDATION LAYER 
+        if not name or not email or not password or not contact or not role_name:
+            flash("All fields are required.", "danger")
+            return redirect(url_for('auth_bp.register'))
+
+        # Regex for standard email format
+        pattern = r'^[\w\.-]+@[\w\.-]+$'
+        if re.match(pattern, email) is  None:
+            flash("Invalid email format.", "warning")
+            return redirect(url_for('auth_bp.register'))
+        
+        if not name.replace(" ", "").isalpha():
+            flash("Name must contain only alphabetic characters and spaces.", "warning")
+            return redirect(url_for('auth_bp.register'))
+        
+        if not(contact.isdigit() and len(contact) == 10):
+            flash("Contact number must be exactly 10 digits.", "warning")
+            return redirect(url_for('auth_bp.register'))
         
         if len(password) < 8:
             flash('Password must be at least 8 characters long', 'warning')
+            return redirect(url_for('auth_bp.register'))
+        
+        if role not in ['student', 'company']:
+            flash('Invalid role selected', 'danger')
             return redirect(url_for('auth_bp.register'))
 
         user = User.query.filter_by(email=email).first()

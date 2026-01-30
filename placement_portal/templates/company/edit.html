@@ -19,11 +19,11 @@
             <div class="row g-3 mb-4">
                 <div class="col-md-6">
                     <label class="text-white-50 small mb-1">HR Name</label>
-                    <input type="text" name="hr_name" class="form-control glass-input" value="{{ user.company_details.hr_name }}" required>
+                    <input type="text" name="hr_name" class="form-control glass-input" value="{{ user.company_details.hr_name | title }}" required>
                 </div>
                 <div class="col-md-6">
                     <label class="text-white-50 small mb-1">Contact Number</label>
-                    <input type="tel" name="contact" class="form-control glass-input" value="{{ user.contact }}" required>
+                    <input type="tel" name="contact" class="form-control glass-input" value="{{ user.contact }}" pattern="\d{10}" required>
                 </div>
                 <div class="col-12">
                     <label class="text-white-50 small mb-1">Company Logo (Leave empty to keep current)</label>
@@ -43,9 +43,14 @@
                     <label class="text-white-50 small mb-1">Location (Headquarters)</label>
                     <input type="text" name="location" class="form-control glass-input" value="{{ user.company_details.location }}" required>
                 </div>
-                <div class="col-12">
+                <div class="col-md-6">
                     <label class="text-white-50 small mb-1">Website URL</label>
                     <input type="url" name="website" class="form-control glass-input" value="{{ user.company_details.website }}" placeholder="https://...">
+                </div>
+                <div class="col-md-6">
+                    <label class="text-white-50 small mb-1">Team Size</label>
+                    <input type="number" class="form-control glass-input" name="employee_count" value="{{ user.company_details.employee_count }}" placeholder="No. of Employees"
+                     min="0" required>
                 </div>
             </div>
 

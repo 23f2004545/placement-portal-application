@@ -19,14 +19,30 @@ def setup():
 
     if request.method == 'POST':
         if current_user.company_details and current_user.company_details.status == "Rejected":
-            hr_name = request.form.get("hr_name")        
-            location = request.form.get("location")
+            hr_name = request.form.get('hr_name')
+            employee_count = request.form.get('employee_count')
+            location = request.form.get('location')
+            website = request.form.get('website') 
+            description = request.form.get('description')
+
+            if not all([hr_name, employee_count, location, website]):
+                flash("All fields are required.", "warning")
+                return redirect(url_for('student_bp.edit_profile'))
+
+            if not hr_name.replace(" ", "").isalpha():
+                flash("Name must contain only alphabetic characters and spaces.", "warning")
+                return redirect(url_for('student_bp.edit_profile'))
+
+            if employee_count < 0:
+                flash("Employee count can't be negative.", "warning")
+                return redirect(url_for('student_bp.edit_profile'))
+            
             current_user.company_details.user_id=user_id 
             current_user.company_details.hr_name=hr_name.strip().title() 
-            current_user.company_details.employee_count=request.form.get("employee_count")
+            current_user.company_details.employee_count=employee_count
             current_user.company_details.location=location.strip().title()
-            current_user.company_details.website=request.form.get("website")
-            current_user.company_details.description=request.form.get("description")
+            current_user.company_details.website=website
+            current_user.company_details.description=description
             current_user.company_details.status = "Pending"
             db.session.commit()
             return redirect(url_for('company_bp.verification'))
@@ -36,6 +52,18 @@ def setup():
             location = request.form.get('location')
             website = request.form.get('website') 
             description = request.form.get('description')
+            
+            if not all([hr_name, employee_count, location, website]):
+                flash("All fields are required.", "warning")
+                return redirect(url_for('student_bp.edit_profile'))
+
+            if not hr_name.replace(" ", "").isalpha():
+                flash("Name must contain only alphabetic characters and spaces.", "warning")
+                return redirect(url_for('student_bp.edit_profile'))
+
+            if employee_count < 0:
+                flash("Employee count can't be negative.", "warning")
+                return redirect(url_for('student_bp.edit_profile'))
             
             hr_name = hr_name.strip().title()        
             location = location.strip().title()        
@@ -80,32 +108,62 @@ def verification():
 @company_bp.route('/profile/edit', methods=['GET', 'POST'])
 @company_required
 def edit_profile():
-    
     if request.method == 'POST':
         try:
-            name = request.form.get('name')
-            
-            current_user.name = name.strip().title()
-            current_user.contact = request.form.get('contact')
+            name = request.form.get('name', '').strip()
+            contact = request.form.get('contact', '').strip()
+            hr_name = request.form.get('hr_name', '').strip()
+            location = request.form.get('location', '').strip()
+            website = request.form.get('website', '').strip()
+            description = request.form.get('description', '').strip()
+            employee_count = request.form.get('employee_count', '').strip()
 
+            if not all([name, contact, hr_name, location, website]):
+                flash("All fields are required.", "warning")
+                return redirect(url_for('company_bp.edit_profile'))
+
+            if not name.replace(" ", "").isalpha():
+                flash("Company name must contain only alphabets.", "warning")
+                return redirect(url_for('company_bp.edit_profile'))
+
+            if not hr_name.replace(" ", "").isalpha():
+                flash("HR name must contain only alphabets.", "warning")
+                return redirect(url_for('company_bp.edit_profile'))
+
+            if not (contact.isdigit() and len(contact) == 10):
+                flash("Contact number must be exactly 10 digits.", "warning")
+                return redirect(url_for('company_bp.edit_profile'))
+            
+            if employee_count < 0:
+                flash("Employee count can't be negative.", "warning")
+                return redirect(url_for('student_bp.edit_profile'))
+
+            # --- Update User Table ---
+            current_user.name = name.title()
+            current_user.contact = contact
+
+            # 6. Profile Picture Size (< 2MB)
             if 'profile_pic' in request.files:
                 pic = request.files['profile_pic']
                 if pic and pic.filename != '':
-                    filename = os.path.basename(pic.filename)
-                    save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'Profile_pics' , filename)
-                    pic.save(save_path)
+                    pic.seek(0, os.SEEK_END)
+                    if pic.tell() > 2 * 1024 * 1024:
+                        flash("Profile picture must be less than 2 MB.", "warning")
+                        return redirect(url_for('company_bp.edit_profile'))
+                    pic.seek(0) # Reset pointer
                     
+                    filename = os.path.basename(pic.filename)
+                    save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'Profile_pics', filename)
+                    pic.save(save_path)
                     current_user.image_url = f"/static/uploads/Profile_pics/{filename}"
 
-            # --- Update Company Table (Business Info) ---
+            # --- Update Company Table ---
             company = current_user.company_details
-            hr_name = request.form.get('hr_name')
-            location = request.form.get('location')
-            
-            company.hr_name = hr_name.split().title()
-            company.location = location.strip().title()
-            company.website = request.form.get('website')
-            company.description = request.form.get('description')
+            company.hr_name = hr_name.title()
+            company.location = location.title()
+            company.website = website
+            company.description = description
+            company.employee_count = employee_count
 
             db.session.commit()
             flash('Company profile updated successfully!', 'success')
@@ -114,7 +172,7 @@ def edit_profile():
         except Exception as e:
             db.session.rollback()
             flash(f'Error updating profile: {str(e)}', 'danger')
-            return render_template('company/edit.html')
+            return render_template('company/edit.html', user=current_user)
 
     return render_template('company/edit.html', user=current_user)
 
@@ -348,11 +406,19 @@ def select_application(id):
         if 'offer_letter' in request.files:
             file = request.files['offer_letter']
             if file and file.filename != '':
+                file.seek(0, os.SEEK_END)
+                if pic.tell() > 2 * 1024 * 1024:
+                        flash("Profile picture must be less than 2 MB.", "warning")
+                        return redirect(url_for('company_bp.edit_profile'))
+                pic.seek(0) # Reset pointer
+                
                 filename = os.path.basename(file.filename) 
                 save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'Offer_letters' , filename)
                 file.save(save_path)
 
             offer_letter = f"/static/uploads/Offer_letters/{filename}"
+            
+
         application.remarks=request.form.get('remarks')
         # Create Placement Record
         new_placement = Placement(

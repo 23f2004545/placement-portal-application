@@ -132,6 +132,7 @@
                             <a href="{{ url_for('admin_bp.view_job', id=job.id) }}" class="btn btn-outline-light btn-sm px-4 rounded-pill glass-btn flex-grow-1 flex-md-grow-0">
                                 View Details
                             </a>
+                            {% if not job.is_deleted %}
                             <button 
                                 class="btn btn-outline-danger btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0"
                                 
@@ -144,6 +145,7 @@
                                 onclick="openConfirmModal(this)">
                                 Delete
                             </button>
+                            {% endif %}
                         </div>
                     </div>
 

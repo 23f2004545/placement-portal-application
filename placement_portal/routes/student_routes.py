@@ -33,7 +33,34 @@ def setup():
                 file.save(save_path)
 
                 resume = f"/static/uploads/Resumes/{filename}"
+        
+        
+        if not cgpa or not experience or not skills or not resume:
+            flash("All fields are required.", "danger")
+            return redirect(url_for('auth_bp.register'))
+        
+        if experience<0:
+            flash("Experience cannot be negative.", "danger")
+            return redirect(url_for('student_bp.setup'))
+        
+        if cgpa<0.0 or cgpa>10.0:
+            flash("CGPA must be between 0.0 and 10.0.", "danger")
+            return redirect(url_for('student_bp.setup'))
+        
+        if file:
+            # 1. Seek to the end of the file to measure bytes
+            file.seek(0, 2) # The '2' stands for os.SEEK_END
+            size_in_bytes = file.tell()
             
+            # 2. Reset the file pointer to the beginning 
+            # (CRUCIAL: If you don't do this, saving the file will result in 0 bytes)
+            file.seek(0)
+
+            # 3. Check if size is > 2MB (2 * 1024 * 1024)
+            if size_in_bytes > 2097152:
+                flash("Resume is too large. Please upload a file smaller than 2 MB.", "warning")
+                return redirect(url_for('auth_bp.register'))
+        
         # --- CREATE STUDENT RECORD ---
         skills = ', '.join(word.capitalize().strip() for word in skills.split(','))
         user_id = current_user.id
@@ -61,40 +88,83 @@ def setup():
 @student_bp.route('/profile/edit', methods=['GET', 'POST'])
 @student_required
 def edit_profile():
-
     if request.method == 'POST':
-        try:
-            name = request.form.get('name')
-            
-            current_user.name = name.strip().title()
-            current_user.contact = request.form.get('contact')
+        try:            
+            name = request.form.get('name', '').strip()
+            contact = request.form.get('contact', '').strip()
+            skills = request.form.get('skill_set', '').strip()
+            cgpa_raw = request.form.get('cgpa', '').strip()
+            exp_raw = request.form.get('experience', '').strip()
+            milestones = request.form.get('milestones', None).strip() 
 
+            if not all([name, contact, skills, cgpa_raw, exp_raw]):
+                flash("All fields are required.", "warning")
+                return redirect(url_for('student_bp.edit_profile'))
+
+            if not name.replace(" ", "").isalpha():
+                flash("Name must contain only alphabetic characters and spaces.", "warning")
+                return redirect(url_for('student_bp.edit_profile'))
+
+            if not (contact.isdigit() and len(contact) == 10):
+                flash("Contact number must be exactly 10 digits.", "warning")
+                return redirect(url_for('student_bp.edit_profile'))
+
+            # CGPA and Experience Numeric Logic
+            try:
+                cgpa = float(cgpa_raw)
+                experience = int(exp_raw)
+            except ValueError:
+                flash("CGPA and Experience must be numeric values.", "warning")
+                return redirect(url_for('student_bp.edit_profile'))
+
+            if not (0.0 <= cgpa <= 10.0):
+                flash("CGPA must be between 0.0 and 10.0.", "warning")
+                return redirect(url_for('student_bp.edit_profile'))
+
+            if experience < 0:
+                flash("Experience cannot be negative.", "warning")
+                return redirect(url_for('student_bp.edit_profile'))
+            
+            current_user.name = name.title()
+            current_user.contact = contact
+
+            # Profile Picture Size Validation (< 2MB)
             if 'profile_pic' in request.files:
                 file = request.files['profile_pic']
                 if file and file.filename != '':
+                    file.seek(0, os.SEEK_END)
+                    if file.tell() > 2 * 1024 * 1024:
+                        flash("Profile picture must be less than 2 MB.", "warning")
+                        return redirect(url_for('student_bp.edit_profile'))
+                    file.seek(0)
+                    
                     filename = os.path.basename(file.filename) 
                     save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'Profile_pics' , filename)
                     file.save(save_path)
-
                     current_user.image_url = f"/static/uploads/Profile_pics/{filename}"
 
-            # --- Update Student Table (Specific Fields) ---
+            # --- Update Student Table ---
             student = current_user.student_details
-            skills = request.form.get('skill_set')
-            skills = ' , '.join(word.capitalize().strip() for word in skills.split(','))
+            formatted_skills = ' , '.join(word.capitalize().strip() for word in skills.split(','))
             
-            student.cgpa = float(request.form.get('cgpa'))
-            student.experience = int(request.form.get('experience'))
-            student.skill_set = skills
-            student.milestones = request.form.get('milestones')
+            student.cgpa = cgpa
+            student.experience = experience
+            student.skill_set = formatted_skills
+            student.milestones = milestones 
             
+            # Resume Size Validation (< 2MB)
             if 'resume' in request.files:
                 file = request.files['resume']
                 if file and file.filename != '':
+                    file.seek(0, os.SEEK_END)
+                    if file.tell() > 2 * 1024 * 1024:
+                        flash("Resume must be less than 2 MB.", "warning")
+                        return redirect(url_for('student_bp.edit_profile'))
+                    file.seek(0)
+
                     filename = os.path.basename(file.filename)
                     save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'Resumes' , filename)
                     file.save(save_path)
-
                     student.resume = f"/static/uploads/Resumes/{filename}"
 
             db.session.commit()
@@ -104,10 +174,9 @@ def edit_profile():
         except Exception as e:
             db.session.rollback()
             flash(f'Error updating profile: {str(e)}', 'danger')
-            return render_template('student/edit.html')
+            return render_template('student/edit.html', user=current_user)
         
-    return render_template('student/edit.html' , user=current_user)
-
+    return render_template('student/edit.html', user=current_user)
 
 # --- MANAGE JOB_POSTINGS ROUTE ---
 @student_bp.route('/job_postings')

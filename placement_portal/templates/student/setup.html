@@ -16,12 +16,12 @@
             <div class="row g-3 mb-3">
                 <div class="col-md-6">
                     <label class="form-label">CGPA (Out of 10)</label>
-                    <input type="number" step="0.01" max="10" class="form-control glass-input" id="cgpa" name="cgpa"
+                    <input type="number" step="0.01" max="10" min="0" class="form-control glass-input" id="cgpa" name="cgpa"
                         placeholder="e.g. 8.5" required>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Experience (Years)</label>
-                    <input type="number" class="form-control glass-input" name="experience" placeholder="0 for Fresher"
+                    <input type="number" class="form-control glass-input" min="0" name="experience" placeholder="0 for Fresher"
                         required>
                 </div>
             </div>
