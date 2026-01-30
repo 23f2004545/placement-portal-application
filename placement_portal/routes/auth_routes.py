@@ -1,6 +1,7 @@
 from flask import Blueprint ,current_app , render_template , request , session , flash , redirect , url_for
 from controller.models import *
 import os 
+from datetime import datetime , timezone
 
 auth_bp = Blueprint('auth_bp', __name__) 
 
@@ -26,6 +27,8 @@ def login():
                 session['user_id'] = user.id
                 session['role'] = user.roles.name
                 role = session['role']
+                user.last_login_at = datetime.now(timezone.utc)
+                db.session.commit()
                 flash('Login successful', 'success')
                 return redirect(url_for(f"{role}_bp.profile"))  
             else: 

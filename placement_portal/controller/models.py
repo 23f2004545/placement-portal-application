@@ -82,8 +82,7 @@ class JobPosition(db.Model):
     job_status = db.Column(db.String(10), default='Hiring') # Hiring , Closed
     
     # --- CHANGED: Approval & Status Logic ---
-    status = db.Column(db.String(20), default='Pending') # 'Pending', 'Approved', 'Rejected', 'Closed'
-    rejection_reason = db.Column(db.String(255))
+    status = db.Column(db.String(20), default='Pending') # 'Pending', 'Approved', 'Rejected'
     
     job_timing = db.Column(db.String(30), nullable=False)
     

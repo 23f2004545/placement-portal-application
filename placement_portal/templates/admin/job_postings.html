@@ -113,6 +113,9 @@
                             {% else %}
                             <span class="badge bg-success-subtle rounded-pill text-xs">{{ job.job_status }}</span>
                             {% endif %}
+                            {% if job.views %}
+                            <span class="badge bg-secondary rounded-pill text-s">{{job.views}}</span>
+                            {% endif %}
                         </div>
                         
                         <p class="text-white-50 mb-1">{{ job.company.user.name }}</p>

@@ -29,7 +29,9 @@
                 
                 <div class="d-flex flex-wrap justify-content-center justify-content-md-start gap-3 mb-2">
                     <span class="text-success"><i class="bi bi-patch-check-fill me-1"></i> Verified Company</span>
-                    {% if company.user.blacklisted %}
+                    {% if company.user.is_deleted %}
+                        <span class="badge bg-danger text-white rounded-pill">Status: Deleted</span>
+                    {% elif company.user.blacklisted %}
                         <span class="badge bg-danger text-white rounded-pill">Status: Blacklisted</span>
                     {% else %}
                         <span class="badge bg-success-subtle rounded-pill">Status: Active</span>

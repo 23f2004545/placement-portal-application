@@ -18,9 +18,19 @@
 
         <div>
             {% if application.application_status == 'Selected' %}
-                <span class="badge bg-success-subtle text-success border border-success px-4 py-2 rounded-pill fs-6">
-                    <i class="bi bi-check-circle-fill me-2"></i> Selected
-                </span>
+                {% if application.placements.status == 'Offered' %}
+                    <div class="badge bg-warning-subtle text-warning border border-warning px-4 py-2 rounded-pill fs-6">
+                        <i class="bi bi-check-circle-fill me-2"></i> Offered
+                    </div>
+                {% elif application.placements.status == 'Joined' %}
+                    <div class="badge bg-success-subtle text-success border border-success px-4 py-2 rounded-pill fs-6">
+                        <i class="bi bi-check-circle-fill me-2"></i> Joined
+                    </div>
+                {% elif application.placements.status == 'Declined' %}
+                    <div class="badge bg-danger-subtle text-danger border border-danger px-4 py-2 rounded-pill fs-6">
+                        <i class="bi bi-check-circle-fill me-2"></i> Declined
+                    </div>
+                {% endif %}
             {% elif application.application_status == 'Rejected' %}
                 <span class="badge bg-danger-subtle text-danger border border-danger px-4 py-2 rounded-pill fs-6">
                     <i class="bi bi-x-circle-fill me-2"></i> Rejected
@@ -147,18 +157,68 @@
                     </div>
                 </div>
 
-                <div class="d-grid">
+                <div class="d-grid gap-2">
                     <a href="{{ url_for('admin_bp.view_company_profile', id=application.job_position.company.id , source='app_view', src_id=application.id) }}" class="btn btn-outline-light btn-sm rounded-pill glass-btn">View Company Profile</a>
+                    {% if application.placements.offer_letter %}
+                    <a href="{{ application.placements.offer_letter }}" target="_blank" class="btn btn-success btn-sm rounded-pill fw-bold">Offer Letter</a>
+                    {% endif %}
                 </div>
             </div>
         </div>
 
+        {% if application.application_status == "Selected" %}
+        <div class="glass-card mb-1 ">
+            <h4 class="text-white fw-bold mb-3 border-bottom border-secondary pb-2">Placement Details</h4>
+            
+            <div class="row g-4 ">
+                <div class="col-md-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <i class="bi bi-cash-stack fs-2 text-white-50"></i>
+                        <div>
+                            <span class="d-block text-white-50 text-uppercase text-xs">Salary Offered</span>
+                            <span class="fw-bold text-white fs-5">{{ application.placements.salary_offered }}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <i class="bi bi-briefcase-fill fs-2 text-white-50"></i>
+                        <div>
+                            <span class="d-block text-white-50 text-uppercase text-xs">Joining Date</span>
+                            <span class="fw-bold text-white fs-5">{{ application.placements.joining_date }} </span>
+                        </div>
+                    </div>
+                </div>
+    
+                <div class="col-md-12">
+                    <div class="d-flex align-items-start gap-3">
+                        <i class="bi bi-file-earmark-check fs-2 text-white-50"></i>
+                        <div class="flex-grow-1">
+                            <span class="d-block text-white-50 text-uppercase text-xs mb-1">Offered Job </span>
+                                <span class="text-white"> {{ application.placements.created_at.strftime('%b %d, %Y') }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
         {% if application.cover_letter %}
-        <div class="col-12">
+        <div class="col-12 mb-1">
             <div class="glass-card">
                 <h5 class="text-white fw-bold mb-2">Cover Letter</h5>
                 <div class="p-3 rounded" style="background: rgba(255,255,255,0.05);">
                     <p class="text-white-50 mb-0 fst-italic">"{{ application.cover_letter }}"</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% if application.remarks %}
+        <div class="col-12 mb-1">
+            <div class="glass-card">
+                <h5 class="text-white fw-bold mb-2">Company Remarks</h5>
+                <div class="p-3 rounded" style="background: rgba(255,255,255,0.05);">
+                    <p class="text-white-50 mb-0 fst-italic">"{{ application.remarks }}"</p>
                 </div>
             </div>
         </div>

@@ -10,8 +10,11 @@
         <div class="d-flex justify-content-between align-items-start mb-4">
             <div>
                 <h3 class="text-white fw-bold mb-1">Job Position Details</h3>
-                
-                {% if job.status == "Approved" %}
+                {% if job.is_deleted %}
+                    <span class="badge bg-danger text-success rounded-pill border border-danger">
+                        <i class="bi bi-x-circle me-1"></i>  Deleted
+                    </span>
+                {% elif job.status == "Approved" %}
                     <span class="badge bg-success-subtle text-success rounded-pill border border-success">
                         <i class="bi bi-check-circle me-1"></i>  Approved
                     </span>
@@ -95,11 +98,6 @@
                 {{ url_for('admin_bp.job_postings') }}
              {% endif %}" class="btn btn-outline-light px-4 rounded-pill">Back to List</a>
                 
-                {% if not job.is_approved %}
-                    <a href="{{ url_for('admin_bp.approve_job', id=job.id) }}" class="btn btn-success px-5 rounded-pill fw-bold">
-                        <i class="bi bi-check-lg me-1"></i> Approve Job
-                    </a>
-                {% endif %}
             </div>
 
         </form>

@@ -42,12 +42,14 @@ def setup():
 
     if request.method == 'POST':
         if current_user.company_details and current_user.company_details.status == "Rejected":
-            current_user.company_details.user_id=user_id, # Link to the currently logged in User
-            current_user.company_details.hr_name=hr_name,
-            current_user.company_details.employee_count=employee_count,
-            current_user.company_details.location=location,
-            current_user.company_details.website=website,
-            current_user.company_details.description=description
+            hr_name = request.form.get("hr_name")        
+            location = request.form.get("location")
+            current_user.company_details.user_id=user_id # Link to the currently logged in User
+            current_user.company_details.hr_name=hr_name.strip().title() 
+            current_user.company_details.employee_count=request.form.get("employee_count")
+            current_user.company_details.location=location.strip().title()
+            current_user.company_details.website=request.form.get("website")
+            current_user.company_details.description=request.form.get("description")
             current_user.company_details.status = "Pending"
             db.session.commit()
             return redirect(url_for('company_bp.verification'))
@@ -190,8 +192,7 @@ def job_postings():
                                pending_jobs=pending_jobs,
                                active_jobs=active_jobs,
                                search=search_query,
-                               jobs = all_jobs,
-                               active_page='job_postings')
+                               jobs = all_jobs)
     else:
         flash('Unauthorized access', 'danger')
         return redirect(url_for('auth_bp.login'))
@@ -206,8 +207,7 @@ def view_job(id):
         job = JobPosition.query.get_or_404(id)
         return render_template('company/view_job.html', 
                                job=job,
-                               user=current_user,
-                               active_page='job_postings')
+                               user=current_user)
     else:
         return redirect(url_for('auth_bp.login'))
     
@@ -222,6 +222,21 @@ def close_job(id):
         db.session.commit()
         
         flash(f'Job "{job.job_title}" has been closed.', 'warning')     
+        return redirect(url_for('company_bp.job_postings'))
+    else:
+        return redirect(url_for('auth_bp.login'))
+    
+@company_bp.route('/job/reopen/<int:id>')
+def reopen_job(id):
+    if not session.get('user_id', None):
+        return redirect(url_for('auth_bp.login'))  
+    elif session.get('role') == 'company':
+        
+        job = JobPosition.query.get_or_404(id)
+        job.job_status = "Hiring"
+        db.session.commit()
+        
+        flash(f'Job "{job.job_title}" has been reopened.', 'success')     
         return redirect(url_for('company_bp.job_postings'))
     else:
         return redirect(url_for('auth_bp.login'))
@@ -268,8 +283,7 @@ def applications():
         return render_template('company/applications.html', 
                                user=current_user,
                                applications=my_applications,
-                               search=search_query,
-                               active_page='applications')
+                               search=search_query)
     else:
         flash('Unauthorized access', 'danger')
         return redirect(url_for('auth_bp.login'))    
@@ -283,6 +297,7 @@ def shortlist_application(id):
         
         application = Application.query.get_or_404(id)
         application.application_status = "Shortlisted"
+        application.is_cleared = False
         db.session.commit()
         
         flash(f'Application has been shortlisted.', 'info')     
@@ -291,18 +306,33 @@ def shortlist_application(id):
         return redirect(url_for('auth_bp.login'))
     
     
-@company_bp.route('/application/reject/<int:id>')
+@company_bp.route('/application/reject/<int:id>', methods=['GET', 'POST'])
 def reject_application(id):
     if not session.get('user_id', None):
         return redirect(url_for('auth_bp.login'))  
     elif session.get('role') == 'company':
-        
+        user_id = session['user_id']
+        current_user = User.query.get(user_id)
         application = Application.query.get_or_404(id)
-        application.application_status = "Rejected"
-        db.session.commit()
-        
-        flash(f'Application has been rejected.', 'danger')     
-        return redirect(url_for('company_bp.reviewed'))
+        if request.method == 'POST':
+            try:
+                application.application_status = "Rejected"
+                application.is_cleared = False
+                application.remarks = request.form.get('remarks')
+                db.session.commit()
+                
+                flash(f'Application has been rejected.', 'danger')     
+                return redirect(url_for('company_bp.reviewed')) 
+                
+            except Exception as e:
+                db.session.rollback()
+                flash(f'Error rejecting student: {str(e)}', 'danger')
+                return redirect(url_for('company_bp.reviewed', id=id))
+
+        # 5. HANDLE GET REQUEST (Show Form)
+        return render_template('company/rejection.html',
+                                user=current_user, 
+                                application=application)
     else:
         return redirect(url_for('auth_bp.login'))
 
@@ -361,18 +391,44 @@ def reviewed():
 
 
 
-@company_bp.route('/application/select/<int:id>')
+@company_bp.route('/application/select/<int:id>', methods=['GET', 'POST'])
 def select_application(id):
     if not session.get('user_id', None):
         return redirect(url_for('auth_bp.login'))  
     elif session.get('role') == 'company':
-        
+        user_id = session['user_id']
+        current_user = User.query.get(user_id)
         application = Application.query.get_or_404(id)
-        application.application_status = "Selected"
-        db.session.commit()
-        
-        flash(f'Application has been selected.', 'success')     
-        return redirect(url_for('company_bp.reviewed'))
+        if request.method == 'POST':
+        # 1. Update Application Status
+            application.application_status = "Selected"
+            application.is_cleared = False # Keep in notifications
+            
+            offer_letter = None 
+            if 'offer_letter' in request.files:
+                file = request.files['offer_letter']
+                if file and file.filename != '':
+                    filename = os.path.basename(file.filename) # Prevents directory traversal
+                    save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'Offer_letters' , filename)
+                    file.save(save_path)
+
+                offer_letter = f"/static/uploads/Offer_letters/{filename}"
+            application.remarks=request.form.get('remarks')
+            # 2. Create Placement Record
+            new_placement = Placement(
+                application_id=application.id,
+                salary_offered=request.form.get('salary_offered'),
+                joining_date=request.form.get('joining_date'),
+                offer_letter=offer_letter,
+                status='Offered'
+            )
+            
+            db.session.add(new_placement)
+            db.session.commit()
+            
+            flash(f'Offer sent to {application.student.user.name}!', 'success')
+            return redirect(url_for('company_bp.reviewed'))
+        return render_template('company/selection.html', application=application, user=current_user,)
     else:
         return redirect(url_for('auth_bp.login'))
     

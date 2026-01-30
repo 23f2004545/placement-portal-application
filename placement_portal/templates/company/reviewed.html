@@ -81,9 +81,6 @@
                     <div class="col-12 col-md-auto">
 
                         {% if application.application_status == 'Shortlisted' %}
-                        <a href="{{ url_for('company_bp.view_application', id=application.id) }}" class="btn btn-outline-light btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0">
-                            View Details
-                        </a>
                         <button 
                             class="btn btn-outline-success btn-sm px-4 rounded-pill fw-bold flex-grow-1 flex-md-grow-0"
                             
@@ -108,22 +105,37 @@
                             onclick="openConfirmModal(this)">
                             Reject
                         </button>
-                        {% else %}
+                        {% elif application.application_status == 'Selected' %}
+                            {% if application.placements.status == 'Offered' %}
+                                <div class="btn btn-outline-warning btn-sm px-3 rounded-pill flex-grow-1 flex-md-grow-0">
+                                    Offered
+                                </div>
+                            {% elif application.placements.status == 'Joined' %}
+                                <div class="btn btn-outline-success btn-sm px-3 rounded-pill flex-grow-1 flex-md-grow-0">
+                                    Joined
+                                </div>
+                            {% else %}
+                                <div class="btn btn-outline-danger btn-sm px-3 rounded-pill flex-grow-1 flex-md-grow-0">
+                                    Declined
+                                </div>
+                            {% endif %}
+                        {% endif %}
                         <a href="{{ url_for('company_bp.view_application', id=application.id) }}" class="btn btn-outline-light btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0">
                             View Details
                         </a>
-                        {% endif %}
-
+                        
                     </div>
                 </div>
             </div>
             {% endfor %}
-
+            
         {% else %}
         <div class="text-center text-white-50 mt-5">
             <i class="bi bi-inbox fs-1 text-white-50"></i>
-            <p>No applications found matching your search.</p>
+            <p>No applications at this moment</p>
+            {% if search or status %}
             <a href="{{ url_for('company_bp.reviewed') }}" class="text-success">Clear Search</a>
+            {% endif %}
         </div>
         {% endif %}
     </div>

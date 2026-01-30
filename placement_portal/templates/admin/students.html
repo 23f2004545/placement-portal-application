@@ -33,10 +33,6 @@
                 {% if student.user.blacklisted %}
                 <div class="position-absolute start-0 top-0 w-100 h-100 bg-black-50 d-flex align-items-center justify-content-center glass-card border border-danger" style="z-index: 5;">
                     <div class="text-center p-3">
-                        <span class="btn btn-danger btn-sm px-4 rounded-pill flex-grow-1 flex-md-grow-0 ">Blacklisted</span>
-                        <a href="{{ url_for('admin_bp.view_student_profile', id=student.id) }}" class="btn btn-outline-light btn-sm px-4 rounded-pill glass-btn flex-grow-1 flex-md-grow-0">
-                            View Details
-                        </a>
                         <button 
                             class="btn btn-outline-success btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0"
                             
@@ -48,6 +44,21 @@
                             
                             onclick="openConfirmModal(this)">
                             Whitelist
+                        </button>
+                        <a href="{{ url_for('admin_bp.view_student_profile', id=student.id) }}" class="btn btn-outline-light btn-sm px-4 rounded-pill glass-btn flex-grow-1 flex-md-grow-0">
+                            View Details
+                        </a>
+                        <button 
+                            class="btn btn-outline-danger btn-sm px-3 rounded-pill flex-grow-1 flex-md-grow-0"
+                            
+                            data-url="{{ url_for('admin_bp.delete_student', id=student.id) }}"
+                            data-title="Delete student"
+                            data-message="Are you sure you want to delete the Student : '{{ student.user.name }}'?"
+                            data-btn-class="btn-danger"
+                            data-btn-text="Delete"
+                            
+                            onclick="openConfirmModal(this)">
+                            Delete
                         </button>
                     </div>
                 </div>
@@ -62,8 +73,9 @@
                     <div class="col-12 col-md">
                         <h5 class="text-white fw-bold mb-0">{{ student.user.name }}</h5>
                         <small class="text-white-50">Joined: {{ student.user.created_at.strftime('%b %d, %Y') }}</small>
-                        
-                        
+                        <p class="text-success text-xs" style="margin-bottom: 0;">
+                            Active {{ student.user.last_login_at | time_ago }}
+                        </p>                                               
                     </div>
                     
                     <div class="col-12 col-md-auto">

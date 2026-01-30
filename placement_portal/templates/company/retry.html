@@ -22,7 +22,7 @@
 
                 <div class="p-3 rounded mb-4 text-start border border-danger border-opacity-25" style="background: rgba(220, 53, 69, 0.05);">
                     <small class="text-danger fw-bold text-uppercase text-xs d-block mb-1">Admin Feedback:</small>
-                    <p class="text-white mb-0 fst-italic">"{{ reason or 'Profile information does not meet our platform criteria.' }}"</p>
+                    <p class="text-white mb-0 fst-italic">"{{ user.company_details.rejection_reason or 'Profile information does not meet our platform criteria.' }}"</p>
                 </div>
 
                 <div class="d-grid gap-3">

@@ -1,0 +1,111 @@
+{% extends 'student/dashboard.html' %}
+
+{% block title %}Offer Details - Apex{% endblock %}
+
+{% block dashboard_content %}
+
+<div class="d-flex justify-content-center fade-in">
+    <div class="glass-card p-4" style="width: 100%; max-width: 700px;">
+        
+        <div class="d-flex justify-content-between align-items-start mb-4">
+            <div>
+                <h3 class="text-white fw-bold mb-1">Official Job Offer</h3>
+                <span class="badge bg-success-subtle text-success rounded-pill border border-success px-3">
+                    <i class="bi bi-trophy-fill me-1"></i> Selected
+                </span>
+            </div>
+            
+            <a href="{{ url_for('student_bp.applications') }}" class="btn btn-sm btn-outline-light rounded-circle" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                <i class="bi bi-x-lg"></i>
+            </a>
+        </div>
+
+        <div class="head d-flex align-items-center gap-3 p-3 mb-4 rounded border border-secondary" style="background: rgba(255, 255, 255, 0.05);">
+            <img src="{{ application.job_position.company.user.image_url }}" alt="Logo" class="rounded-circle bg-white" style="width: 60px; height: 60px; object-fit: contain; padding: 5px;">
+            <div>
+                <small class="text-white-50 text-uppercase text-xs d-block">Company</small>
+                <h5 class="text-white fw-bold mb-0">{{ application.job_position.company.user.name }}</h5>
+            </div>
+            <div class="vr bg-secondary mx-2 opacity-50"></div>
+            <div >
+                <small class="text-white-50 text-uppercase text-xs d-block ">Role Offered</small>
+                <h5 class="text-success fw-bold mb-0 ">{{ application.job_position.job_title }}</h5>
+            </div>
+        </div>
+
+        <form>
+            <h5 class="text-light mb-3 border-bottom border-secondary pb-2">Compensation & Logistics</h5>
+            
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="text-white-50 small mb-1">Salary Offered (Per Annum)</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-secondary text-white-50" style="border-right: none;">$</span>
+                        <input type="text" class="form-control glass-input text-white border-start-0" value="{{ application.placements.salary_offered }}" readonly>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <label class="text-white-50 small mb-1">Expected Joining Date</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-secondary text-white-50" style="border-right: none;"><i class="bi bi-calendar-event"></i></span>
+                        <input type="text" class="form-control glass-input text-white border-start-0" value="{{ application.placements.joining_date }}" readonly>
+                    </div>
+                </div>
+            </div>
+
+            {% if application.remarks %}
+            <h5 class="text-light mb-3 border-bottom border-secondary pb-2">Message from Recruiter</h5>
+            <div class="mb-4">
+                <div class="p-3 rounded border border-secondary" style="background: rgba(255,255,255,0.05);">
+                    <i class="bi bi-quote text-white-50 fs-3 d-block mb-2"></i>
+                    <p class="text-white lh-lg opacity-90 mb-0 fst-italic">
+                        {{ application.remarks }}
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+
+            <h5 class="text-light mb-3 border-bottom border-secondary pb-2">Offer Documents</h5>
+            <div class="mb-4">
+                <div class="pdf-f glass-input p-3 rounded d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-3">
+                        <i class="pdf bi bi-file-earmark-pdf-fill fs-2 text-danger"></i>
+                        <div class="pdf">
+                            <span class="d-block text-white fw-bold">Official_Offer_Letter.pdf</span>
+                            <small class="text-white-50">Please review this document carefully.</small>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('static', filename=application.placements.offer_letter) }}" target="_blank" class=" btn btn-sm btn-outline-light rounded-pill px-3">
+                        <i class="bi bi-download me-2"></i> View PDF
+                    </a>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                <a href="{{ url_for('student_bp.applications') }}" class="btn btn-outline-light px-5 rounded-pill">Close</a>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<style>
+    @media screen and (max-width: 768px) {
+        .pdf {
+            display: none;
+        }
+        .pdf-f {
+            justify-content: center !important;
+        }  
+    }
+    @media screen and (max-width: 494px) {
+        .head {
+            flex-direction: column !important;
+            text-align: center;
+            gap: 0.5px !important;
+        }
+    }
+</style>
+
+{% endblock %}

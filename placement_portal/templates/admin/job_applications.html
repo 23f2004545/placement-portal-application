@@ -85,18 +85,6 @@
                             <a href="{{ url_for('admin_bp.view_application' , id=application.id)}}" class="btn btn-outline-light btn-sm px-4 rounded-pill glass-btn flex-grow-1 flex-md-grow-0">
                                 View Details
                             </a>
-                            <button 
-                                class="btn btn-outline-danger btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0"
-                                
-                                data-url="{{ url_for('admin_bp.delete_application' , id=application.id)}}"
-                                data-title="Delete Application"
-                                data-message="Are you sure you want to delete the application for '{{ application.student.user.name }}'?"
-                                data-btn-class="btn-danger"
-                                data-btn-text="Delete"
-                                
-                                onclick="openConfirmModal(this)">
-                                Delete
-                            </button>
                         </div>
                     </div>
 

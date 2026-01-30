@@ -73,18 +73,32 @@ def approve_company(id):
     
     
 # --- ACTION: REJECT COMPANY ---
-@admin_bp.route('/company/reject/<int:id>')
+@admin_bp.route('/company/reject/<int:id>', methods=['GET', 'POST'])
 def reject_company(id):
     if not session.get('user_id', None):
         return redirect(url_for('auth_bp.login'))  
     elif session.get('role') == 'admin':
-        
         company = Company.query.get_or_404(id)
-        company.status = "Rejected"
-        db.session.commit()
+        if request.method == 'POST':
+            try:
+                
+                rejection_reason = request.form.get('rejection_reason')
+                company.rejection_reason = rejection_reason
+                company.status = "Rejected"
+                db.session.commit()
+                
+                flash(f'{company.user.name} has been rejected.', 'danger')
+                return redirect(url_for('admin_bp.companies')) 
+                
+            except Exception as e:
+                db.session.rollback()
+                flash(f'Error rejecting company: {str(e)}', 'danger')
+                return redirect(url_for('admin_bp.companies', id=id))
+
+        # 5. HANDLE GET REQUEST (Show Form)
+        return render_template('admin/rejection.html', 
+                                company=company)
         
-        flash(f'{company.user.name} has been rejected.', 'danger')
-        return redirect(url_for('admin_bp.companies'))
     else:
         return redirect(url_for('auth_bp.login'))
 
@@ -118,8 +132,7 @@ def delete_company(id):
         user = company.user # Get the associated User account
         
         try:
-            db.session.delete(company)
-            db.session.delete(user) # Cascading delete usually handles this, but explicit is safer
+            company.is_deleted = True 
             db.session.commit()
             flash('Company profile deleted.', 'warning')
         except Exception as e:
@@ -210,8 +223,7 @@ def delete_student(id):
         user = student.user # Get the associated User account
         
         try:
-            db.session.delete(student)
-            db.session.delete(user) # Cascading delete usually handles this, but explicit is safer
+            student.is_deleted = True
             db.session.commit()
             flash('Student profile deleted.', 'warning')
         except Exception as e:
@@ -303,7 +315,7 @@ def reject_job(id):
     elif session.get('role') == 'admin':
         
         job = JobPosition.query.get_or_404(id)
-        job.status = "Rejected"
+        db.session.delete(job)
         db.session.commit()
         
         flash(f'Job "{job.job_title}" has been rejected.', 'danger')
@@ -335,7 +347,7 @@ def delete_job(id):
         job = JobPosition.query.get_or_404(id)
         
         try:
-            db.session.delete(job)
+            job.is_deleted = True
             db.session.commit()
             flash('Job deleted.', 'warning')
         except Exception as e:
@@ -400,22 +412,22 @@ def view_application(id):
     else:
         return redirect(url_for('auth_bp.login'))
     
-@admin_bp.route('/application/delete/<int:id>')
-def delete_application(id):
-    if not session.get('user_id', None):
-        return redirect(url_for('auth_bp.login'))  
-    elif session.get('role') == 'admin':
+# @admin_bp.route('/application/delete/<int:id>')
+# def delete_application(id):
+#     if not session.get('user_id', None):
+#         return redirect(url_for('auth_bp.login'))  
+#     elif session.get('role') == 'admin':
         
-        application = Application.query.get_or_404(id)
+#         application = Application.query.get_or_404(id)
         
-        try:
-            db.session.delete(application)
-            db.session.commit()
-            flash('Application deleted.', 'warning')
-        except Exception as e:
-            db.session.rollback()
-            flash('Error deleting application.', 'danger')
+#         try:
+#             db.session.delete(application)
+#             db.session.commit()
+#             flash('Application deleted.', 'warning')
+#         except Exception as e:
+#             db.session.rollback()
+#             flash('Error deleting application.', 'danger')
             
-        return redirect(url_for('admin_bp.job_applications'))
-    else:
-        return redirect(url_for('auth_bp.login'))
+#         return redirect(url_for('admin_bp.job_applications'))
+#     else:
+#         return redirect(url_for('auth_bp.login'))

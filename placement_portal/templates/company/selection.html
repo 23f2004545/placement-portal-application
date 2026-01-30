@@ -1,0 +1,76 @@
+{% extends 'company/dashboard.html' %}
+
+{% block title %}Create Offer{% endblock %}
+
+{% block dashboard_content %}
+<div class="d-flex justify-content-center fade-in">
+    <div class="glass-card p-4" style="width: 100%; max-width: 600px;">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h4 class="text-white fw-bold mb-0">Job Offer Details</h4>
+                <small class="text-info">Student: {{ application.student.user.name }}</small>
+            </div>
+            <a href="{{ url_for('company_bp.reviewed') }}" class="text-white-50"><i class="bi bi-x-lg"></i></a>
+        </div>
+
+        <form action="{{ url_for('company_bp.select_application', id=application.id) }}" method="POST" enctype="multipart/form-data" onsubmit="return validateSetup()">
+            
+            <div class="mb-3">
+                <label class="text-white-50 small mb-2">Salary Offered (Per Annum)</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-transparent border-secondary text-white-50">$</span>
+                    <input type="text" name="salary_offered" class="form-control glass-input" placeholder="e.g. 12,00,000" required>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="text-white-50 small mb-2">Expected Joining Date</label>
+                <input type="date" name="joining_date" class="form-control glass-input" required>
+            </div>
+            <div class="mb-3">
+                <label class="text-white-50 small mb-2">Remarks</label>
+                <textarea name="remarks" class="form-control glass-input" 
+                    placeholder="Welcome to the team!'" 
+                    style="height: 150px;" ></textarea>
+            </div>
+            <div class="mb-3">
+                <label class="text-white-50 small mb-2">Offer Letter / Additional Instructions</label>
+                <div class="col-12">
+                    <div class="input-group">
+                        <input type="file" name="offer_letter" class="form-control glass-input" id="offer_letter" accept=".pdf" required>   
+                    </div>
+                    <small id="fileError" class="text-danger mt-1" style="display:none;">File too large (Max 2MB) or invalid
+                        format.</small>
+                </div>
+            </div>
+            <div class="alert alert-warning border-0 small mb-4" style="background: rgba(255, 193, 7, 0.1); color: #ffca2c;">
+                <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                Submitting this will officially mark the application as 'Selected' and notify the student.
+            </div>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-success rounded-pill">Confirm & Send Offer</button>
+                <a href="{{ url_for('company_bp.applications') }}" class="btn btn-outline-light btn-sm rounded-pill">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    function validateSetup() {
+
+        // Validate Resume Size
+        const resume = document.getElementById('resume');
+        const maxSize = 2 * 1024 * 1024; // 2MB
+        if (resume.files.length > 0) {
+            if (resume.files[0].size > maxSize) {
+                document.getElementById('fileError').style.display = 'block';
+                return false;
+            }
+        }
+        return true;
+    }
+</script>
+{% endblock %}

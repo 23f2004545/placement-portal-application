@@ -6,7 +6,32 @@
 
 <div class="container-fluid fade-in">
     
-    <h3 class="text-white fw-bold mb-4">Placement History</h3>
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
+        <h3 class="text-white fw-bold mb-0">Placement History</h3>
+        
+        <div class="d-flex ">
+            <div class="dropdown">
+                <button class="btn btn-outline-light glass-btn dropdown-toggle h-100" type="button" data-bs-toggle="dropdown">
+                    <i class="bi bi-filter"></i>
+                </button>
+            
+                <ul class="dropdown-menu dropdown-menu-end glass-dropdown border-secondary">
+                    <li><a class="dropdown-item" href="{{ url_for('student_bp.history') }}">All</a></li>
+                    <li><hr class="dropdown-divider border-secondary opacity-25"></li>
+                    <li><a class="dropdown-item text-success" href="{{ url_for('student_bp.history', status='Joined') }}">Joined</a></li>
+                    <li><a class="dropdown-item text-danger" href="{{ url_for('student_bp.history', status='Declined') }}">Declined</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <hr class="border-secondary opacity-25 mb-4">
+    {% if status and placements %}
+        <div class="mb-3 text-white-50">
+            Showing results for "{{ status }}" 
+            <a href="{{ url_for('student_bp.history') }}" class="text-success ms-2">Clear Search</a>
+        </div>
+    {% endif %}
 
     {% if placements %}
     <div class="row g-4">
@@ -16,12 +41,12 @@
                 
                 <div class="p-4 border-bottom border-secondary bg-white-10">
                     <div class="d-flex justify-content-between align-items-start">
-                        <div class="d-flex gap-3 align-items-center">
-                            <img src="{{ url_for('static', filename=offer.application.job.company.user.image_url) }}" 
-                                 alt="Logo" style="width: 50px; height: 50px; border-radius: 10px; background: white; object-fit: contain;">
+                        <div class="d-flex gap-2 align-items-center">
+                                <img src="{{ offer.application.job_position.company.user.image_url }}" class="rounded-circle bg-white border border-secondary mx-auto mx-md-0" style="width: 60px; height: 60px; object-fit: contain; padding: 2px;">
+                        
                             <div>
-                                <h5 class="text-white fw-bold mb-0">{{ offer.application.job.company.company_name }}</h5>
-                                <p class="text-success mb-0 small">{{ offer.application.job.title }}</p>
+                                <h5 class="text-white fw-bold mb-0">{{ offer.application.job_position.company.user.name }}</h5>
+                                <p class="text-info text-opacity-75 mb-0 ">{{ offer.application.job_position.job_title }}</p>
                             </div>
                         </div>
                         
@@ -49,14 +74,13 @@
                 </div>
 
                 <div class="p-3 bg-black-20 d-flex gap-2">
-                    <a href="{{ url_for('static', filename=offer.offer_letter) }}" target="_blank" class="btn btn-outline-light btn-sm w-100">
+                    <a href="{{ offer.offer_letter }}" target="_blank" class="btn btn-outline-light btn-sm w-100">
                         <i class="bi bi-file-earmark-pdf me-2"></i> Offer Letter
                     </a>
+                    <a href="{{ url_for('student_bp.view_job' , id=offer.application.job_position.id , source='history_view') }}" class="btn btn-outline-light btn-sm w-100">
+                        <i class="bi bi-file-earmark-pdf me-2"></i> Job Details
+                    </a>
                     
-                    {% if offer.status == 'Offered' %}
-                        <button class="btn btn-success btn-sm w-100">Accept</button>
-                        <button class="btn btn-danger btn-sm w-100">Decline</button>
-                    {% endif %}
                 </div>
 
             </div>
@@ -67,8 +91,13 @@
     {% else %}
     <div class="text-center text-white-50 mt-5">
         <i class="bi bi-trophy fs-1 d-block mb-3 opacity-50"></i>
+        {% if not status %}
+        <p>No results matching your filter</p>
+        <a href="{{ url_for('student_bp.history') }}" class="text-success">Clear Search</a>
+        {% else %}
         <p>No placement offers yet. Keep applying!</p>
-        <a href="{{ url_for('student_bp.job_postings') }}" class="btn btn-success btn-sm rounded-pill px-4">Find Jobs</a>
+        <a href="{{ url_for('student_bp.job_postings') }}" class="text-success">Browse Job Postings</a>
+        {% endif %}
     </div>
     {% endif %}
 

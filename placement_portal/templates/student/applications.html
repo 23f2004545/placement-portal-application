@@ -56,10 +56,6 @@
             <div class="glass-card p-3 position-relative transition-hover">
                 
                 <div class="row g-3 align-items-center text-center text-md-start">
-                    
-                    <!-- <div class="col-12 col-md-auto">
-                        <img src="{{ application.job_position.company.user.image_url }}" class="rounded-circle bg-white border border-secondary mx-auto mx-md-0" style="width: 60px; height: 60px; object-fit: contain; padding: 2px;">
-                    </div> -->
                     <div class="col-12 col-md">
                         <div class="d-flex flex-column flex-md-row align-items-center gap-2">
                             <h5 class="text-white fw-bold mb-0">{{ application.job_position.company.user.name }}</h5>
@@ -77,17 +73,47 @@
                         <span class="text-info text-opacity-50">{{ application.job_position.job_title }}</span>
 
                         <div class="d-flex flex-wrap justify-content-center justify-content-md-start gap-2 text-white-50 text-xs mt-2">
-                            <!-- <span><i class="bi bi-mortarboard-fill "></i> CGPA: {{ application.student.cgpa }}</span>
-                            <span><i class="bi bi-briefcase "></i> Exp: {{ application.student.experience }}Y</span> -->
                             <span><i class="bi bi-calendar3 "></i> {{ application.applied_at.strftime('%b %d, %Y') }}</span>
                         </div>
                     </div>
 
                     <div class="col-12 col-md-auto">
-                        <a href="{{ url_for('student_bp.view_job', id=application.student.id , source='app_view', src_id=application.id) }}" class="btn btn-outline-light btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0">
-                            View Details
-                        </a>
+                        <div class="d-flex flex-wrap justify-content-center justify-content-md-end gap-2">
+                                {% if application.placements.status == "Offered" %}
+                                    <button 
+                                        class="btn btn-outline-success btn-sm px-3 rounded-pill flex-grow-1 flex-md-grow-0"
+                                        
+                                        data-url="{{ url_for('student_bp.join_offer', id=application.id) }}"
+                                        data-title="Approve Company"
+                                        data-message="Are you sure you want to approve the Offer ?"
+                                        data-btn-class="btn-success"
+                                        data-btn-text="Approve"
+                                        
+                                        onclick="openConfirmModal(this)">
+                                        Join
+                                    </button>
+                                    <button 
+                                        class="btn btn-outline-danger btn-sm px-3 rounded-pill flex-grow-1 flex-md-grow-0"
+                                        
+                                        data-url="{{ url_for('student_bp.decline_offer', id=application.id) }}"
+                                        data-title="Decline Company"
+                                        data-message="Are you sure you want to Decline the Offer ?"
+                                        data-btn-class="btn-danger"
+                                        data-btn-text="Decline"
+                                        
+                                        onclick="openConfirmModal(this)">
+                                        Decline
+                                    </button>
+                                    <a href="{{ url_for('student_bp.view_offer', id=application.id) }}" class="btn btn-outline-light btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0">
+                                        View Offer
+                                    </a>
+                                {% endif %}
+                            <a href="{{ url_for('student_bp.view_job', id=application.job_position.id , source='app_view') }}" class="btn btn-outline-light btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0">
+                                View Details
+                            </a>
+                        </div>
                     </div>
+
                 </div>
             </div>
             {% endfor %}
@@ -95,8 +121,12 @@
         {% else %}
             <div class="text-center text-white-50 mt-5">
                 <i class="bi bi-inbox fs-1 text-white-50"></i>
-                <p>No applications found matching your search.</p>
+                <p>No applications at this moment</p>
+                {% if search or status %}
                 <a href="{{ url_for('student_bp.applications') }}" class="text-success">Clear Search</a>
+                {% else %}
+                <a href="{{ url_for('student_bp.job_postings') }}" class="text-success">Browse Job Postings</a>
+                {% endif %}
             </div>
         {% endif %}
     </div>

@@ -85,8 +85,10 @@
         {% else %}
             <div class="text-center text-white-50 mt-5">
                 <i class="bi bi-inbox fs-1 text-white-50"></i>
-                <p>No applications found matching your search.</p>
+                <p>No applications at this moment</p>
+                {% if search %}
                 <a href="{{ url_for('company_bp.applications') }}" class="text-success">Clear Search</a>
+                {% endif %}
             </div>
         {% endif %}
     </div>

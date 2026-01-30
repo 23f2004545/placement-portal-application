@@ -32,9 +32,9 @@
             </div>
 
             {% if applications %}
-            <a href="#" 
+            <a href="{{ url_for('student_bp.clear_all_notifications', id=applications.id) }}" 
                onclick="openConfirmModal(this)"
-               data-url="#"
+               data-url="{{ url_for('student_bp.clear_all_notifications', id=applications.id) }}"
                data-title="Clear All Notifications"
                data-message="This will hide all current updates from this list."
                data-btn-class="btn-danger"
@@ -63,7 +63,7 @@
 
             <div class="position-relative">
                 
-                <a href="#" 
+                <a href="{{ url_for('student_bp.clear_notification', id=app.id) }}" 
                 class="position-absolute top-0 end-0 m-2 text-white-50 hover-danger p-2"
                 style="z-index: 10; cursor: pointer;"
                 title="Remove">
@@ -108,8 +108,10 @@
     {% else %}
     <div class="text-center text-white-50 mt-5">
         <i class="bi bi-bell-slash fs-1 d-block mb-3"></i>
-        <p>No notifications found matching your search.</p>
+        <p>No notifications at this moment</p>
+        {% if status %}
         <a href="{{ url_for('student_bp.notifications') }}" class="text-success">Clear Search</a>
+        {% endif %}
     </div>
     {% endif %}
 
