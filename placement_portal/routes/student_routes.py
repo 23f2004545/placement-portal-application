@@ -1,39 +1,21 @@
 from flask import Blueprint , current_app , render_template , session , flash , redirect , url_for , request
+from controller.decorators import student_required
+from flask_login import current_user
 from controller.models import *
 import os
 
 student_bp = Blueprint('student_bp', __name__) 
 
 @student_bp.route('/profile')
+@student_required
 def profile():
-    user_id = session['user_id']
-    current_user = User.query.filter_by(id=user_id).first()
-    if not session.get('user_id', None):
-        return redirect(url_for('auth_bp.login'))
-    elif session.get('role') == 'student':
-        if not current_user.student_details:
-            flash('Please complete your profile first.', 'info')
-            return redirect(url_for('student_bp.setup'))
-        return render_template('student/profile.html' , user=current_user)
-    else:
-        flash('Unauthorized access', 'danger')
-        return redirect(url_for('auth_bp.login'))
+    return render_template('student/profile.html' , user=current_user)
+
     
-    
+# --- ACTION: ACCOUNT SETUP ---
 @student_bp.route('/setup', methods=['GET', 'POST'])
+@student_required
 def setup():
-    user_id = session['user_id']
-    current_user = User.query.filter_by(id=user_id).first()
-    if request.method == 'GET':
-        if not session.get('user_id', None):
-            return redirect(url_for('auth_bp.login'))    
-        elif session.get('role') == 'student':
-            if current_user.student_details:
-                return render_template('student/profile.html' , user=current_user)
-            return render_template('student/setup.html' , user=current_user)
-        else :
-            flash('Unauthorized access', 'danger')
-            return redirect(url_for('auth_bp.login'))
 
     if request.method == 'POST':
         cgpa = float(request.form.get('cgpa'))
@@ -54,9 +36,9 @@ def setup():
             
         # --- CREATE STUDENT RECORD ---
         skills = ', '.join(word.capitalize().strip() for word in skills.split(','))
-        user_id = session['user_id']
+        user_id = current_user.id
         new_student = Student(
-            user_id=user_id, # Link to the currently logged in User
+            user_id=user_id, 
             cgpa=cgpa,
             experience=experience,
             skill_set=skills,
@@ -70,21 +52,15 @@ def setup():
         flash('Profile Completed! Welcome to your profile.', 'success')
         return redirect(url_for('student_bp.profile'))
 
-    return render_template('student/setup.html')
+    if current_user.student_details:
+        return render_template('student/profile.html' , user=current_user)
+    return render_template('student/setup.html' , user=current_user)
 
 
+# --- ACTION: EDIT PROFILE ---
 @student_bp.route('/profile/edit', methods=['GET', 'POST'])
+@student_required
 def edit_profile():
-    user_id = session['user_id']
-    current_user = User.query.filter_by(id=user_id).first()
-    if request.method == 'GET':
-        if not session.get('user_id', None):
-            return redirect(url_for('auth_bp.login'))    
-        elif session.get('role') == 'student':
-            return render_template('student/edit.html' , user=current_user)
-        else :
-            flash('Unauthorized access', 'danger')
-            return redirect(url_for('auth_bp.login'))
 
     if request.method == 'POST':
         try:
@@ -96,7 +72,7 @@ def edit_profile():
             if 'profile_pic' in request.files:
                 file = request.files['profile_pic']
                 if file and file.filename != '':
-                    filename = os.path.basename(file.filename) # Prevents directory traversal
+                    filename = os.path.basename(file.filename) 
                     save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'Profile_pics' , filename)
                     file.save(save_path)
 
@@ -130,199 +106,206 @@ def edit_profile():
             flash(f'Error updating profile: {str(e)}', 'danger')
             return render_template('student/edit.html')
         
-    return render_template('student/edit.html', user=current_user)
-
+    return render_template('student/edit.html' , user=current_user)
 
 
 # --- MANAGE JOB_POSTINGS ROUTE ---
 @student_bp.route('/job_postings')
+@student_required
 def job_postings():
-    # 1. AUTHENTICATION
-    user_id = session['user_id']
-    current_user = User.query.filter_by(id=user_id).first()
-    if not session.get('user_id', None):
-        return redirect(url_for('auth_bp.login'))  
-    elif session.get('role') == 'student':
-        
-        # 2. QUERY & JOINS
-        # Join Job -> Company -> User (to get Company Name & Logo)
-        query = JobPosition.query.join(Company).join(User)
-        
-        # 3. SEARCH LOGIC
-        search_query = request.args.get('q', '')
-        if search_query:
-            search = f"%{search_query}%"
-            query = query.filter(
-                    (JobPosition.job_title.ilike(search)) |   # Job Title
-                    (User.name.ilike(search)) |               # Company Name
-                    (JobPosition.requirements.ilike(search))     
-            )
-        
-        all_jobs = query.filter(JobPosition.status=="Approved" , JobPosition.is_deleted==False).order_by(JobPosition.created_at.desc()).all()
 
-        return render_template('student/job_postings.html', 
-                               user=current_user,
-                               search=search_query,
-                               jobs = all_jobs,
-                               active_page='job_postings')
-    else:
-        return redirect(url_for('auth_bp.login'))
+    # Join Job -> Company -> User (to get Company Name & Logo)
+    query = JobPosition.query.join(Company).join(User)
     
+    # SEARCH LOGIC
+    search_query = request.args.get('q', '')
+    if search_query:
+        search = f"%{search_query}%"
+        query = query.filter(
+                (JobPosition.job_title.ilike(search)) |   # Job Title
+                (User.name.ilike(search)) |               # Company Name
+                (JobPosition.requirements.ilike(search))     
+        )
     
+    all_jobs = query.filter(JobPosition.status=="Approved" , JobPosition.is_deleted==False).order_by(JobPosition.created_at.desc()).all()
+
+    return render_template('student/job_postings.html', 
+                            user=current_user,
+                            search=search_query,
+                            jobs = all_jobs,
+                            active_page='job_postings')
+
+    
+# --- ACTION: VIEW JOB ---
 @student_bp.route('/job/view/<int:id>')
+@student_required
 def view_job(id):
-    user_id = session['user_id']
-    current_user = User.query.filter_by(id=user_id).first()
-    if not session.get('user_id', None):
-        return redirect(url_for('auth_bp.login'))  
-    elif session.get('role') == 'student':
-        job = JobPosition.query.get_or_404(id)
+
+    job = JobPosition.query.get_or_404(id)
+    
+    # Counting views for job once per student per session 
+    # Initialize 'viewed_jobs' list in session if it doesn't exist
+    if 'viewed_jobs' not in session:
+        session['viewed_jobs'] = []
+
+    # If this Job ID is not in the session's viewed list
+    # We cast to list because session objects can be finicky with appends
+    viewed_list = list(session['viewed_jobs']) 
+    
+    if id not in viewed_list:
+        # Increment the existing column
+        job.views = (job.views or 0) + 1
         
-        # Counting views for job once per student per session 
-        # Initialize 'viewed_jobs' list in session if it doesn't exist
-        if 'viewed_jobs' not in session:
-            session['viewed_jobs'] = []
-
-        # Logic: If this Job ID is not in the session's viewed list
-        # We cast to list because session objects can be finicky with appends
-        viewed_list = list(session['viewed_jobs']) 
-        
-        if id not in viewed_list:
-            # Increment the existing column
-            job.views = (job.views or 0) + 1
-            
-            # Add to session so they aren't counted again this session
-            viewed_list.append(id)
-            session['viewed_jobs'] = viewed_list 
-            db.session.commit()
-        return render_template('student/view_job.html', 
-                               job=job, 
-                               user=current_user,
-                               active_page='job_postings')
-    else:
-        return redirect(url_for('auth_bp.login'))
+        # Add to session so they aren't counted again this session
+        viewed_list.append(id)
+        session['viewed_jobs'] = viewed_list 
+        db.session.commit()
+    return render_template('student/view_job.html', 
+                            job=job, 
+                            user=current_user,
+                            active_page='job_postings')
 
 
-
-
+# --- ACTION: JOB APPLY ---
 @student_bp.route('/job/apply/<int:id>', methods=['GET', 'POST'])
+@student_required
 def apply_job(id):
-    user_id = session['user_id']
-    current_user = User.query.get(user_id)
+
     student = current_user.student_details
-    # 1. AUTH CHECK
-    if not session.get('user_id', None):
-        return redirect(url_for('auth_bp.login'))
+    job = JobPosition.query.get_or_404(id)
     
-    elif session.get('role') == 'student':
-        
-        # 2. GET JOB DETAILS
-        job = JobPosition.query.get_or_404(id)
-        
-        # 3. CHECK DUPLICATE APPLICATION
-        # We check if this student has already applied to this specific job_position_id
-        existing_app = Application.query.filter_by(
-            student_id=student.id, 
-            job_position_id=job.id
-        ).first()
+    # CHECK DUPLICATE APPLICATION
+    # We check if this student has already applied to this specific job_position_id
+    existing_app = Application.query.filter_by(
+        student_id=student.id, 
+        job_position_id=job.id
+    ).first()
 
-        if existing_app:
-            flash(f'You have already applied for the {job.job_title} position.', 'warning')
-            return redirect(url_for('student_bp.job_postings'))
+    if existing_app:
+        flash(f'You have already applied for the {job.job_title} position.', 'warning')
+        return redirect(url_for('student_bp.job_postings'))
 
-        # 4. HANDLE POST REQUEST (Form Submission)
-        if request.method == 'POST':
-            try:
-                cover_letter_text = request.form.get('cover_letter')
+    if request.method == 'POST':
+        try:
+            cover_letter_text = request.form.get('cover_letter')
 
-                 # --- RESUME SAVING LOGIC ---
-                resume = None 
-                if 'resume' in request.files:
-                    file = request.files['resume']
-                    if file and file.filename != '':
-                        filename = os.path.basename(file.filename) # Prevents directory traversal
-                        save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'Resumes' , filename)
-                        file.save(save_path)
+            resume = None 
+            if 'resume' in request.files:
+                file = request.files['resume']
+                if file and file.filename != '':
+                    filename = os.path.basename(file.filename) 
+                    save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'Resumes' , filename)
+                    file.save(save_path)
 
-                        resume = f"/static/uploads/Resumes/{filename}"
+                    resume = f"/static/uploads/Resumes/{filename}"
 
-                # C. Create Application Entry
-                new_application = Application(
-                    student_id=student.id,
-                    job_position_id=job.id,
-                    application_status='Applied',
-                    cover_letter=cover_letter_text,
-                    custom_resume=resume 
-                )
-                
-                db.session.add(new_application)
-                db.session.commit()
-                
-                flash('Application submitted successfully! Good luck.', 'success')
-                return redirect(url_for('student_bp.job_postings')) 
-                
-            except Exception as e:
-                db.session.rollback()
-                flash(f'Error submitting application: {str(e)}', 'danger')
-                return redirect(url_for('student_bp.apply_job', id=id))
-
-        # 5. HANDLE GET REQUEST (Show Form)
-        return render_template('student/apply_job.html', 
-                               user=current_user, 
-                               job=job)
-    
-    else:
-        flash('Unauthorized access', 'danger')
-        return redirect(url_for('auth_bp.login'))
-    
-    
-    
-@student_bp.route('/applications')
-def applications():
-    user_id = session['user_id']
-    current_user = User.query.filter_by(id=user_id).first()
-    if not session.get('user_id', None):
-        return redirect(url_for('auth_bp.login'))
-    elif session.get('role') == 'student':
-        if not current_user.student_details:
-            flash('Please complete your profile first.', 'info')
-            return redirect(url_for('student_bp.setup'))
-        
-        # 2. QUERY & JOINS
-        # Join Job -> Company -> User (to get Company Name & Logo)
-        my_id = current_user.student_details.id
-        
-        query = Application.query.join(JobPosition).join(Company).join(User)
-        
-        # 3. SEARCH LOGIC
-        search_query = request.args.get('q', '')
-        status_filter = request.args.get('status', '')
-        if search_query:
-            search = f"%{search_query}%"
-            query = query.filter(
-                    (JobPosition.job_title.ilike(search)) |   # Job Title
-                    (User.name.ilike(search))                # Company Name    
+            # Application Entry
+            new_application = Application(
+                student_id=student.id,
+                job_position_id=job.id,
+                application_status='Applied',
+                cover_letter=cover_letter_text,
+                custom_resume=resume 
             )
             
-        if status_filter:
-            query = query.filter(Application.application_status == status_filter)
+            db.session.add(new_application)
+            db.session.commit()
+            
+            flash('Application submitted successfully! Good luck.', 'success')
+            return redirect(url_for('student_bp.job_postings')) 
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error submitting application: {str(e)}', 'danger')
+            return redirect(url_for('student_bp.apply_job', id=id))
         
-        # Add filter Application.placements.status == "Offered"
-        all_applications = query.filter(Application.student_id == my_id).order_by(Application.applied_at.desc()).all()
+    return render_template('student/apply_job.html', 
+                            user=current_user, 
+                            job=job)
+    
 
-        return render_template('student/applications.html', 
-                               user=current_user,
-                               search=search_query,
-                               status=status_filter,
-                               applications = all_applications)
+
+# --- APPLICATIONS ROUTE ---
+@student_bp.route('/applications')
+@student_required
+def applications():
+
+    # Join Job -> Company -> User (to get Company Name & Logo)
+    my_id = current_user.student_details.id
+    
+    query = Application.query.join(JobPosition).join(Company).join(User)
+    
+    # SEARCH LOGIC
+    search_query = request.args.get('q', '')
+    status_filter = request.args.get('status', '')
+    if search_query:
+        search = f"%{search_query}%"
+        query = query.filter(
+                (JobPosition.job_title.ilike(search)) |   # Job Title
+                (User.name.ilike(search))                # Company Name    
+        )
         
-    else:
-        flash('Unauthorized access', 'danger')
-        return redirect(url_for('auth_bp.login'))
+    if status_filter:
+        query = query.filter(Application.application_status == status_filter)
+
+    all_applications = query.filter(Application.student_id == my_id).order_by(Application.applied_at.desc()).all()
+
+    return render_template('student/applications.html', 
+                            user=current_user,
+                            search=search_query,
+                            status=status_filter,
+                            applications = all_applications)
     
+
+# --- ACTION: VIEW JOB OFFER ---
+@student_bp.route('/offer/view/<int:id>')
+@student_required
+def view_offer(id):
+
+    application = Application.query.get_or_404(id)
     
+    return render_template('student/view_offer.html', 
+                            application=application, 
+                            user=current_user)
+
     
+# --- ACTION: JOIN OFFER ---
+@student_bp.route('/offer/join/<int:id>')
+def join_offer(id):
+
+    application = Application.query.get_or_404(id)
     
+    try:
+        application.placements.status = 'Joined'
+        db.session.commit()
+        
+        flash(f'Congratulations! You have successfully accepted the offer at {application.job_position.company.user.name}.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('An error occurred while processing your request.', 'danger')
+
+    return redirect(url_for('student_bp.applications'))
+
+
+# --- ACTION: DECLINE OFFER ---
+@student_bp.route('/offer/decline/<int:id>')
+def decline_offer(id):
+
+    application = Application.query.get_or_404(id)
+
+    try:
+        application.placements.status = 'Declined'
+        db.session.commit()
+        
+        flash('You have declined the offer.', 'info')
+    except Exception as e:
+        db.session.rollback()
+        flash('Error processing request.', 'danger')
+
+    return redirect(url_for('student_bp.applications'))
+        
+
+
 # --- HELPER: GENERATE PROFESSIONAL MESSAGES ---
 def get_status_message(application):
     status = application.application_status
@@ -371,71 +354,67 @@ def get_status_message(application):
             "class": "secondary"
         }
 
-# --- NOTIFICATIONS LIST (Student Center) ---
+# --- NOTIFICATIONS LIST  ---
 @student_bp.route('/notifications')
+@student_required
 def notifications():
-    if not session.get('user_id', None):
-        return redirect(url_for('auth_bp.login'))
-    elif session.get('role') == 'student':
-        user_id = session['user_id']
-        current_user = User.query.get(user_id)
-        student = current_user.student_details
-        
-        query = Application.query
-        status_filter = request.args.get('status', '')
-        if status_filter:
-            query = query.filter(Application.application_status == status_filter)
-        
-        # Fetch applications (Newest first)
-        my_apps = query.filter(Application.student_id==student.id , Application.is_cleared == False).order_by(Application.applied_at.desc()).all()
-        
-        return render_template('student/notifications.html', 
-                               user=current_user,
-                               applications=my_apps,
-                               status=status_filter)
-    else:
-        return redirect(url_for('auth_bp.login'))
+
+    student = current_user.student_details
+    
+    query = Application.query
+    status_filter = request.args.get('status', '')
+    if status_filter:
+        query = query.filter(Application.application_status == status_filter)
+    
+    # (Newest first)
+    my_apps = query.filter(Application.student_id==student.id , Application.is_cleared == False).order_by(Application.applied_at.desc()).all()
+    
+    return render_template('student/notifications.html', 
+                            user=current_user,
+                            applications=my_apps,
+                            status=status_filter)
+
 
 # --- VIEW NOTIFICATION (Detailed Message) ---
 @student_bp.route('/notification/view/<int:id>')
+@student_required
 def view_notification(id):
-    if not session.get('user_id', None):
-        return redirect(url_for('auth_bp.login'))
-    elif session.get('role') == 'student':
-        
-        application = Application.query.get_or_404(id)
-        
-        # Security: Ensure student owns this notification
-        if application.student.user.id != session['user_id']:
-            flash("Unauthorized access.", "danger")
-            return redirect(url_for('student_bp.notifications'))
 
-        # Generate the custom message based on current status
-        message_data = get_status_message(application)
-        application.is_read = True
-        db.session.commit()
+    application = Application.query.get_or_404(id)
+    
+    # Security: EnsurING student owns this notification
+    if application.student.user.id != current_user.id:
+        flash("Unauthorized access.", "danger")
+        return redirect(url_for('student_bp.notifications'))
 
-        return render_template('student/view_notification.html', 
-                               user=User.query.get(session['user_id']),
-                               application=application,
-                               msg=message_data)
-    else:
-        return redirect(url_for('auth_bp.login'))
+    # GeneratING the custom message based on current status
+    message_data = get_status_message(application)
+    application.is_read = True
+    db.session.commit()
+
+    return render_template('student/view_notification.html', 
+                            user=User.query.get(current_user.id),
+                            application=application,
+                            msg=message_data)
+
 
 # --- ACTION: CLEAR SINGLE NOTIFICATION ---
 @student_bp.route('/notification/clear/<int:id>')
+@student_required
 def clear_notification(id):
     app = Application.query.get_or_404(id)
     # Check ownership
-    if app.student.user.id == session['user_id']:
-        app.is_cleared = True  # Soft delete from view
+    if app.student.user.id == current_user.id:
+        app.is_cleared = True  
         db.session.commit()
     return redirect(url_for('student_bp.notifications'))
 
-# --- ACTION: CLEAR ALL ---
+
+# --- ACTION: CLEAR ALL NOTIFICATIONS ---
 @student_bp.route('/notifications/clear_all')
+@student_required
 def clear_all_notifications():
-    user_id = session['user_id']
+    user_id = current_user.id
     student = User.query.get(user_id).student_details
     
     # Bulk update
@@ -446,99 +425,22 @@ def clear_all_notifications():
     return redirect(url_for('student_bp.notifications'))
 
 
-
-@student_bp.route('/offer/view/<int:id>')
-def view_offer(id):
-    user_id = session['user_id']
-    current_user = User.query.filter_by(id=user_id).first()
-    if not session.get('user_id', None):
-        return redirect(url_for('auth_bp.login'))  
-    elif session.get('role') == 'student':
-        application = Application.query.get_or_404(id)
-        
-        return render_template('student/view_offer.html', 
-                               application=application, 
-                               user=current_user)
-    else:
-        return redirect(url_for('auth_bp.login'))
-    
-    
-# --- ACTION: JOIN OFFER ---
-@student_bp.route('/offer/join/<int:id>')
-def join_offer(id):
-    # 1. AUTH CHECK
-    if not session.get('user_id', None):
-        return redirect(url_for('auth_bp.login'))
-    elif session.get('role') != 'student':
-        flash('Unauthorized access', 'danger')
-        return redirect(url_for('auth_bp.login'))
-
-    # 2. FETCH & VALIDATE
-    application = Application.query.get_or_404(id)
-
-    # 3. UPDATE STATUS
-    try:
-        application.placements.status = 'Joined'
-        db.session.commit()
-        
-        flash(f'Congratulations! You have successfully accepted the offer at {application.job_position.company.user.name}.', 'success')
-    except Exception as e:
-        db.session.rollback()
-        flash('An error occurred while processing your request.', 'danger')
-
-    return redirect(url_for('student_bp.applications'))
-
-
-# --- ACTION: DECLINE OFFER ---
-@student_bp.route('/offer/decline/<int:id>')
-def decline_offer(id):
-    # 1. AUTH CHECK
-    if not session.get('user_id', None):
-        return redirect(url_for('auth_bp.login'))
-    elif session.get('role') != 'student':
-        flash('Unauthorized access', 'danger')
-        return redirect(url_for('auth_bp.login'))
-
-    # 2. FETCH & VALIDATE
-    application = Application.query.get_or_404(id)
-
-    # 3. UPDATE STATUS
-    try:
-        application.placements.status = 'Declined'
-        db.session.commit()
-        
-        flash('You have declined the offer.', 'info')
-    except Exception as e:
-        db.session.rollback()
-        flash('Error processing request.', 'danger')
-
-    return redirect(url_for('student_bp.applications'))
-
-
-
-
+# --- PLACEMENT HISTORY ROUTE ---
 @student_bp.route('/history')
 def history():
-    user_id = session['user_id']
-    current_user = User.query.filter_by(id=user_id).first()
-    if not session.get('user_id', None):
-        return redirect(url_for('auth_bp.login'))
-    elif session.get('role') == 'student':
-        if not current_user.student_details:
-            flash('Please complete your profile first.', 'info')
-            return redirect(url_for('student_bp.setup'))
-        
-        my_id = current_user.student_details.id
-        
-        query = Placement.query.join(Application)
-        
-        status_filter = request.args.get('status', '')
-            
-        if status_filter:
-            query = query.filter(Placement.status == status_filter)
 
-        placements = query.filter(Application.student_id == my_id , Placement.status != "Offered").order_by(Placement.created_at.desc()).all()
-        return render_template('student/history.html' , placements=placements, user=current_user, status=status_filter)
-    else:
-        flash('Unauthorized access', 'danger')
-        return redirect(url_for('auth_bp.login'))
+    if not current_user.student_details:
+        flash('Please complete your profile first.', 'info')
+        return redirect(url_for('student_bp.setup'))
+    
+    my_id = current_user.student_details.id
+    
+    query = Placement.query.join(Application)
+    
+    status_filter = request.args.get('status', '')
+        
+    if status_filter:
+        query = query.filter(Placement.status == status_filter)
+
+    placements = query.filter(Application.student_id == my_id , Placement.status != "Offered").order_by(Placement.created_at.desc()).all()
+    return render_template('student/history.html' , placements=placements, user=current_user, status=status_filter)

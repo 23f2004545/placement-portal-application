@@ -1,433 +1,344 @@
-from flask import Blueprint , current_app , render_template , session , flash , redirect , url_for , request
+from flask import Blueprint , render_template  , flash , redirect , url_for , request
+from controller.decorators import admin_required
+from flask_login import current_user
 from controller.models import *
 
 admin_bp = Blueprint('admin_bp', __name__) 
 
+
 @admin_bp.route('/profile')
+@admin_required
 def profile():
-    if not session.get('user_id', None):
-        return redirect(url_for('auth_bp.login'))  
-    elif session.get('role') == 'admin':
-        return render_template('admin/profile.html')
-    else:
-        flash('Unauthorized access', 'danger')
-        return redirect(url_for('auth_bp.login'))
+    return render_template('admin/profile.html')
+
     
     
-    
-# --- MANAGE COMPANIES ROUTE ---
+#  =========================================
+#      ------ MANAGE COMPANIES --------
+#  ========================================= 
+
 @admin_bp.route('/companies')
+@admin_required
 def companies():
-    # 1. AUTHENTICATION CHECK (As requested)
-    if not session.get('user_id', None):
-        return redirect(url_for('auth_bp.login'))  
-    elif session.get('role') == 'admin':
-        
-        # 2. LOGIC START
-        search_query = request.args.get('q', '')
-        
-        # Join Company with User to access name, email, image, etc.
-        query = Company.query.join(User)
+    search_query = request.args.get('q', '')
+    
+    # Join Company with User to access name, email, image, etc.
+    query = Company.query.join(User)
 
-        if search_query:
-            search = f"%{search_query}%"
-            # Search by Company Name (User.name) or HR Name
-            query = query.filter(
-                (User.name.ilike(search)) | 
-                (Company.hr_name.ilike(search)) |
-                (Company.id.ilike(search))
-            )
+    if search_query:
+        search = f"%{search_query}%"
+        # Search by Company Name (User.name) or HR Name
+        query = query.filter(
+            (User.name.ilike(search)) | 
+            (Company.hr_name.ilike(search)) |
+            (Company.id.ilike(search))
+        )
 
-        all_companies = query.all()
+    all_companies = query.all()
 
-        # Separate into lists based on 'status'
-        pending_list = [c for c in all_companies if c.status=="Pending"]
-        approved_list = [c for c in all_companies if c.status=="Approved"]
+    # Separate into lists based on 'status'
+    pending_list = [c for c in all_companies if c.status=="Pending"]
+    approved_list = [c for c in all_companies if c.status=="Approved"]
 
-        return render_template('admin/companies.html', 
-                               user=User.query.get(session['user_id']), # Current Admin User
-                               pending_companies=pending_list,
-                               approved_companies=approved_list,
-                               companies=all_companies,
-                               search = search_query,
-                               active_page='companies')
-    else:
-        flash('Unauthorized access', 'danger')
-        return redirect(url_for('auth_bp.login'))
+    return render_template('admin/companies.html', 
+                            user=current_user, 
+                            pending_companies=pending_list,
+                            approved_companies=approved_list,
+                            companies=all_companies,
+                            search = search_query)
+
 
 # --- ACTION: APPROVE COMPANY ---
 @admin_bp.route('/company/approve/<int:id>')
+@admin_required
 def approve_company(id):
-    if not session.get('user_id', None):
-        return redirect(url_for('auth_bp.login'))  
-    elif session.get('role') == 'admin':
-        
-        company = Company.query.get_or_404(id)
-        company.status = "Approved"
-        db.session.commit()
-        
-        flash(f'{company.user.name} has been approved.', 'success')
-        return redirect(url_for('admin_bp.companies'))
-    else:
-        return redirect(url_for('auth_bp.login'))
     
+    company = Company.query.get_or_404(id)
+    company.status = "Approved"
+    db.session.commit()
+    
+    flash(f'{company.user.name} has been approved.', 'success')
+    return redirect(url_for('admin_bp.companies'))
+
     
 # --- ACTION: REJECT COMPANY ---
 @admin_bp.route('/company/reject/<int:id>', methods=['GET', 'POST'])
+@admin_required
 def reject_company(id):
-    if not session.get('user_id', None):
-        return redirect(url_for('auth_bp.login'))  
-    elif session.get('role') == 'admin':
-        company = Company.query.get_or_404(id)
-        if request.method == 'POST':
-            try:
-                
-                rejection_reason = request.form.get('rejection_reason')
-                company.rejection_reason = rejection_reason
-                company.status = "Rejected"
-                db.session.commit()
-                
-                flash(f'{company.user.name} has been rejected.', 'danger')
-                return redirect(url_for('admin_bp.companies')) 
-                
-            except Exception as e:
-                db.session.rollback()
-                flash(f'Error rejecting company: {str(e)}', 'danger')
-                return redirect(url_for('admin_bp.companies', id=id))
 
-        # 5. HANDLE GET REQUEST (Show Form)
-        return render_template('admin/rejection.html', 
-                                company=company)
-        
-    else:
-        return redirect(url_for('auth_bp.login'))
+    company = Company.query.get_or_404(id)
+    if request.method == 'POST':
+        try:
+            
+            rejection_reason = request.form.get('rejection_reason')
+            company.rejection_reason = rejection_reason
+            company.status = "Rejected"
+            db.session.commit()
+            
+            flash(f'{company.user.name} has been rejected.', 'danger')
+            return redirect(url_for('admin_bp.companies')) 
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error rejecting company: {str(e)}', 'danger')
+            return redirect(url_for('admin_bp.companies', id=id))
+    return render_template('admin/rejection.html', 
+                            company=company)
+
 
 # --- ACTION: BLACKLIST TOGGLE ---
 @admin_bp.route('/company/blacklist/<int:id>')
+@admin_required
 def toggle_blacklist_company(id):
+    
+    company = Company.query.get_or_404(id)
+    # Toggle the User's blacklist status
+    company.user.blacklisted = not company.user.blacklisted
+    db.session.commit()
+    
+    status = "Blacklisted" if company.user.blacklisted else "Reactivated"
+    flash(f'{company.user.name} has been {status}.', 'info')
+    return redirect(url_for('admin_bp.companies'))
 
-    if not session.get('user_id', None):
-        return redirect(url_for('auth_bp.login'))  
-    elif session.get('role') == 'admin':
-        
-        company = Company.query.get_or_404(id)
-        # Toggle the User's blacklist status
-        company.user.blacklisted = not company.user.blacklisted
-        db.session.commit()
-        
-        status = "Blacklisted" if company.user.blacklisted else "Reactivated"
-        flash(f'{company.user.name} has been {status}.', 'info')
-        return redirect(url_for('admin_bp.companies'))
-    else:
-        return redirect(url_for('auth_bp.login'))
 
 # --- ACTION: DELETE COMPANY ---
 @admin_bp.route('/company/delete/<int:id>')
+@admin_required
 def delete_company(id):
-    if not session.get('user_id', None):
-        return redirect(url_for('auth_bp.login'))  
-    elif session.get('role') == 'admin':
-        
-        company = Company.query.get_or_404(id)
-        user = company.user # Get the associated User account
-        
-        try:
-            company.is_deleted = True 
-            db.session.commit()
-            flash('Company profile deleted.', 'warning')
-        except Exception as e:
-            db.session.rollback()
-            flash('Error deleting company.', 'danger')
-            
-        return redirect(url_for('admin_bp.companies'))
-    else:
-        return redirect(url_for('auth_bp.login'))
+      
+    company = Company.query.get_or_404(id)
     
+    try:
+        company.is_deleted = True 
+        db.session.commit()
+        flash('Company profile deleted.', 'warning')
+    except Exception as e:
+        db.session.rollback()
+        flash('Error deleting company.', 'danger')
+        
+    return redirect(url_for('admin_bp.companies'))
+
+# --- ACTION: VIEW COMPANY ---
 @admin_bp.route('/company/view/<int:id>')
+@admin_required
 def view_company_profile(id):
-    if not session.get('user_id', None):
-        return redirect(url_for('auth_bp.login'))  
-    elif session.get('role') == 'admin':
-        
-        # Fetch the student (or 404 if not found)
-        company = Company.query.get_or_404(id)
-        
-        return render_template('admin/view_company.html', 
-                               company=company, 
-                               user=User.query.get(session['user_id']), # Current Admin
-                               active_page='companies')
-    else:
-        return redirect(url_for('auth_bp.login'))
+
+    # Fetch the Company (or 404 if not found)
+    company = Company.query.get_or_404(id)
     
+    return render_template('admin/view_company.html', 
+                            company=company, 
+                            user=current_user)
     
-# --- MANAGE STUDENTS ROUTE ---
+
+#  =========================================
+#      ------ MANAGE STUDENTS --------
+#  ========================================= 
+
 @admin_bp.route('/students')
+@admin_required
 def students():
-    # 1. AUTHENTICATION CHECK (As requested)
-    if not session.get('user_id', None):
-        return redirect(url_for('auth_bp.login'))  
-    elif session.get('role') == 'admin':
-        
-        # 2. LOGIC START
-        search_query = request.args.get('q', '')
-        
-        # Join Student with User to access name, email, image, etc.
-        query = Student.query.join(User)
 
-        if search_query:
-            search = f"%{search_query}%"
-            # Search by Student Name (User.name) or ID or contact
-            query = query.filter(
-                (User.name.ilike(search)) | 
-                (User.email.ilike(search)) |
-                (Student.id.ilike(search))
-            )
+    search_query = request.args.get('q', '')
+    
+    # Join Student with User to access name, email, image, etc.
+    query = Student.query.join(User)
 
-        all_students = query.all()
+    if search_query:
+        search = f"%{search_query}%"
+        # Search by Student Name (User.name) or ID or contact
+        query = query.filter(
+            (User.name.ilike(search)) | 
+            (User.email.ilike(search)) |
+            (Student.id.ilike(search))
+        )
 
-        return render_template('admin/students.html', 
-                               user=User.query.get(session['user_id']), # Current Admin User
-                               students=all_students,
-                               search = search_query,
-                               active_page='students')
-    else:
-        flash('Unauthorized access', 'danger')
-        return redirect(url_for('auth_bp.login'))
+    all_students = query.all()
+
+    return render_template('admin/students.html', 
+                            user=current_user, 
+                            students=all_students,
+                            search = search_query)
+
 
 # --- ACTION: BLACKLIST TOGGLE ---
 @admin_bp.route('/student/blacklist/<int:id>')
+@admin_required
 def toggle_blacklist_student(id):
-    if not session.get('user_id', None):
-        return redirect(url_for('auth_bp.login'))  
-    elif session.get('role') == 'admin':
-        
-        student = Student.query.get_or_404(id)
-        # Toggle the User's blacklist status
-        student.user.blacklisted = not student.user.blacklisted
-        db.session.commit()
-        
-        status = "Blacklisted" if student.user.blacklisted else "Reactivated"
-        flash(f'{student.user.name} has been {status}.', 'info')
-        return redirect(url_for('admin_bp.students'))
-    else:
-        return redirect(url_for('auth_bp.login'))
+   
+    student = Student.query.get_or_404(id)
+    # Toggle the User's blacklist status
+    student.user.blacklisted = not student.user.blacklisted
+    db.session.commit()
+    
+    status = "Blacklisted" if student.user.blacklisted else "Reactivated"
+    flash(f'{student.user.name} has been {status}.', 'info')
+    return redirect(url_for('admin_bp.students'))
+
 
 # --- ACTION: DELETE STUDENT ---
 @admin_bp.route('/student/delete/<int:id>')
+@admin_required
 def delete_student(id):
-    if not session.get('user_id', None):
-        return redirect(url_for('auth_bp.login'))  
-    elif session.get('role') == 'admin':
-        
-        student = Student.query.get_or_404(id)
-        user = student.user # Get the associated User account
-        
-        try:
-            student.is_deleted = True
-            db.session.commit()
-            flash('Student profile deleted.', 'warning')
-        except Exception as e:
-            db.session.rollback()
-            flash('Error deleting student.', 'danger')
-            
-        return redirect(url_for('admin_bp.students'))
-    else:
-        return redirect(url_for('auth_bp.login'))
     
+    student = Student.query.get_or_404(id)
+    
+    try:
+        student.is_deleted = True
+        db.session.commit()
+        flash('Student profile deleted.', 'warning')
+    except Exception as e:
+        db.session.rollback()
+        flash('Error deleting student.', 'danger')
+        
+    return redirect(url_for('admin_bp.students'))
+
+
+# --- ACTION: VIEW STUDENT ---
 @admin_bp.route('/student/view/<int:id>')
+@admin_required
 def view_student_profile(id):
-    if not session.get('user_id', None):
-        return redirect(url_for('auth_bp.login'))  
-    elif session.get('role') == 'admin':
         
-        # Fetch the student (or 404 if not found)
-        student = Student.query.get_or_404(id)
-        
-        return render_template('admin/view_student.html', 
-                               student=student, 
-                               user=User.query.get(session['user_id']), # Current Admin
-                               active_page='students')
-    else:
-        return redirect(url_for('auth_bp.login'))
+    # Fetch the student (or 404 if not found)
+    student = Student.query.get_or_404(id)
+    
+    return render_template('admin/view_student.html', 
+                            student=student, 
+                            user=current_user)
+
     
     
-    
-# --- MANAGE JOB_POSTINGS ROUTE ---
+#  =========================================
+#     ------ MANAGE JOB POSTINGS -------
+#  =========================================
+ 
 @admin_bp.route('/job_postings')
+@admin_required
 def job_postings():
-    # 1. AUTHENTICATION
-    if not session.get('user_id', None):
-        return redirect(url_for('auth_bp.login'))  
-    elif session.get('role') == 'admin':
-        
-        # 2. QUERY & JOINS
-        # Join Job -> Company -> User (to get Company Name & Logo)
-        query = JobPosition.query.join(Company).join(User)
-        
-        # 3. SEARCH LOGIC
-        search_query = request.args.get('q', '')
-        if search_query:
-            search = f"%{search_query}%"
-            query = query.filter(
-                    (JobPosition.job_title.ilike(search)) |   # Job Title
-                    (User.name.ilike(search)) |               # Company Name
-                    (JobPosition.job_type.ilike(search)) |    # Type (Remote/Hybrid)
-                    (JobPosition.job_status.ilike(search))   # Status (Hiring/Closed)
-            )
-        
-        all_jobs = query.order_by(JobPosition.created_at.desc()).all()
+    
+    # Join Job -> Company -> User (to get Company Name & Logo)
+    query = JobPosition.query.join(Company).join(User)
+    
+    # SEARCH LOGIC
+    search_query = request.args.get('q', '')
+    if search_query:
+        search = f"%{search_query}%"
+        query = query.filter(
+                (JobPosition.job_title.ilike(search)) |   # Job Title
+                (User.name.ilike(search)) |               # Company Name
+                (JobPosition.job_type.ilike(search)) |    # Type (Remote/Hybrid)
+                (JobPosition.job_status.ilike(search))   # Status (Hiring/Closed)
+        )
+    
+    all_jobs = query.order_by(JobPosition.created_at.desc()).all()
 
-        # 4. SEPARATE LISTS
-        pending_jobs = [job for job in all_jobs if job.status=="Pending"]
-        active_jobs = [job for job in all_jobs if job.status=="Approved"]
+    # SEPARATE LISTS
+    pending_jobs = [job for job in all_jobs if job.status=="Pending"]
+    active_jobs = [job for job in all_jobs if job.status=="Approved"]
 
-        return render_template('admin/job_postings.html', 
-                               user=User.query.get(session['user_id']),
-                               pending_jobs=pending_jobs,
-                               active_jobs=active_jobs,
-                               search=search_query,
-                               jobs = all_jobs,
-                               active_page='job_postings')
-    else:
-        return redirect(url_for('auth_bp.login'))
+    return render_template('admin/job_postings.html', 
+                            user=current_user,
+                            pending_jobs=pending_jobs,
+                            active_jobs=active_jobs,
+                            search=search_query,
+                            jobs = all_jobs)
+
 
 # --- ACTION: APPROVE JOB ---
 @admin_bp.route('/job/approve/<int:id>')
+@admin_required
 def approve_job(id):
-    if not session.get('user_id', None):
-        return redirect(url_for('auth_bp.login'))  
-    elif session.get('role') == 'admin':
-        
-        job = JobPosition.query.get_or_404(id)
-        job.status = "Approved"
-        db.session.commit()
-        
-        flash(f'Job "{job.job_title}" has been approved.', 'success')
-        return redirect(url_for('admin_bp.job_postings'))
-    else:
-        return redirect(url_for('auth_bp.login'))
+  
+    job = JobPosition.query.get_or_404(id)
+    job.status = "Approved"
+    db.session.commit()
+    
+    flash(f'Job "{job.job_title}" has been approved.', 'success')
+    return redirect(url_for('admin_bp.job_postings'))
+
     
 # --- ACTION: REJECT JOB ---
 @admin_bp.route('/job/reject/<int:id>')
+@admin_required
 def reject_job(id):
-    if not session.get('user_id', None):
-        return redirect(url_for('auth_bp.login'))  
-    elif session.get('role') == 'admin':
-        
-        job = JobPosition.query.get_or_404(id)
-        db.session.delete(job)
-        db.session.commit()
-        
-        flash(f'Job "{job.job_title}" has been rejected.', 'danger')
-        return redirect(url_for('admin_bp.job_postings'))
-    else:
-        return redirect(url_for('auth_bp.login'))
+    
+    job = JobPosition.query.get_or_404(id)
+    db.session.delete(job)
+    db.session.commit()
+    
+    flash(f'Job "{job.job_title}" has been rejected.', 'danger')
+    return redirect(url_for('admin_bp.job_postings'))
 
-# --- ACTION: VIEW JOB DETAILS (Route Placeholder) ---
+
+# --- ACTION: VIEW JOB DETAILS ---
 @admin_bp.route('/job/view/<int:id>')
+@admin_required
 def view_job(id):
-    if not session.get('user_id', None):
-        return redirect(url_for('auth_bp.login'))  
-    elif session.get('role') == 'admin':
-        job = JobPosition.query.get_or_404(id)
-        return render_template('admin/view_job.html', 
-                               job=job, 
-                               user=User.query.get(session['user_id']),
-                               active_page='job_postings')
-    else:
-        return redirect(url_for('auth_bp.login'))
+
+    job = JobPosition.query.get_or_404(id)
+    return render_template('admin/view_job.html', 
+                            job=job, 
+                            user=current_user)
+
     
 # --- ACTION: DELETE JOB ---
 @admin_bp.route('/job/delete/<int:id>')
+@admin_required
 def delete_job(id):
-    if not session.get('user_id', None):
-        return redirect(url_for('auth_bp.login'))  
-    elif session.get('role') == 'admin':
-        
-        job = JobPosition.query.get_or_404(id)
-        
-        try:
-            job.is_deleted = True
-            db.session.commit()
-            flash('Job deleted.', 'warning')
-        except Exception as e:
-            db.session.rollback()
-            flash('Error deleting Job.', 'danger')
-            
-        return redirect(url_for('admin_bp.job_postings'))
-    else:
-        return redirect(url_for('auth_bp.login'))
+
+    job = JobPosition.query.get_or_404(id)
     
+    try:
+        job.is_deleted = True
+        db.session.commit()
+        flash('Job deleted.', 'warning')
+    except Exception as e:
+        db.session.rollback()
+        flash('Error deleting Job.', 'danger')
+        
+    return redirect(url_for('admin_bp.job_postings'))
 
     
-    
+#  =========================================
+#   ------ MANAGE JOB APPLICATIONS -------
+#  =========================================
+
 @admin_bp.route('/job_applications')
+@admin_required
 def job_applications():
-    if not session.get('user_id', None):
-        return redirect(url_for('auth_bp.login'))  
-    elif session.get('role') == 'admin':
-        
-        query = Application.query.join(JobPosition).join(Company).join(User)
-        
-        # 3. SEARCH LOGIC
-        search_query = request.args.get('q', '')
-        status_filter = request.args.get('status', '')
-        
-        if search_query:
-            search = f"%{search_query}%"
-            query = query.filter(
-                    (JobPosition.job_title.ilike(search)) |   # Job Title
-                    (User.name.ilike(search))               # Company Name 
-            )
-        
-        if status_filter:
-            query = query.filter(Application.application_status == status_filter)
-        
-        all_applications = query.order_by(Application.applied_at.desc()).all()
+    
+    query = Application.query.join(JobPosition).join(Company).join(User)
+    
+    # SEARCH LOGIC
+    search_query = request.args.get('q', '')
+    status_filter = request.args.get('status', '')
+    
+    if search_query:
+        search = f"%{search_query}%"
+        query = query.filter(
+                (JobPosition.job_title.ilike(search)) |   # Job Title
+                (User.name.ilike(search))               # Company Name 
+        )
+    
+    if status_filter:
+        query = query.filter(Application.application_status == status_filter)
+    
+    all_applications = query.order_by(Application.applied_at.desc()).all()
 
-        return render_template('admin/job_applications.html', 
-                               user=User.query.get(session['user_id']),
-                               search=search_query,
-                               status=status_filter,
-                               applications = all_applications,
-                               active_page='job_applications')       
-    else:
-        flash('Unauthorized access', 'danger')
-        return redirect(url_for('auth_bp.login'))
+    return render_template('admin/job_applications.html', 
+                            user=current_user,
+                            search=search_query,
+                            status=status_filter,
+                            applications = all_applications)       
     
 
+# --- ACTION: VIEW APPLICATION ---
 @admin_bp.route('/application/view/<int:id>')
+@admin_required
 def view_application(id):
-    if not session.get('user_id', None):
-        return redirect(url_for('auth_bp.login'))  
-    elif session.get('role') == 'admin':
-        
-        # Fetch Application (Relationships will auto-load Student, Job, and Company)
-        app = Application.query.get_or_404(id)
-        
-        return render_template('admin/view_application.html', 
-                               application=app, 
-                               user=User.query.get(session['user_id']),
-                               active_page='applications') # Ensure you have an 'applications' active state
-    else:
-        return redirect(url_for('auth_bp.login'))
+
+    app = Application.query.get_or_404(id)
     
-# @admin_bp.route('/application/delete/<int:id>')
-# def delete_application(id):
-#     if not session.get('user_id', None):
-#         return redirect(url_for('auth_bp.login'))  
-#     elif session.get('role') == 'admin':
-        
-#         application = Application.query.get_or_404(id)
-        
-#         try:
-#             db.session.delete(application)
-#             db.session.commit()
-#             flash('Application deleted.', 'warning')
-#         except Exception as e:
-#             db.session.rollback()
-#             flash('Error deleting application.', 'danger')
-            
-#         return redirect(url_for('admin_bp.job_applications'))
-#     else:
-#         return redirect(url_for('auth_bp.login'))
+    return render_template('admin/view_application.html', 
+                            application=app, 
+                            user=current_user) 

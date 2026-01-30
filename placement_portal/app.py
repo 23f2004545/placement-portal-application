@@ -1,4 +1,5 @@
 from flask import Flask 
+from flask_login import LoginManager
 from controller.db import db
 from controller.models import *
 from config import config
@@ -11,6 +12,17 @@ from routes.company_routes import company_bp
 
 app = Flask(__name__)
 app.config.from_object(config)
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'auth_bp.login' # Where to send people who aren't logged in
+login_manager.login_message_category = 'warning' # Flash message category
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+
 db.init_app(app)
 
 with app.app_context():

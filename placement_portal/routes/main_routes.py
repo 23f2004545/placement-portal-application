@@ -12,6 +12,7 @@ def home():
     return render_template('auth/login.html')
 
 
+
 # ERROR HANDLERS
 @app.errorhandler(404)
 def page_not_found(e):
@@ -28,6 +29,8 @@ def method_not_allowed(e):
     return redirect(url_for('auth_bp.login'))  # Handle 405 (Method Not Allowed)
 
 
+
+# Notification status modify
 @app.context_processor
 def inject_notifications():
     if session.get('role') == 'student':
@@ -42,6 +45,7 @@ def inject_notifications():
                 ).count()
             return dict(unread_count=count)
     return dict(unread_count=0)
+
 
 
 # Last login management
