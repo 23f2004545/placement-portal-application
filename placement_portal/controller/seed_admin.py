@@ -1,6 +1,7 @@
 from app import app
 from controller.db import db
 from controller.models import User , Role
+from werkzeug.security import generate_password_hash
 
 def seed_admin():
     with app.app_context():
@@ -15,7 +16,7 @@ def seed_admin():
             admin = User(
                 name="admin", 
                 email="admin@gmail.com", 
-                password="admin123", 
+                password=generate_password_hash("admin123"), 
                 contact="7898789078", 
                 image_url="https//admin_image",
                 roles=admin_role)

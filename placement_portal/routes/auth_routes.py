@@ -2,6 +2,7 @@ from flask import Blueprint ,current_app , render_template , request , session ,
 from flask_login import login_user, logout_user, login_required, current_user
 from controller.models import *
 import os , re
+from werkzeug.security import generate_password_hash
 from datetime import datetime , timezone
 
 auth_bp = Blueprint('auth_bp', __name__) 
@@ -26,7 +27,7 @@ def login():
             flash('Incorrect email or password', 'warning')
             return redirect(url_for('auth_bp.login'))
         else:
-            if user.password == password:
+            if user.check_password(password):
                 login_user(user)
                 
                 # Update last login
@@ -114,11 +115,12 @@ def register():
             return redirect(url_for('auth_bp.register'))
         
         role_obj = Role.query.filter_by(name=role_name).first()
+        hashed_pw = generate_password_hash(password)
         
         user = User(
             name=name, 
             email=email, 
-            password=password, 
+            password=hashed_pw, 
             contact=contact, 
             image_url=profile_pic, 
             roles=role_obj 

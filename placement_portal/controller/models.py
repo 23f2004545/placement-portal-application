@@ -1,12 +1,13 @@
 from controller.db import db 
 from flask_login import UserMixin
 import secrets
+from werkzeug.security import generate_password_hash, check_password_hash
 
 class User(UserMixin,db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(80), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(20), nullable=False)
+    password = db.Column(db.String(200), nullable=False)
     contact = db.Column(db.String(10), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=db.func.current_timestamp())
     blacklisted = db.Column(db.Boolean, default=False)
@@ -20,6 +21,25 @@ class User(UserMixin,db.Model):
     student_details = db.relationship('Student', backref='user', lazy=True, uselist=False)
     company_details = db.relationship('Company', backref='user', lazy=True, uselist=False)
     roles = db.relationship('Role', secondary='user_roles', backref='user', lazy=True, uselist=False)
+    
+    # Check password during Login
+    def check_password(self, password):
+        """
+        Compares the provided plain-text password with the stored hash.
+        Returns True if they match, False otherwise.
+        """
+        # Handle legacy plain text passwords (optional, helps during transition)
+        if not self.password.startswith('scrypt:') and not self.password.startswith('pbkdf2:'):
+            return self.password == password
+            
+        return check_password_hash(self.password, password)
+
+    # Set password during Register
+    def set_password(self, password):
+        """
+        Hashes the password and stores it.
+        """
+        self.password = generate_password_hash(password)
 
     @property
     def is_active(self):
