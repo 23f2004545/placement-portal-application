@@ -45,6 +45,20 @@ class Student(db.Model):
     is_deleted = db.Column(db.Boolean, default=False) 
     
     applications = db.relationship('Application', backref='student', lazy=True)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.user.name, # Accessing relationship
+            'email': self.user.email,
+            'contact': self.user.contact,
+            'blacklisted':self.user.blacklisted,
+            'cgpa': self.cgpa,
+            'experience': self.experience,
+            'skills': self.skill_set,
+            'created_at': self.user.created_at.isoformat(),
+            'deleted':self.is_deleted
+        }
 
 class Company(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -59,6 +73,22 @@ class Company(db.Model):
     is_deleted = db.Column(db.Boolean, default=False)
     
     job_postings = db.relationship('JobPosition', backref='company', lazy=True)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.user.name,
+            'email': self.user.email,
+            'contact': self.user.contact,
+            'blacklisted':self.user.blacklisted,
+            'location': self.location,
+            'website': self.website,
+            'status': self.status,
+            'employee_count': self.employee_count,
+            'hr_name': self.hr_name,
+            'created_at': self.user.created_at.isoformat(),
+            'deleted':self.is_deleted
+        }
 
 class JobPosition(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -90,6 +120,16 @@ class Application(db.Model):
     
     placements = db.relationship('Placement', backref='application', lazy=True, uselist=False)
     job_position = db.relationship('JobPosition', backref='applications', lazy=True)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'job_title': self.job_position.job_title,
+            'company': self.job_position.company.user.name,
+            'student': self.student.user.name,
+            'status': self.application_status,
+            'applied_at': self.applied_at.isoformat()
+        }
 
 class Placement(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
