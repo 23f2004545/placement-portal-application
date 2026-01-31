@@ -4,7 +4,42 @@
 
 {% block dashboard_content %}
 <div class="profile-container fade-in">
-    
+    <div class="row">
+        <div class="col-md-12">
+            <div class="glass-card p-4 h-100">
+                <div>
+                    <h3 class="text-white fw-bold text-center">Welcome back, {{ user.name }}!</h3>
+                    <p class="text-white-50 text-center">Track your progress and keep applying. You have applied to <span class="badge bg-success rounded-pill text-s">{{ application_values|sum }}</span> jobs so far.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% if application_values|sum > 0 %}
+    <div class="row">
+        <div class="col-md-6 mb-2">
+            <div class="glass-card p-4 h-80 ">
+                <h5 class="text-white fw-bold mb-2">Application Status</h5>
+                <div style="height: 150px; width: 100%;">
+                    <canvas id="ApplicationChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 ">
+            <div class="glass-card p-4 h-80">
+                <h5 class="text-white fw-bold mb-2">Selection Status</h5>
+                {% if selection_values and selection_values|sum > 0 %}
+                <div style="height: 150px; width: 100%;">
+                    <canvas id="SelectionChart"></canvas>
+                </div>
+                {% else %}
+                <div class="text-white-50 text-center d-flex align-items-center justify-content-center" style="height: 150px;">
+                    <i>Not selected yet</i>
+                </div>
+                {% endif %} 
+            </div>
+        </div>
+    </div>
+    {% endif %}
     <div class="glass-card profile-header-card">
         <div class="d-flex align-items-center flex-wrap gap-4">
             <div class="profile-img-container">
@@ -131,3 +166,91 @@
 
 </div>
 {% endblock %}
+{% block script %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const app = document.getElementById('ApplicationChart').getContext('2d');
+        
+        // Pass Python data to JS using safe filter
+        const app_labels = {{ application_labels | tojson }};
+        const app_data = {{ application_values | tojson }};
+        
+        new Chart(app, {
+            type: 'doughnut', // 'pie', 'bar', 'line'
+            data: {
+                labels: app_labels,
+                datasets: [{
+                    data: app_data,
+                    backgroundColor: [
+                        'rgba(255, 193, 7, 0.8)',  // Warning (Applied)
+                        'rgba(25, 135, 84, 0.8)',  // Success (Selected)
+                        'rgba(13, 202, 240, 0.8)',  // Info (Shortlisted)
+                        'rgba(220, 57, 69, 0.8)'  // Danger (Rejected)
+                    ],
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: 'rgba(255, 255, 255, 0.7)' }
+                    }
+                }
+            }
+        });
+
+        const ctx = document.getElementById('SelectionChart').getContext('2d');
+        const select_labels = {{ selection_labels | tojson }};
+        const select_data = {{ selection_values | tojson }};
+        
+        new Chart(ctx, {
+            type: 'doughnut', // 'pie', 'bar', 'line'
+            data: {
+                labels: select_labels,
+                datasets: [{
+                    data: select_data,
+                    backgroundColor: [
+                        'rgba(220, 57, 69, 0.8)', // Danger (Declineed)
+                        'rgba(25, 135, 84, 0.8)',  // Success (Joined)
+                        'rgba(255, 193, 7, 0.8)'  // Warning (Offered)
+                    ],
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: 'rgba(255, 255, 255, 0.7)' }
+                    }
+                }
+            }
+        });
+    });
+
+    // Sidebar Toggle
+        const Btn = document.getElementById('sidebarToggle');
+        const Sidebar = document.getElementById('sidebar');
+    
+            // Add the click listener
+            Btn.addEventListener('click', function(e) {
+                e.preventDefault(); 
+                e.stopPropagation(); // Stop anything else from interfering
+                
+                if (window.innerWidth <= 1024) {
+                // Mobile/Tablet: We toggle the 'expanded' class we just wrote CSS for
+                    Sidebar.classList.toggle('expanded');
+                } else {
+                // Desktop: We toggle 'collapsed'
+                    Sidebar.classList.toggle('collapsed');
+                }
+            });
+</script>
+{%endblock%}

@@ -4,7 +4,13 @@
 
 {% block dashboard_content %}
 <div class="profile-container fade-in">
-    
+    <div class="glass-card p-4 mb-1">
+        <h5 class="text-white fw-bold mb-3">Application Trends</h5>
+        
+        <div style="height: 300px; width: 100%;">
+            <canvas id="jobChart"></canvas>
+        </div>
+    </div>
     <div class="glass-card profile-header-card">
         <div class="d-flex align-items-center flex-wrap gap-4">
             <div class="profile-img-container">
@@ -137,4 +143,47 @@
     </div>
 
 </div>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const ctx = document.getElementById('jobChart').getContext('2d');
+        
+        const labels = {{ job_labels | tojson }};
+        const data = {{ app_counts | tojson }};
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Applications Received',
+                    data: data,
+                    backgroundColor: 'rgba(25, 135, 84, 0.8)', 
+                    borderColor: 'rgba(29, 139, 84, 1)',
+                    borderWidth: 1,
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: 'rgba(255, 255, 255, 0.5)', stepSize: 1 }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: 'rgba(255, 255, 255, 0.5)' }
+                    }
+                },
+                plugins: {
+                    legend: { display: false } // Hide label since it's obvious
+                }
+            }
+        });
+    });
+</script>
 {% endblock %}

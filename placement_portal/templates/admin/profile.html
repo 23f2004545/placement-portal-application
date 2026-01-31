@@ -3,4 +3,175 @@
 {% block title %}My Profile - Apex{% endblock %}
 
 {% block dashboard_content %}
+<div class="container-fluid fade-in">
+    
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="glass-card p-3 d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-white-50 text-uppercase text-xs">Students</h6>
+                    <h2 class="text-white fw-bold mb-0">{{ stats.students }}</h2>
+                </div>
+                <div class="icon-box bg-primary bg-opacity-25 text-primary rounded-circle p-3">
+                    <i class="bi bi-people-fill fs-6"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card p-3 d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-white-50 text-uppercase text-xs">Companies</h6>
+                    <h2 class="text-white fw-bold mb-0">{{ stats.companies }}</h2>
+                </div>
+                <div class="icon-box bg-warning bg-opacity-25 text-warning rounded-circle p-3">
+                    <i class="bi bi-building-fill fs-6"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card p-3 d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-white-50 text-uppercase text-xs">Jobs</h6>
+                    <h2 class="text-white fw-bold mb-0">{{ stats.jobs }}</h2>
+                </div>
+                <div class="icon-box bg-info bg-opacity-25 text-info rounded-circle p-3">
+                    <i class="bi bi-briefcase-fill fs-6"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card p-3 d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="text-white-50 text-uppercase text-xs">Placements</h6>
+                    <h2 class="text-success fw-bold mb-0">{{ stats.placements }}</h2>
+                </div>
+                <div class="icon-box bg-success bg-opacity-25 text-success rounded-circle p-3">
+                    <i class="bi bi-trophy-fill fs-6"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        
+        <div class="col-md-8">
+            <div class="glass-card p-4 h-100">
+                <h5 class="text-white fw-bold mb-4">Application Activity (Last 7 Days)</h5>
+                <div style="height: 300px;">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="glass-card p-4 h-100">
+                <h5 class="text-white fw-bold mb-4">Applications ({{app_status_values|sum}})</h5>
+                <div style="height: 300px;">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-12">
+            <div class="glass-card p-4">
+                <h5 class="text-white fw-bold mb-4">Top Hiring Companies (Most Jobs Posted)</h5>
+                <div style="height: 250px;">
+                    <canvas id="companyChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    
+    // --- CHART A: TREND LINE ---
+    const ctxTrend = document.getElementById('trendChart').getContext('2d');
+    new Chart(ctxTrend, {
+        type: 'line',
+        data: {
+            labels: {{ trend_dates | tojson }},
+            datasets: [{
+                label: 'New Applications',
+                data: {{ trend_values | tojson }},
+                borderColor: '#0d6efd', // Bootstrap Primary
+                backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                borderWidth: 2,
+                tension: 0.4, // Curvy lines
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: 'rgba(255,255,255,0.5)', stepSize: 1 } },
+                x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.5)' } }
+            }
+        }
+    });
+
+    // --- CHART B: STATUS DOUGHNUT ---
+    const ctxStatus = document.getElementById('statusChart').getContext('2d');
+    new Chart(ctxStatus, {
+        type: 'doughnut',
+        data: {
+            labels: {{ app_status_labels | tojson }},
+            datasets: [{
+                data: {{ app_status_values | tojson }},
+                backgroundColor: [
+                    '#ffc107', // Warning (Applied)
+                    '#198754', // Success (Selected)
+                    '#0dcaf0', // Info (Shortlisted)
+                    '#dc3545'  // Danger (Rejected)
+                ],
+                borderColor: 'transparent',
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { 
+                legend: { position: 'bottom', labels: { color: 'rgba(255,255,255,0.7)' } } 
+            }
+        }
+    });
+
+    // --- CHART C: COMPANY BAR ---
+    const ctxComp = document.getElementById('companyChart').getContext('2d');
+    new Chart(ctxComp, {
+        type: 'bar',
+        data: {
+            labels: {{ company_labels | tojson }},
+            datasets: [{
+                label: 'Jobs Posted',
+                data: {{ company_values | tojson }},
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                borderColor: 'rgba(255, 255, 255, 0.5)',
+                borderWidth: 1,
+                borderRadius: 4,
+                barThickness: 40
+            }]
+        },
+        options: {
+            indexAxis: 'y', // Horizontal Bar Chart!
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: 'rgba(255,255,255,0.5)', stepSize: 1 } },
+                y: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.8)' } }
+            }
+        }
+    });
+
+});
+</script>
+
 {% endblock %}

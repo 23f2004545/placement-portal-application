@@ -1,6 +1,7 @@
 from flask import Blueprint , current_app , render_template , session , flash , redirect , url_for , request
 from controller.decorators import student_required
 from flask_login import current_user
+from sqlalchemy import func
 from controller.models import *
 import os
 
@@ -9,7 +10,35 @@ student_bp = Blueprint('student_bp', __name__)
 @student_bp.route('/profile')
 @student_required
 def profile():
-    return render_template('student/profile.html' , user=current_user)
+    
+    application_stats = db.session.query(
+        Application.application_status, 
+        func.count(Application.id)
+    ).filter_by(student_id=current_user.student_details.id)\
+     .group_by(Application.application_status).all()
+
+    # Separate into two lists for Chart.js
+    application_labels = [stat[0] for stat in application_stats] # ['Applied', 'Rejected']
+    application_values = [stat[1] for stat in application_stats] # [5, 2]
+    
+    selection_stats = db.session.query(
+        Placement.status, 
+        func.count(Placement.id)
+    ).join(Application)\
+     .filter(Application.student_id==current_user.student_details.id)\
+     .group_by(Placement.status).all()
+
+    selection_labels = [stat[0] for stat in selection_stats] # ['Offered', 'Joined']
+    selection_values = [stat[1] for stat in selection_stats] # [5, 2]
+
+    
+    return render_template('student/profile.html' ,
+                           user=current_user,
+                           # Pass data to HTML
+                           application_labels=application_labels, 
+                           application_values=application_values,
+                           selection_labels=selection_labels, 
+                           selection_values=selection_values)
 
     
 # --- ACTION: ACCOUNT SETUP ---

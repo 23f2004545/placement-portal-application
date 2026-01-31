@@ -1,6 +1,8 @@
 from flask import Blueprint , render_template  , flash , redirect , url_for , request
 from controller.decorators import admin_required
 from flask_login import current_user
+from sqlalchemy import func
+from datetime import datetime , timedelta
 from controller.models import *
 
 admin_bp = Blueprint('admin_bp', __name__) 
@@ -9,7 +11,59 @@ admin_bp = Blueprint('admin_bp', __name__)
 @admin_bp.route('/profile')
 @admin_required
 def profile():
-    return render_template('admin/profile.html')
+    
+# --- 1. KEY COUNTERS (Top Cards) ---
+    stats = {
+        'students': Student.query.count(),
+        'companies': Company.query.count(),
+        'jobs': JobPosition.query.filter_by(is_deleted=False).count(),
+        'placements': Placement.query.count()
+    }
+
+    # --- 2. CHART DATA: Application Status (Doughnut) ---
+    # Query: [('Applied', 10), ('Selected', 2), ...]
+    status_query = db.session.query(
+        Application.application_status, func.count(Application.id)
+    ).group_by(Application.application_status).all()
+    
+    app_status_labels = [s[0] for s in status_query]
+    app_status_values = [s[1] for s in status_query]
+
+    # --- 3. CHART DATA: Activity Trend (Line Chart - Last 7 Days) ---
+    # We do this in Python to handle missing dates gracefully (so graph doesn't jump)
+    today = datetime.now().date()
+    dates = [(today - timedelta(days=i)).strftime('%Y-%m-%d') for i in range(6, -1, -1)]
+    daily_counts = []
+    
+    for date_str in dates:
+        # Count apps created on this specific date
+        # Note: In production, optimize this into one SQL query
+        count = Application.query.filter(
+            func.date(Application.applied_at) == date_str
+        ).count()
+        daily_counts.append(count)
+
+    # --- 4. CHART DATA: Top Hiring Companies (Bar Chart) ---
+    # Get top 5 companies by job count
+    top_companies_query = db.session.query(
+        User.name, func.count(JobPosition.id)
+    ).join(Company, Company.user_id == User.id)\
+     .join(JobPosition, JobPosition.company_id == Company.id)\
+     .group_by(User.name)\
+     .order_by(func.count(JobPosition.id).desc())\
+     .limit(5).all()
+     
+    company_labels = [c[0] for c in top_companies_query]
+    company_values = [c[1] for c in top_companies_query]
+        
+    return render_template('admin/profile.html',
+                           stats=stats,
+                           app_status_labels=app_status_labels,
+                           app_status_values=app_status_values,
+                           trend_dates=dates,
+                           trend_values=daily_counts,
+                           company_labels=company_labels,
+                           company_values=company_values)
 
     
     

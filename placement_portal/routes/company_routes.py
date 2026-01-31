@@ -9,7 +9,19 @@ company_bp = Blueprint('company_bp', __name__)
 @company_bp.route('/profile')
 @company_required
 def profile():  
-    return render_template('company/profile.html' , user=current_user)
+    
+    my_jobs = JobPosition.query.filter_by(company_id=current_user.company_details.id, job_status='Hiring').all()
+    
+    # List Comprehension to extract data
+    # Label: Job Title (e.g., "Python Dev")
+    # Value: Count of applications for that job
+    job_labels = [job.job_title for job in my_jobs]
+    app_counts = [len(job.applications) for job in my_jobs]
+
+    return render_template('company/profile.html' ,
+                           user=current_user ,
+                           job_labels=job_labels,
+                           app_counts=app_counts)
 
     
 # --- ACTION: ACCOUNT SETUP ---
