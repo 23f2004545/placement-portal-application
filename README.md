@@ -128,18 +128,17 @@ python app.py
 ## 🧪 API Documentation
 The platform includes a lightweight REST API for external integrations.
 
-```Markdown
 | Method | Endpoint | Description | Auth Required |
 | :--- | :--- | :--- | :--- |
 | `GET` | `/api/jobs` | List all active job postings | Yes |
 | `GET` | `/api/students` | List all student profiles | Admin Only |
 | `POST` | `/api/application` | Submit a new job application | Student Only |
-```
+
 *(All API responses are in JSON format)*
 
 ---
 
 ## 🤝 Contribution
-This project was developed as part of the **IITM BS Degree (MAD-1)** curriculum. It demonstrates proficiency in CRUD operations, Relational Database Design, MVC Architecture, and API Development. 
-**Developer**: Kartikey Tripathi
-**Session**: 2026 - Jan Term
+This project was developed as part of the **IITM BS Degree (MAD-1)** curriculum. It demonstrates proficiency in CRUD operations, Relational Database Design, MVC Architecture, and API Development.  
+**Developer**: Kartikey Tripathi  
+**Session**: 2026 - Jan Term  
