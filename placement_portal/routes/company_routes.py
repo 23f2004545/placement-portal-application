@@ -13,7 +13,7 @@ def profile():
     my_jobs = JobPosition.query.filter_by(company_id=current_user.company_details.id, job_status='Hiring').all()
     
     # List Comprehension to extract data
-    # Label: Job Title (e.g., "Python Dev")
+    # Label: Job Title 
     # Value: Count of applications for that job
     job_labels = [job.job_title for job in my_jobs]
     app_counts = [len(job.applications) for job in my_jobs]
