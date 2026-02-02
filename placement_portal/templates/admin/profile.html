@@ -98,8 +98,8 @@ document.addEventListener("DOMContentLoaded", function() {
             datasets: [{
                 label: 'New Applications',
                 data: {{ trend_values | tojson }},
-                borderColor: '#0d6efd', // Bootstrap Primary
-                backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                borderColor: '#40826D', // Bootstrap Primary
+                backgroundColor: 'rgba(64, 130, 109, 0.1)',
                 borderWidth: 2,
                 tension: 0.4, // Curvy lines
                 fill: true
@@ -118,18 +118,24 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // --- CHART B: STATUS DOUGHNUT ---
     const ctxStatus = document.getElementById('statusChart').getContext('2d');
+
+    const labels = {{ app_status_labels | tojson }};
+    const data = {{ app_status_values | tojson }};
+    const statusColors = {
+        'Applied': 'rgba(255, 193, 7, 0.8)',     // Yellow
+        'Selected': 'rgba(25, 135, 84, 0.8)',    // Green
+        'Shortlisted': 'rgba(13, 202, 240, 0.8)', // Blue
+        'Rejected': 'rgba(220, 57, 69, 0.8)'     // Red
+    };
+    const backgroundColors = labels.map(label => statusColors[label] || 'rgba(200, 200, 200, 0.8)');
+
     new Chart(ctxStatus, {
         type: 'doughnut',
         data: {
-            labels: {{ app_status_labels | tojson }},
+            labels: labels,
             datasets: [{
-                data: {{ app_status_values | tojson }},
-                backgroundColor: [
-                    '#ffc107', // Warning (Applied)
-                    '#198754', // Success (Selected)
-                    '#0dcaf0', // Info (Shortlisted)
-                    '#dc3545'  // Danger (Rejected)
-                ],
+                data: data ,
+                backgroundColor: backgroundColors,
                 borderColor: 'transparent',
                 borderWidth: 0
             }]

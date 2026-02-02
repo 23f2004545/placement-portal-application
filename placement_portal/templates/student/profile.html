@@ -175,18 +175,22 @@
         const app_labels = {{ application_labels | tojson }};
         const app_data = {{ application_values | tojson }};
         
+        const A_statusColors = {
+            'Applied': 'rgba(255, 193, 7, 0.8)',     // Yellow
+            'Selected': 'rgba(25, 135, 84, 0.8)',    // Green
+            'Shortlisted': 'rgba(13, 202, 240, 0.8)', // Blue
+            'Rejected': 'rgba(220, 57, 69, 0.8)'     // Red
+        };
+        // This ensures that 'Selected' is ALWAYS green regardless of its position in the array
+        const A_backgroundColors = app_labels.map(label => A_statusColors[label] || 'rgba(200, 200, 200, 0.8)');    
+
         new Chart(app, {
             type: 'doughnut', // 'pie', 'bar', 'line'
             data: {
                 labels: app_labels,
                 datasets: [{
                     data: app_data,
-                    backgroundColor: [
-                        'rgba(255, 193, 7, 0.8)',  // Warning (Applied)
-                        'rgba(25, 135, 84, 0.8)',  // Success (Selected)
-                        'rgba(13, 202, 240, 0.8)',  // Info (Shortlisted)
-                        'rgba(220, 57, 69, 0.8)'  // Danger (Rejected)
-                    ],
+                    backgroundColor: A_backgroundColors ,
                     borderColor: 'rgba(255, 255, 255, 0.1)',
                     borderWidth: 1
                 }]
@@ -206,6 +210,12 @@
         const ctx = document.getElementById('SelectionChart').getContext('2d');
         const select_labels = {{ selection_labels | tojson }};
         const select_data = {{ selection_values | tojson }};
+
+        const S_statusColors = {
+            'Joined': 'rgba(25, 135, 84, 0.8)',    // Green
+            'Declined': 'rgba(220, 57, 69, 0.8)'     // Red
+        };
+        const S_backgroundColors = select_labels.map(label => S_statusColors[label] || 'rgba(200, 200, 200, 0.8)');
         
         new Chart(ctx, {
             type: 'doughnut', // 'pie', 'bar', 'line'
@@ -213,11 +223,7 @@
                 labels: select_labels,
                 datasets: [{
                     data: select_data,
-                    backgroundColor: [
-                        'rgba(220, 57, 69, 0.8)', // Danger (Declineed)
-                        'rgba(25, 135, 84, 0.8)',  // Success (Joined)
-                        'rgba(255, 193, 7, 0.8)'  // Warning (Offered)
-                    ],
+                    backgroundColor: S_backgroundColors,
                     borderColor: 'rgba(255, 255, 255, 0.1)',
                     borderWidth: 1
                 }]

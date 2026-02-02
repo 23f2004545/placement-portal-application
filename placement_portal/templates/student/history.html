@@ -91,7 +91,7 @@
     {% else %}
     <div class="text-center text-white-50 mt-5">
         <i class="bi bi-trophy fs-1 d-block mb-3 opacity-50"></i>
-        {% if not status %}
+        {% if status %}
         <p>No results matching your filter</p>
         <a href="{{ url_for('student_bp.history') }}" class="text-success">Clear Search</a>
         {% else %}
