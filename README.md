@@ -89,7 +89,7 @@ Placement_Portal_Project/
 
 **1. Clone the Repository**
 ```bash
-git clone https://github.com/yourusername/apex-portal.git
+git clone https://github.com/23f2004545/placement-portal-application.git
 cd apex-portal
 ```
 
@@ -130,7 +130,7 @@ The platform includes a lightweight REST API for external integrations.
 
 | Method | Endpoint | Description | Auth Required |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/api/jobs` | List all active job postings | Yes |
+| `GET` | `/api/companies` | List all company profiles | Yes |
 | `GET` | `/api/students` | List all student profiles | Admin Only |
 | `POST` | `/api/application` | Submit a new job application | Student Only |
 
