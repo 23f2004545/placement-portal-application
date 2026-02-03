@@ -44,7 +44,7 @@
                         <span class="nav-text">&nbsp;Notifications</span>
                         
                         {% if unread_count > 0 %}
-                        <span class="position-absolute top-50 end-0 translate-middle-y me-3 badge rounded-pill bg-danger shadow-sm pulse-badge ">
+                        <span class="notif" >
                             {{ unread_count }}
                             <span class="visually-hidden">unread messages</span>
                         </span>
@@ -126,13 +126,13 @@
             // Add the click listener
             Btn.addEventListener('click', function(e) {
                 e.preventDefault(); 
-                e.stopPropagation(); // Stop anything else from interfering
+                e.stopPropagation(); 
                 
                 if (window.innerWidth <= 1024) {
-                // Mobile/Tablet: We toggle the 'expanded' class we just wrote CSS for
+                // Mobile/Tablet: toggle 'expanded' 
                     Sidebar.classList.toggle('expanded');
                 } else {
-                // Desktop: We toggle 'collapsed'
+                // Desktop: toggle 'collapsed'
                     Sidebar.classList.toggle('collapsed');
                 }
             });

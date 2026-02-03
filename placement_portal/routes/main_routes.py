@@ -1,13 +1,13 @@
 from app import app
-from flask import  render_template , session , flash , redirect , url_for
-from controller.db import db
+from flask import  render_template , flash , redirect , url_for 
+from flask_login import current_user , login_required
 from controller.models import User,Application
 from datetime import datetime , timezone
 
 @app.route('/')
 def home():
-    if 'user_id' in session:
-        role = session['role']
+    if current_user.is_authenticated:
+        role = current_user.roles.name
         return redirect(url_for(f"{role}_bp.profile"))
     return render_template('auth/login.html')
 
@@ -33,17 +33,14 @@ def method_not_allowed(e):
 # Notification status modify
 @app.context_processor
 def inject_notifications():
-    if session.get('role') == 'student':
-        user_id = session['user_id']
-        current_user = User.query.get(user_id)
-        if current_user and current_user.student_details:
-            # Count apps that are NOT cleared and NOT read
-            count = Application.query.filter_by(
-                student_id=current_user.student_details.id ,
-                is_read=False,
-                is_cleared=False 
-                ).count()
-            return dict(unread_count=count)
+    if current_user.is_authenticated and current_user.roles.name == 'student':
+        # Count apps that are NOT cleared and NOT read
+        count = Application.query.filter_by(
+            student_id=current_user.student_details.id ,
+            is_read=False,
+            is_cleared=False 
+            ).count()
+        return dict(unread_count=count)
     return dict(unread_count=0)
 
 

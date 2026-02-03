@@ -309,7 +309,7 @@ select.glass-input option {
     }
 
     .sidebar.expanded .sidebar-link { justify-content: flex-start; }
-    .sidebar.expanded .toggle-btn { transform: rotate(0deg); }
+    .sidebar.expanded .toggle-btn i { transform: rotate(0deg); }
 }
 
 @keyframes fadeIn {
@@ -700,6 +700,14 @@ select.glass-input option {
     .d-flex.flex-column.gap-2 .btn {
         flex: 1;
     }
+    .notif {
+        position: absolute;
+        top: 12px;   /* Adjusted to sit slightly above the icon */
+        right: 14px; /* Adjusted to sit on the top-right corner */
+        width: 14px; /* Slightly smaller for the collapsed view */
+        height: 14px;
+        font-size: 4px;
+      }
 }
 
 
@@ -774,6 +782,32 @@ select.glass-input option {
     background: rgba(255,255,255,0.1);
     color: white !important;
 }
+
+.notif {
+    position: absolute;
+    background-color: rgba(54, 208, 37, 0.97); 
+    top: 12px;   
+    right: 14px;
+    width: 14px; 
+    height: 14px;
+    font-size: 10px;
+    color: rgba(12, 70, 30, 0.653);
+    font-weight: bold;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none; 
+    transition: all 0.3s ease; 
+  }
+
+  .sidebar-expanded .notif {
+    position: relative; /* Removes absolute positioning to flow after text */
+    margin-left: auto;   /* Pushes it to the far right of the container */
+    transform: none;
+  }
 
 /* --- HISTORY / PLACEMENTS --- */
 .bg-white-10 { background: rgba(255,255,255,0.05); }
