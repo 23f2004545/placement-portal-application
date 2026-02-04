@@ -36,7 +36,6 @@ def login():
                 
                 # Redirect based on role
                 role = user.roles.name
-                flash('Login successful', 'success')
                 return redirect(url_for(f"{role}_bp.profile"))  
             else: 
                 flash('Incorrect email or password', 'warning')

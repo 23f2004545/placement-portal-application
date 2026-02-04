@@ -225,7 +225,7 @@ def job_postings():
                 (JobPosition.requirements.ilike(search))     
         )
     
-    all_jobs = query.filter(JobPosition.status=="Approved" , JobPosition.is_deleted==False).order_by(JobPosition.created_at.desc()).all()
+    all_jobs = query.filter(JobPosition.status=="Approved" , JobPosition.is_deleted==False , Company.is_deleted==False).order_by(JobPosition.created_at.desc()).all()
 
     return render_template('student/job_postings.html', 
                             user=current_user,
@@ -268,58 +268,61 @@ def view_job(id):
 @student_bp.route('/job/apply/<int:id>', methods=['GET', 'POST'])
 @student_required
 def apply_job(id):
-
-    student = current_user.student_details
-    job = JobPosition.query.get_or_404(id)
-    
-    # CHECK DUPLICATE APPLICATION
-    # We check if this student has already applied to this specific job_position_id
-    existing_app = Application.query.filter_by(
-        student_id=student.id, 
-        job_position_id=job.id
-    ).first()
-
-    if existing_app:
-        flash(f'You have already applied for the {job.job_title} position.', 'warning')
+    if current_user.blacklisted:
+        flash('Your are blacklisted and cannot apply for jobs.', 'danger')
         return redirect(url_for('student_bp.job_postings'))
-
-    if request.method == 'POST':
-        try:
-            cover_letter_text = request.form.get('cover_letter')
-
-            resume = None 
-            if 'resume' in request.files:
-                file = request.files['resume']
-                if file and file.filename != '':
-                    filename = os.path.basename(file.filename) 
-                    save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'Resumes' , filename)
-                    file.save(save_path)
-
-                    resume = f"/static/uploads/Resumes/{filename}"
-
-            # Application Entry
-            new_application = Application(
-                student_id=student.id,
-                job_position_id=job.id,
-                application_status='Applied',
-                cover_letter=cover_letter_text,
-                custom_resume=resume 
-            )
-            
-            db.session.add(new_application)
-            db.session.commit()
-            
-            flash('Application submitted successfully! Good luck.', 'success')
-            return redirect(url_for('student_bp.job_postings')) 
-            
-        except Exception as e:
-            db.session.rollback()
-            flash(f'Error submitting application: {str(e)}', 'danger')
-            return redirect(url_for('student_bp.apply_job', id=id))
+    else :
+        student = current_user.student_details
+        job = JobPosition.query.get_or_404(id)
         
-    return render_template('student/apply_job.html', 
-                            user=current_user, 
-                            job=job)
+        # CHECK DUPLICATE APPLICATION
+        # We check if this student has already applied to this specific job_position_id
+        existing_app = Application.query.filter_by(
+            student_id=student.id, 
+            job_position_id=job.id
+        ).first()
+
+        if existing_app:
+            flash(f'You have already applied for the {job.job_title} position.', 'warning')
+            return redirect(url_for('student_bp.job_postings'))
+
+        if request.method == 'POST':
+            try:
+                cover_letter_text = request.form.get('cover_letter')
+
+                resume = None 
+                if 'resume' in request.files:
+                    file = request.files['resume']
+                    if file and file.filename != '':
+                        filename = os.path.basename(file.filename) 
+                        save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'Resumes' , filename)
+                        file.save(save_path)
+
+                        resume = f"/static/uploads/Resumes/{filename}"
+
+                # Application Entry
+                new_application = Application(
+                    student_id=student.id,
+                    job_position_id=job.id,
+                    application_status='Applied',
+                    cover_letter=cover_letter_text,
+                    custom_resume=resume 
+                )
+                
+                db.session.add(new_application)
+                db.session.commit()
+                
+                flash('Application submitted successfully! Good luck.', 'success')
+                return redirect(url_for('student_bp.job_postings')) 
+                
+            except Exception as e:
+                db.session.rollback()
+                flash(f'Error submitting application: {str(e)}', 'danger')
+                return redirect(url_for('student_bp.apply_job', id=id))
+            
+        return render_template('student/apply_job.html', 
+                                user=current_user, 
+                                job=job)
     
 
 
@@ -346,7 +349,7 @@ def applications():
     if status_filter:
         query = query.filter(Application.application_status == status_filter)
 
-    all_applications = query.filter(Application.student_id == my_id).order_by(Application.applied_at.desc()).all()
+    all_applications = query.filter(Application.student_id == my_id, Company.is_deleted==False).order_by(Application.applied_at.desc()).all()
 
     return render_template('student/applications.html', 
                             user=current_user,
@@ -540,5 +543,5 @@ def history():
     if status_filter:
         query = query.filter(Placement.status == status_filter)
 
-    placements = query.filter(Application.student_id == my_id , Placement.status != "Offered").order_by(Placement.created_at.desc()).all()
+    placements = query.filter(Application.student_id == my_id , Placement.status != "Offered", Company.is_deleted==False).order_by(Placement.created_at.desc()).all()
     return render_template('student/history.html' , placements=placements, user=current_user, status=status_filter)

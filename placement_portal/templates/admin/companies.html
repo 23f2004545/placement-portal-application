@@ -67,18 +67,6 @@
                                     <a href="{{ url_for('admin_bp.view_company_profile', id=company.id) }}" class="btn btn-outline-light btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0">
                                         View Details
                                     </a>
-                                    <!-- <button 
-                                        class="btn btn-outline-danger btn-sm px-3 rounded-pill flex-grow-1 flex-md-grow-0"
-                                        
-                                        data-url="{{ url_for('admin_bp.reject_company', id=company.id) }}"
-                                        data-title="Reject Company"
-                                        data-message="Are you sure you want to reject the Company : '{{ company.user.name }}'?"
-                                        data-btn-class="btn-danger"
-                                        data-btn-text="Reject"
-                                        
-                                        onclick="openConfirmModal(this)">
-                                        Reject
-                                    </button> -->
                                     <a href="{{ url_for('admin_bp.reject_company', id=company.id) }}" class="btn btn-outline-danger btn-sm px-3 rounded-pill flex-grow-1 flex-md-grow-0" >
                                         Reject
                                     </a>
@@ -97,11 +85,19 @@
             {% for company in approved_companies %}
             <div class="glass-card p-3 position-relative">
                 
-                {% if company.user.blacklisted %}
+                {% if company.is_deleted %}
                 <div class="position-absolute start-0 top-0 w-100 h-100 bg-black-50 d-flex align-items-center justify-content-center glass-card border border-danger" style="z-index: 5;">
                     <div class="text-center p-3">
+                        <a href="{{ url_for('admin_bp.view_company_profile', id=company.id) }}" class="btn btn-outline-light btn-sm px-4 rounded-pill glass-btn flex-grow-1 flex-md-grow-0">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+                {% elif company.user.blacklisted %}
+                <div class="position-absolute start-0 top-0 w-100 h-100 bg-black-50 d-flex align-items-center justify-content-center glass-card border border-warning" style="z-index: 5;">
+                    <div class="text-center p-3">
                         <button 
-                            class="btn btn-outline-success btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0"
+                            class="btn btn-outline-success btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0 mb-2"
                             
                             data-url="{{ url_for('admin_bp.toggle_blacklist_company', id=company.id) }}"
                             data-title="Whitelist Company"
@@ -112,12 +108,12 @@
                             onclick="openConfirmModal(this)">
                             Whitelist
                         </button>
-                        <a href="{{ url_for('admin_bp.view_company_profile', id=company.id) }}" class="btn btn-outline-light btn-sm px-4 rounded-pill glass-btn flex-grow-1 flex-md-grow-0">
+                        <a href="{{ url_for('admin_bp.view_company_profile', id=company.id) }}" class="btn btn-outline-light btn-sm px-4 rounded-pill glass-btn flex-grow-1 flex-md-grow-0 mb-2">
                             View Details
                         </a>
                         {% if not company.is_deleted %}
                         <button 
-                            class="btn btn-outline-danger btn-sm px-3 rounded-pill flex-grow-1 flex-md-grow-0"
+                            class="btn btn-outline-danger btn-sm px-3 rounded-pill flex-grow-1 flex-md-grow-0 mb-2"
                             
                             data-url="{{ url_for('admin_bp.delete_company', id=company.id) }}"
                             data-title="Delete Company"
@@ -142,18 +138,20 @@
                     <div class="col-12 col-md">
                         <h5 class="text-white fw-bold mb-0">{{ company.user.name }}</h5>
                         <small class="text-white-50">Joined: {{ company.user.created_at.strftime('%b %d, %Y') }}</small>
+                        {% if not company.is_deleted %}
                         <p class="text-success text-xs" style="margin-bottom: 0;">
                             Active {{ company.user.last_login_at | time_ago }}
                         </p>  
+                        {% endif %}
                     </div>
                     
                     <div class="col-12 col-md-auto">
                         <div class="d-flex flex-wrap justify-content-center justify-content-md-end gap-2">
+                            
+                            {% if not company.user.blacklisted and not company.is_deleted %}
                             <a href="{{ url_for('admin_bp.view_company_profile', id=company.id) }}" class="btn btn-outline-light btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0">
                                 View Profile
                             </a>
-                            
-                            {% if not company.user.blacklisted %}
                             <button 
                                 class="btn btn-outline-warning btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0"
                                 
@@ -166,8 +164,6 @@
                                 onclick="openConfirmModal(this)">
                                 Blacklist
                             </button>
-                            {% endif %}
-                            
                             <button 
                                 class="btn btn-outline-danger btn-sm px-3 rounded-pill flex-grow-1 flex-md-grow-0"
                                 
@@ -180,6 +176,8 @@
                                 onclick="openConfirmModal(this)">
                                 Delete
                             </button>
+                            {% endif %}
+
                         </div>
                     </div>
                     

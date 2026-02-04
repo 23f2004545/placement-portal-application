@@ -82,7 +82,7 @@
 
                         {% if application.application_status == 'Shortlisted' %}
                         <button 
-                            class="btn btn-outline-success btn-sm px-4 rounded-pill fw-bold flex-grow-1 flex-md-grow-0"
+                            class="btn btn-outline-success btn-sm px-4 rounded-pill fw-bold flex-grow-1 flex-md-grow-0 me-1 mb-2"
                             
                             data-url="{{ url_for('company_bp.select_application', id=application.id) }}"
                             data-title="Select Applicant"
@@ -94,7 +94,7 @@
                             Select 
                         </button>
                         <button 
-                            class="btn btn-outline-danger btn-sm px-3 rounded-pill flex-grow-1 flex-md-grow-0"
+                            class="btn btn-outline-danger btn-sm px-3 rounded-pill flex-grow-1 flex-md-grow-0 me-1 mb-2"
                             
                             data-url="{{ url_for('company_bp.reject_application', id=application.id) }}"
                             data-title="Reject Applicant"
@@ -107,20 +107,20 @@
                         </button>
                         {% elif application.application_status == 'Selected' %}
                             {% if application.placements.status == 'Offered' %}
-                                <div class="btn btn-outline-warning btn-sm px-3 rounded-pill flex-grow-1 flex-md-grow-0">
+                                <div class="btn btn-outline-warning btn-sm px-3 rounded-pill flex-grow-1 flex-md-grow-0 me-1 mb-2">
                                     Offered
                                 </div>
                             {% elif application.placements.status == 'Joined' %}
-                                <div class="btn btn-outline-success btn-sm px-3 rounded-pill flex-grow-1 flex-md-grow-0">
+                                <div class="btn btn-outline-success btn-sm px-3 rounded-pill flex-grow-1 flex-md-grow-0 me-1 mb-2">
                                     Joined
                                 </div>
                             {% else %}
-                                <div class="btn btn-outline-danger btn-sm px-3 rounded-pill flex-grow-1 flex-md-grow-0">
+                                <div class="btn btn-outline-danger btn-sm px-3 rounded-pill flex-grow-1 flex-md-grow-0 me-1 mb-2">
                                     Declined
                                 </div>
                             {% endif %}
                         {% endif %}
-                        <a href="{{ url_for('company_bp.view_application', id=application.id) }}" class="btn btn-outline-light btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0">
+                        <a href="{{ url_for('company_bp.view_application', id=application.id) }}" class="btn btn-outline-light btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0 mb-2">
                             View Details
                         </a>
                         

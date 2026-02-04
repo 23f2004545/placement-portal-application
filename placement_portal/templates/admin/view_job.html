@@ -11,13 +11,23 @@
             <div>
                 <h3 class="text-white fw-bold mb-1">Job Position Details</h3>
                 {% if job.is_deleted %}
-                    <span class="badge bg-danger text-success rounded-pill border border-danger">
-                        <i class="bi bi-x-circle me-1"></i>  Deleted
+                    <span class="badge bg-danger-subtle text-danger rounded-pill border border-danger">
+                        <i class="bi bi-x-circle-fill "></i>  Deleted
                     </span>
                 {% elif job.status == "Approved" %}
-                    <span class="badge bg-success-subtle text-success rounded-pill border border-success">
-                        <i class="bi bi-check-circle me-1"></i>  Approved
+                    {% if job.company.is_deleted %}
+                    <span class="badge bg-danger-subtle text-danger rounded-pill border border-danger">
+                        <i class="bi bi-exclamation-triangle-fill me-1"></i> Profile Deleted
                     </span>
+                    {% elif job.company.user.blacklisted %}
+                    <span class="badge bg-danger-subtle text-danger rounded-pill border border-danger">
+                        <i class="bi bi-exclamation-triangle-fill me-1"></i> Blacklisted 
+                    </span>
+                    {% else %}
+                        <span class="badge bg-success-subtle text-success rounded-pill border border-success">
+                            <i class="bi bi-check-circle me-1"></i> Approved
+                        </span>
+                    {% endif %}
                 {% else %}
                     <span class="badge bg-warning-subtle text-warning rounded-pill border border-warning">
                         <i class="bi bi-hourglass-split me-1"></i> Pending Approval

@@ -30,11 +30,19 @@
             {% for student in students %}
             <div class="glass-card p-3 position-relative">
                 
-                {% if student.user.blacklisted %}
+                {% if student.is_deleted %}
                 <div class="position-absolute start-0 top-0 w-100 h-100 bg-black-50 d-flex align-items-center justify-content-center glass-card border border-danger" style="z-index: 5;">
                     <div class="text-center p-3">
+                        <a href="{{ url_for('admin_bp.view_student_profile', id=student.id) }}" class="btn btn-outline-light btn-sm px-4 rounded-pill glass-btn flex-grow-1 flex-md-grow-0">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+                {% elif student.user.blacklisted %}
+                <div class="position-absolute start-0 top-0 w-100 h-100 bg-black-50 d-flex align-items-center justify-content-center glass-card border border-warning" style="z-index: 5;">
+                    <div class="text-center p-3">
                         <button 
-                            class="btn btn-outline-success btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0"
+                            class="btn btn-outline-success btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0 mb-2"
                             
                             data-url="{{ url_for('admin_bp.toggle_blacklist_student', id=student.id) }}"
                             data-title="Whitelist student"
@@ -45,11 +53,11 @@
                             onclick="openConfirmModal(this)">
                             Whitelist
                         </button>
-                        <a href="{{ url_for('admin_bp.view_student_profile', id=student.id) }}" class="btn btn-outline-light btn-sm px-4 rounded-pill glass-btn flex-grow-1 flex-md-grow-0">
+                        <a href="{{ url_for('admin_bp.view_student_profile', id=student.id) }}" class="btn btn-outline-light btn-sm px-4 rounded-pill glass-btn flex-grow-1 flex-md-grow-0 mb-2">
                             View Details
                         </a>
                         <button 
-                            class="btn btn-outline-danger btn-sm px-3 rounded-pill flex-grow-1 flex-md-grow-0"
+                            class="btn btn-outline-danger btn-sm px-3 rounded-pill flex-grow-1 flex-md-grow-0 mb-2"
                             
                             data-url="{{ url_for('admin_bp.delete_student', id=student.id) }}"
                             data-title="Delete student"
@@ -73,18 +81,20 @@
                     <div class="col-12 col-md">
                         <h5 class="text-white fw-bold mb-0">{{ student.user.name }}</h5>
                         <small class="text-white-50">Joined: {{ student.user.created_at.strftime('%b %d, %Y') }}</small>
+                        {% if not student.is_deleted %}
                         <p class="text-success text-xs" style="margin-bottom: 0;">
                             Active {{ student.user.last_login_at | time_ago }}
                         </p>                                               
+                        {% endif %}
                     </div>
                     
                     <div class="col-12 col-md-auto">
                         <div class="d-flex flex-wrap justify-content-center justify-content-md-end gap-2">
-                            <a href="{{ url_for('admin_bp.view_student_profile', id=student.id) }}" class="btn btn-outline-light btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0">
-                                View Profile
-                            </a>
-    
-                            {% if not student.user.blacklisted %}
+                            
+                            {% if not student.user.blacklisted and not student.is_deleted %}
+                                <a href="{{ url_for('admin_bp.view_student_profile', id=student.id) }}" class="btn btn-outline-light btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0">
+                                    View Profile
+                                </a>
                                 <button 
                                     class="btn btn-outline-warning btn-sm px-3 rounded-pill glass-btn flex-grow-1 flex-md-grow-0"
                                     
@@ -97,21 +107,20 @@
                                     onclick="openConfirmModal(this)">
                                     Blacklist
                                 </button>
+                                <button 
+                                    class="btn btn-outline-danger btn-sm px-3 rounded-pill flex-grow-1 flex-md-grow-0"
+                                    
+                                    data-url="{{ url_for('admin_bp.delete_student', id=student.id) }}"
+                                    data-title="Delete student"
+                                    data-message="Are you sure you want to delete the Student : '{{ student.user.name }}'?"
+                                    data-btn-class="btn-danger"
+                                    data-btn-text="Delete"
+                                    
+                                    onclick="openConfirmModal(this)">
+                                    Delete
+                                </button>
                             {% endif %}
-                            {% if not student.is_deleted %}
-                            <button 
-                                class="btn btn-outline-danger btn-sm px-3 rounded-pill flex-grow-1 flex-md-grow-0"
-                                
-                                data-url="{{ url_for('admin_bp.delete_student', id=student.id) }}"
-                                data-title="Delete student"
-                                data-message="Are you sure you want to delete the Student : '{{ student.user.name }}'?"
-                                data-btn-class="btn-danger"
-                                data-btn-text="Delete"
-                                
-                                onclick="openConfirmModal(this)">
-                                Delete
-                            </button>
-                            {% endif %}
+
                         </div>
                     </div>
                     

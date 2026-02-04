@@ -16,7 +16,7 @@ def profile():
     stats = {
         'students': Student.query.count(),
         'companies': Company.query.count(),
-        'jobs': JobPosition.query.filter_by(is_deleted=False).count(),
+        'jobs': JobPosition.query.count(),
         'placements': Placement.query.count()
     }
 
@@ -37,7 +37,6 @@ def profile():
     
     for date_str in dates:
         # Count apps created on this specific date
-        # Note: In production, optimize this into one SQL query
         count = Application.query.filter(
             func.date(Application.applied_at) == date_str
         ).count()

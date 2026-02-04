@@ -41,9 +41,9 @@ class User(UserMixin,db.Model):
         """
         self.password = generate_password_hash(password)
 
-    @property
-    def is_active(self):
-        return not self.blacklisted
+    # @property
+    # def is_active(self):
+    #     return not self.blacklisted
 
 class Role(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)

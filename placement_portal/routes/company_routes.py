@@ -250,13 +250,16 @@ def close_job(id):
 @company_bp.route('/job/reopen/<int:id>')
 @company_required
 def reopen_job(id):  
-    
-    job = JobPosition.query.get_or_404(id)
-    job.job_status = "Hiring"
-    db.session.commit()
-    
-    flash(f'Job "{job.job_title}" has been reopened.', 'success')     
-    return redirect(url_for('company_bp.job_postings'))
+    if current_user.blacklisted:
+        flash('You are blacklisted and cannot post new jobs.', 'danger')
+        return redirect(url_for('company_bp.job_postings'))
+    else:
+        job = JobPosition.query.get_or_404(id)
+        job.job_status = "Hiring"
+        db.session.commit()
+        
+        flash(f'Job "{job.job_title}" has been reopened.', 'success')     
+        return redirect(url_for('company_bp.job_postings'))
 
 
 # --- ACTION: CREATE JOB ---
@@ -264,32 +267,36 @@ def reopen_job(id):
 @company_required
 def create_job():
 
-    if request.method == 'POST':
-        try:
-            new_job = JobPosition(
-                company_id=current_user.company_details.id,
-                job_title=request.form.get('job_title'),
-                job_type=request.form.get('job_type'),
-                job_pay=request.form.get('job_pay'),
-                job_timing=request.form.get('job_timing'),
-                job_location=request.form.get('job_location'),
-                requirements=request.form.get('requirements'),
-                job_description=request.form.get('job_description'),
-                job_status='Hiring'
-            )
+    if current_user.blacklisted:
+        flash('You are blacklisted and cannot post new jobs.', 'danger')
+        return redirect(url_for('company_bp.job_postings'))
+    else:
+        if request.method == 'POST':
+            try:
+                new_job = JobPosition(
+                    company_id=current_user.company_details.id,
+                    job_title=request.form.get('job_title'),
+                    job_type=request.form.get('job_type'),
+                    job_pay=request.form.get('job_pay'),
+                    job_timing=request.form.get('job_timing'),
+                    job_location=request.form.get('job_location'),
+                    requirements=request.form.get('requirements'),
+                    job_description=request.form.get('job_description'),
+                    job_status='Hiring'
+                )
 
-            db.session.add(new_job)
-            db.session.commit()
-            
-            flash('Job posted successfully! Waiting for company approval.', 'success')
-            return redirect(url_for('company_bp.job_postings'))
+                db.session.add(new_job)
+                db.session.commit()
+                
+                flash('Job posted successfully! Waiting for company approval.', 'success')
+                return redirect(url_for('company_bp.job_postings'))
 
-        except Exception as e:
-            db.session.rollback()
-            flash(f'Error posting job: {str(e)}', 'danger')
-            return redirect(url_for('company_bp.create_job'))
+            except Exception as e:
+                db.session.rollback()
+                flash(f'Error posting job: {str(e)}', 'danger')
+                return redirect(url_for('company_bp.create_job'))
 
-    return render_template('company/create_job.html', user=current_user)
+        return render_template('company/create_job.html', user=current_user)
 
 
 # --- THE APPLICATIONS ROUTE ---
@@ -300,7 +307,7 @@ def applications():
     # Join Application -> JobPosition -> Filter by Company ID
     my_company_id = current_user.company_details.id
     
-    query = Application.query.join(JobPosition).filter(
+    query = Application.query.join(Student).join(JobPosition).filter(
         JobPosition.company_id == my_company_id
     )
 
@@ -310,13 +317,13 @@ def applications():
     if search_query:
         search = f"%{search_query}%"
         # We need to join Student & User to search by applicant Name
-        query = query.join(Student).join(User).filter(
+        query = query.join(User).filter(
             (User.name.ilike(search)) |               # Applicant Name
             (JobPosition.job_title.ilike(search))     # Job Title
         )
 
     # (Newest First)
-    my_applications = query.filter(Application.application_status=="Applied").order_by(Application.applied_at.desc()).all()
+    my_applications = query.filter(Application.application_status=="Applied", Student.is_deleted==False).order_by(Application.applied_at.desc()).all()
 
     return render_template('company/applications.html', 
                             user=current_user,
@@ -373,7 +380,7 @@ def reviewed():
     # Join Application -> JobPosition -> Filter by Company ID
     my_company_id = current_user.company_details.id
     
-    query = Application.query.join(JobPosition).filter(
+    query = Application.query.join(Student).join(JobPosition).filter(
         JobPosition.company_id == my_company_id
     )
 
@@ -384,7 +391,7 @@ def reviewed():
     if search_query:
         search = f"%{search_query}%"
         # We need to join Student & User to search by applicant Name
-        query = query.join(Student).join(User).filter(
+        query = query.join(User).filter(
             (User.name.ilike(search)) |               # Applicant Name
             (JobPosition.job_title.ilike(search))     # Job Title
         )
@@ -393,7 +400,7 @@ def reviewed():
         query = query.filter(Application.application_status == status_filter)
 
     # (Newest First)
-    my_applications = query.filter(Application.application_status!="Applied").order_by(Application.applied_at.desc()).all()
+    my_applications = query.filter(Application.application_status!="Applied", Student.is_deleted==False).order_by(Application.applied_at.desc()).all()
 
     return render_template('company/reviewed.html', 
                             user=current_user,
