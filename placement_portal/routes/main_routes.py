@@ -1,7 +1,7 @@
 from app import app
 from flask import  render_template , flash , redirect , url_for 
-from flask_login import current_user , login_required
-from controller.models import User,Application
+from flask_login import current_user 
+from controller.models import Application
 from datetime import datetime , timezone
 
 @app.route('/')

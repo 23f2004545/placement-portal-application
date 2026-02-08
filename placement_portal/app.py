@@ -1,7 +1,7 @@
 from flask import Flask 
 from flask_login import LoginManager
 from controller.db import db
-from controller.models import *
+from controller.models import User , Role
 from config import config
 
 from routes.auth_routes import auth_bp
