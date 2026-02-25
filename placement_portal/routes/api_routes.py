@@ -30,8 +30,7 @@ def get_companies():
 def create_application():
     # Expecting JSON: {"job_id": 12, "cover_letter": "..."}
     data = request.get_json()
-    
-    # Simple Validation
+
     if not data or 'job_id' not in data:
         return jsonify({'error': 'Missing job_id'}), 400
         
@@ -48,7 +47,7 @@ def create_application():
 @api_bp.route('/api/student/update', methods=['PUT'])
 @login_required
 def update_student_profile():
-    # Only allow students to update their own profile
+
     if not current_user.student_details:
         return jsonify({'error': 'Unauthorized'}), 403
         
@@ -76,8 +75,7 @@ def delete_application(id):
     # Ownership Check
     if app.student.user.id != current_user.id:
         return jsonify({'error': 'Unauthorized'}), 403
-        
-    # Hard Delete or Soft Delete
+
     db.session.delete(app)
     db.session.commit()
     

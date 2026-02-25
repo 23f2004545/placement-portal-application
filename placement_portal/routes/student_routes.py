@@ -34,7 +34,6 @@ def profile():
     
     return render_template('student/profile.html' ,
                            user=current_user,
-                           # Pass data to HTML
                            application_labels=application_labels, 
                            application_values=application_values,
                            selection_labels=selection_labels, 
@@ -77,15 +76,11 @@ def setup():
             return redirect(url_for('student_bp.setup'))
         
         if file:
-            # 1. Seek to the end of the file to measure bytes
-            file.seek(0, 2) # The '2' stands for os.SEEK_END
+            file.seek(0, os.SEEK_END) 
             size_in_bytes = file.tell()
             
-            # 2. Reset the file pointer to the beginning 
-            # (CRUCIAL: If you don't do this, saving the file will result in 0 bytes)
             file.seek(0)
 
-            # 3. Check if size is > 2MB (2 * 1024 * 1024)
             if size_in_bytes > 2097152:
                 flash("Resume is too large. Please upload a file smaller than 2 MB.", "warning")
                 return redirect(url_for('auth_bp.register'))
@@ -212,7 +207,6 @@ def edit_profile():
 @student_required
 def job_postings():
 
-    # Join Job -> Company -> User (to get Company Name & Logo)
     query = JobPosition.query.join(Company).join(User)
     
     # SEARCH LOGIC
@@ -246,8 +240,6 @@ def view_job(id):
     if 'viewed_jobs' not in session:
         session['viewed_jobs'] = []
 
-    # If this Job ID is not in the session's viewed list
-    # We cast to list because session objects can be finicky with appends
     viewed_list = list(session['viewed_jobs']) 
     
     if id not in viewed_list:
@@ -276,7 +268,6 @@ def apply_job(id):
         job = JobPosition.query.get_or_404(id)
         
         # CHECK DUPLICATE APPLICATION
-        # We check if this student has already applied to this specific job_position_id
         existing_app = Application.query.filter_by(
             student_id=student.id, 
             job_position_id=job.id
@@ -331,7 +322,6 @@ def apply_job(id):
 @student_required
 def applications():
 
-    # Join Job -> Company -> User (to get Company Name & Logo)
     my_id = current_user.student_details.id
     
     query = Application.query.join(JobPosition).join(Company).join(User)
@@ -482,13 +472,12 @@ def notifications():
 def view_notification(id):
 
     application = Application.query.get_or_404(id)
-    
-    # Security: EnsurING student owns this notification
+
     if application.student.user.id != current_user.id:
         flash("Unauthorized access.", "danger")
         return redirect(url_for('student_bp.notifications'))
 
-    # GeneratING the custom message based on current status
+    # Generating custom message based on current status
     message_data = get_status_message(application)
     application.is_read = True
     db.session.commit()
@@ -504,7 +493,7 @@ def view_notification(id):
 @student_required
 def clear_notification(id):
     app = Application.query.get_or_404(id)
-    # Check ownership
+    
     if app.student.user.id == current_user.id:
         app.is_cleared = True  
         db.session.commit()

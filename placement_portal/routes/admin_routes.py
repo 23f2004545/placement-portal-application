@@ -12,7 +12,7 @@ admin_bp = Blueprint('admin_bp', __name__)
 @admin_required
 def profile():
     
-# --- 1. KEY COUNTERS (Top Cards) ---
+    # --- 1. KEY COUNTERS (Top Cards) ---
     stats = {
         'students': Student.query.count(),
         'companies': Company.query.count(),
@@ -21,7 +21,6 @@ def profile():
     }
 
     # --- 2. CHART DATA: Application Status (Doughnut) ---
-    # Query: [('Applied', 10), ('Selected', 2), ...]
     status_query = db.session.query(
         Application.application_status, func.count(Application.id)
     ).group_by(Application.application_status).all()
@@ -30,20 +29,17 @@ def profile():
     app_status_values = [s[1] for s in status_query]
 
     # --- 3. CHART DATA: Activity Trend (Line Chart - Last 7 Days) ---
-    # We do this in Python to handle missing dates gracefully (so graph doesn't jump)
     today = datetime.now().date()
     dates = [(today - timedelta(days=i)).strftime('%Y-%m-%d') for i in range(6, -1, -1)]
     daily_counts = []
     
     for date_str in dates:
-        # Count apps created on this specific date
         count = Application.query.filter(
             func.date(Application.applied_at) == date_str
         ).count()
         daily_counts.append(count)
 
     # --- 4. CHART DATA: Top Hiring Companies (Bar Chart) ---
-    # Get top 5 companies by job count
     top_companies_query = db.session.query(
         User.name, func.count(JobPosition.id)
     ).join(Company, Company.user_id == User.id)\
@@ -74,13 +70,11 @@ def profile():
 @admin_required
 def companies():
     search_query = request.args.get('q', '')
-    
-    # Join Company with User to access name, email, image, etc.
+
     query = Company.query.join(User)
 
     if search_query:
         search = f"%{search_query}%"
-        # Search by Company Name (User.name) or HR Name
         query = query.filter(
             (User.name.ilike(search)) | 
             (Company.hr_name.ilike(search)) |
@@ -89,7 +83,6 @@ def companies():
 
     all_companies = query.all()
 
-    # Separate into lists based on 'status'
     pending_list = [c for c in all_companies if c.status=="Pending"]
     approved_list = [c for c in all_companies if c.status=="Approved"]
 
@@ -145,7 +138,7 @@ def reject_company(id):
 def toggle_blacklist_company(id):
     
     company = Company.query.get_or_404(id)
-    # Toggle the User's blacklist status
+
     company.user.blacklisted = not company.user.blacklisted
     db.session.commit()
     
@@ -176,7 +169,6 @@ def delete_company(id):
 @admin_required
 def view_company_profile(id):
 
-    # Fetch the Company (or 404 if not found)
     company = Company.query.get_or_404(id)
     
     return render_template('admin/view_company.html', 
@@ -193,13 +185,11 @@ def view_company_profile(id):
 def students():
 
     search_query = request.args.get('q', '')
-    
-    # Join Student with User to access name, email, image, etc.
+
     query = Student.query.join(User)
 
     if search_query:
         search = f"%{search_query}%"
-        # Search by Student Name (User.name) or ID or contact
         query = query.filter(
             (User.name.ilike(search)) | 
             (User.email.ilike(search)) |
@@ -220,7 +210,6 @@ def students():
 def toggle_blacklist_student(id):
    
     student = Student.query.get_or_404(id)
-    # Toggle the User's blacklist status
     student.user.blacklisted = not student.user.blacklisted
     db.session.commit()
     
@@ -251,8 +240,7 @@ def delete_student(id):
 @admin_bp.route('/student/view/<int:id>')
 @admin_required
 def view_student_profile(id):
-        
-    # Fetch the student (or 404 if not found)
+
     student = Student.query.get_or_404(id)
     
     return render_template('admin/view_student.html', 
@@ -268,8 +256,7 @@ def view_student_profile(id):
 @admin_bp.route('/job_postings')
 @admin_required
 def job_postings():
-    
-    # Join Job -> Company -> User (to get Company Name & Logo)
+
     query = JobPosition.query.join(Company).join(User)
     
     # SEARCH LOGIC
@@ -285,7 +272,6 @@ def job_postings():
     
     all_jobs = query.order_by(JobPosition.created_at.desc()).all()
 
-    # SEPARATE LISTS
     pending_jobs = [job for job in all_jobs if job.status=="Pending"]
     active_jobs = [job for job in all_jobs if job.status=="Approved"]
 

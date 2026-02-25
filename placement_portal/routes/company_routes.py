@@ -195,7 +195,6 @@ def edit_profile():
 @company_required
 def job_postings():
 
-    # Join Job -> Company with current user's id
     company_id = current_user.company_details.id
     query = JobPosition.query.filter_by(company_id=company_id)
     
@@ -209,8 +208,7 @@ def job_postings():
         )
     
     all_jobs = query.order_by(JobPosition.created_at.desc()).all()
-    
-    # SEPARATE LISTS
+
     pending_jobs = [job for job in all_jobs if job.status == "Pending"]
     active_jobs = [job for job in all_jobs if job.status == "Approved"]
 
@@ -304,7 +302,6 @@ def create_job():
 @company_required
 def applications():
 
-    # Join Application -> JobPosition -> Filter by Company ID
     my_company_id = current_user.company_details.id
     
     query = Application.query.join(Student).join(JobPosition).filter(
@@ -316,7 +313,6 @@ def applications():
 
     if search_query:
         search = f"%{search_query}%"
-        # We need to join Student & User to search by applicant Name
         query = query.join(User).filter(
             (User.name.ilike(search)) |               # Applicant Name
             (JobPosition.job_title.ilike(search))     # Job Title
@@ -377,20 +373,17 @@ def reject_application(id):
 @company_required
 def reviewed():
 
-    # Join Application -> JobPosition -> Filter by Company ID
     my_company_id = current_user.company_details.id
     
     query = Application.query.join(Student).join(JobPosition).filter(
         JobPosition.company_id == my_company_id
     )
 
-    # SEARCH & FILTER
     search_query = request.args.get('q', '')
     status_filter = request.args.get('status', '')
 
     if search_query:
         search = f"%{search_query}%"
-        # We need to join Student & User to search by applicant Name
         query = query.join(User).filter(
             (User.name.ilike(search)) |               # Applicant Name
             (JobPosition.job_title.ilike(search))     # Job Title
@@ -417,7 +410,6 @@ def select_application(id):
 
     application = Application.query.get_or_404(id)
     if request.method == 'POST':
-        # Update Application Status
         application.application_status = "Selected"
         application.is_cleared = False # Keep in notifications
         
@@ -426,10 +418,10 @@ def select_application(id):
             file = request.files['offer_letter']
             if file and file.filename != '':
                 file.seek(0, os.SEEK_END)
-                if pic.tell() > 2 * 1024 * 1024:
-                        flash("Profile picture must be less than 2 MB.", "warning")
+                if file.tell() > 2 * 1024 * 1024:
+                        flash("Offer Letter must be less than 2 MB.", "warning")
                         return redirect(url_for('company_bp.edit_profile'))
-                pic.seek(0) # Reset pointer
+                file.seek(0) # Reset pointer
                 
                 filename = os.path.basename(file.filename) 
                 save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'Offer_letters' , filename)
@@ -439,7 +431,7 @@ def select_application(id):
             
 
         application.remarks=request.form.get('remarks')
-        # Create Placement Record
+        # Placement Record
         new_placement = Placement(
             application_id=application.id,
             salary_offered=request.form.get('salary_offered'),

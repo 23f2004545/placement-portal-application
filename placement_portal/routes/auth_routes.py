@@ -20,7 +20,6 @@ def login():
         email = request.form.get('email', None)
         password = request.form.get('password', None)
         
-        # existence of user 
         user = User.query.filter_by(email=email).first()
         
         if not user:
@@ -34,7 +33,6 @@ def login():
                 user.last_login_at = datetime.now(timezone.utc)
                 db.session.commit()
                 
-                # Redirect based on role
                 role = user.roles.name
                 return redirect(url_for(f"{role}_bp.profile"))  
             else: 

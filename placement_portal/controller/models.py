@@ -13,37 +13,22 @@ class User(UserMixin,db.Model):
     blacklisted = db.Column(db.Boolean, default=False)
     image_url = db.Column(db.String(225)) 
 
-    # fs_uniquifier: Critical for Flask-Security (invalidates old cookies on password change)
     fs_uniquifier = db.Column(db.String(255), unique=True, nullable=False, default=secrets.token_urlsafe(16))
     last_login_at = db.Column(db.DateTime) 
 
-    # Relationships
     student_details = db.relationship('Student', backref='user', lazy=True, uselist=False)
     company_details = db.relationship('Company', backref='user', lazy=True, uselist=False)
     roles = db.relationship('Role', secondary='user_roles', backref='user', lazy=True, uselist=False)
     
-    # Check password during Login
     def check_password(self, password):
-        """
-        Compares the provided plain-text password with the stored hash.
-        Returns True if they match, False otherwise.
-        """
-        # Handle legacy plain text passwords (optional, helps during transition)
+        # Handle legacy plain text passwords 
         if not self.password.startswith('scrypt:') and not self.password.startswith('pbkdf2:'):
             return self.password == password
             
         return check_password_hash(self.password, password)
 
-    # Set password during Register
     def set_password(self, password):
-        """
-        Hashes the password and stores it.
-        """
         self.password = generate_password_hash(password)
-
-    # @property
-    # def is_active(self):
-    #     return not self.blacklisted
 
 class Role(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
