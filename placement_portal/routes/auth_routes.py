@@ -102,7 +102,7 @@ def register():
             flash('Password must be at least 8 characters long', 'warning')
             return redirect(url_for('auth_bp.register'))
         
-        if role not in ['student', 'company']:
+        if role_name not in ['student', 'company']:
             flash('Invalid role selected', 'danger')
             return redirect(url_for('auth_bp.register'))
 

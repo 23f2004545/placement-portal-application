@@ -68,7 +68,7 @@ def student_required(f):
 
         if not current_user.student_details:
             flash('Please complete your profile first.', 'info')
-            return redirect(url_for('company_bp.setup'))
+            return redirect(url_for('student_bp.setup'))
 
         student = current_user.student_details
         

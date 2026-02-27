@@ -42,7 +42,6 @@ def profile():
     
 # --- ACTION: ACCOUNT SETUP ---
 @student_bp.route('/setup', methods=['GET', 'POST'])
-@student_required
 def setup():
 
     if request.method == 'POST':

@@ -26,13 +26,12 @@ def profile():
     
 # --- ACTION: ACCOUNT SETUP ---
 @company_bp.route('/setup', methods=['GET', 'POST'])
-@company_required
 def setup():
 
     if request.method == 'POST':
         if current_user.company_details and current_user.company_details.status == "Rejected":
             hr_name = request.form.get('hr_name')
-            employee_count = request.form.get('employee_count')
+            employee_count = int(request.form.get('employee_count'))
             location = request.form.get('location')
             website = request.form.get('website') 
             description = request.form.get('description')
@@ -103,7 +102,6 @@ def setup():
 
 # --- THE WAITING ROOM ROUTE ---
 @company_bp.route('/verification')
-@company_required
 def verification():
 
     if current_user.company_details.status == "Approved":
