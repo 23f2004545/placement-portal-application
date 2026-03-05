@@ -7,14 +7,18 @@
     <div class="glass-card p-4 mb-1">
         {% if user.blacklisted %}
         <h3 class="text-danger text-opacity-75 fw-bold mb-3 text-center">PROFILE BLACKLISTED</h3>
-        <!-- <div class="status-badge danger-glow mb-3">
-            <span class="fw-bold"><i class="bi bi-exclamation-triangle-fill me-1"></i> BLACKLISTED</span>
-        </div> -->
         {% endif %}
         <h5 class="text-white fw-bold mb-3">Application Trends</h5>
         
-        <div style="height: 300px; width: 100%;">
-            <canvas id="jobChart"></canvas>
+        <div style="max-height: 300px; width: 100%;">
+            {% if job_labels %}
+                <canvas id="jobChart"></canvas>
+            {% else %}
+                <div class="text-center">
+                    <i class="bi bi-graph-up-arrow text-white-50" style="font-size: 2rem;"></i>
+                    <p class="text-white-50 mt-2">No jobs posted yet.</p>
+                </div>
+            {% endif %}
         </div>
     </div>
     <div class="glass-card profile-header-card">
@@ -155,6 +159,7 @@
     document.addEventListener("DOMContentLoaded", function() {
         const ctx = document.getElementById('jobChart').getContext('2d');
         
+        if (!ctx) return; 
         const labels = {{ job_labels | tojson }};
         const data = {{ app_counts | tojson }};
 

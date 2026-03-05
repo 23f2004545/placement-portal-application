@@ -55,7 +55,7 @@ def setup():
                 flash("Employee count can't be negative.", "warning")
                 return redirect(url_for('student_bp.edit_profile'))
             
-            current_user.company_details.user_id=user_id 
+            current_user.company_details.user_id=current_user.id
             current_user.company_details.hr_name=hr_name.strip().title() 
             current_user.company_details.employee_count=employee_count
             current_user.company_details.location=location.strip().title()
@@ -102,7 +102,7 @@ def setup():
         flash('Profile Completed.', 'success')
         return redirect(url_for('company_bp.verification'))
 
-    if current_user.company_details:
+    if current_user.company_details and current_user.company_details.status == "Approved":
         return render_template('company/profile.html' , user=current_user)
     return render_template('company/setup.html' , user=current_user)
 
