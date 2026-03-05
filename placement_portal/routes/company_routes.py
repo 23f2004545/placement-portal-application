@@ -27,7 +27,14 @@ def profile():
 # --- ACTION: ACCOUNT SETUP ---
 @company_bp.route('/setup', methods=['GET', 'POST'])
 def setup():
-
+    if not current_user.is_authenticated:
+        flash("Login required", "warning")
+        return redirect(url_for('auth_bp.login'))
+    
+    if current_user.roles.name != "company":
+        flash("Unauthorized access.", "danger")
+        return redirect(url_for('auth_bp.login'))
+    
     if request.method == 'POST':
         if current_user.company_details and current_user.company_details.status == "Rejected":
             hr_name = request.form.get('hr_name')
@@ -59,7 +66,7 @@ def setup():
             return redirect(url_for('company_bp.verification'))
         else:    
             hr_name = request.form.get('hr_name')
-            employee_count = request.form.get('employee_count')
+            employee_count = int(request.form.get('employee_count'))
             location = request.form.get('location')
             website = request.form.get('website') 
             description = request.form.get('description')
@@ -103,7 +110,18 @@ def setup():
 # --- THE WAITING ROOM ROUTE ---
 @company_bp.route('/verification')
 def verification():
+    if not current_user.is_authenticated:
+        flash("Login required", "warning")
+        return redirect(url_for('auth_bp.login'))
+    
+    if current_user.roles.name != "company":
+        flash("Unauthorized access.", "danger")
+        return redirect(url_for('auth_bp.login'))
 
+    if not current_user.company_details:
+        flash('Please complete your profile first.', 'info')
+        return redirect(url_for('company_bp.setup'))
+    
     if current_user.company_details.status == "Approved":
         flash('Your account is already approved!', 'success')
         return render_template('company/profile.html' , user=current_user)

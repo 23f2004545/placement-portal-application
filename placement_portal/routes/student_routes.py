@@ -43,7 +43,14 @@ def profile():
 # --- ACTION: ACCOUNT SETUP ---
 @student_bp.route('/setup', methods=['GET', 'POST'])
 def setup():
-
+    if not current_user.is_authenticated:
+        flash("Login required", "warning")
+        return redirect(url_for('auth_bp.login'))
+    
+    if current_user.roles.name != "student":
+        flash("Unauthorized access.", "danger")
+        return redirect(url_for('auth_bp.login'))
+    
     if request.method == 'POST':
         cgpa = float(request.form.get('cgpa'))
         experience = request.form.get('experience')
