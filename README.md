@@ -1,6 +1,8 @@
 # Apex - College Placement Portal
 **Apex** is a comprehensive, full-stack web application designed to streamline the campus placement process. It serves as a centralized platform connecting **Students**, **Companies**, and the **Placement Cell (Admin)**, facilitating seamless job postings, applications, status tracking, and analytics.
 
+🔗 **Live Demo:** [APEX Career Launchpad](https://placement-portal-application-98lz.onrender.com/ "Visit the APEX Placement Portal")
+
 ---
 
 ## 🚀 Key Features
