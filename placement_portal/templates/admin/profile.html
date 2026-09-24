@@ -5,52 +5,61 @@
 {% block dashboard_content %}
 <div class="container-fluid fade-in">
     
-    <div class="row g-4 mb-4">
-        <div class="col-md-3">
+
+    <div class="row g-2 g-md-4 mb-3 mb-md-4">
+        <!-- Students Card -->
+        <div class="col-12 col-md-3">
             <div class="glass-card p-3 d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="text-white-50 text-uppercase text-xs">Students</h6>
-                    <h2 class="text-white fw-bold mb-0">{{ stats.students }}</h2>
+                <div class="pe-2">
+                    <h6 class="text-white-50 text-uppercase text-nowrap mb-1" style="font-size: 0.75rem; letter-spacing: 0.5px;">Students</h6>
+                    <h2 class="text-white fw-bold mb-0 fs-3 fs-md-2">{{ stats.students }}</h2>
                 </div>
-                <div class="icon-box bg-primary bg-opacity-25 text-primary rounded-circle p-3">
+                <div class="icon-box bg-primary bg-opacity-25 text-primary rounded-circle p-2 p-md-3 flex-shrink-0">
                     <i class="bi bi-people-fill fs-6"></i>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+
+        <!-- Companies Card -->
+        <div class="col-12 col-md-3">
             <div class="glass-card p-3 d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="text-white-50 text-uppercase text-xs">Companies</h6>
-                    <h2 class="text-white fw-bold mb-0">{{ stats.companies }}</h2>
+                <div class="pe-2">
+                    <h6 class="text-white-50 text-uppercase text-nowrap mb-1" style="font-size: 0.75rem; letter-spacing: 0.5px;">Companies</h6>
+                    <h2 class="text-white fw-bold mb-0 fs-3 fs-md-2">{{ stats.companies }}</h2>
                 </div>
-                <div class="icon-box bg-warning bg-opacity-25 text-warning rounded-circle p-3">
+                <div class="icon-box bg-warning bg-opacity-25 text-warning rounded-circle p-2 p-md-3 flex-shrink-0">
                     <i class="bi bi-building-fill fs-6"></i>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+
+        <!-- Jobs Card -->
+        <div class="col-12 col-md-3">
             <div class="glass-card p-3 d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="text-white-50 text-uppercase text-xs">Jobs</h6>
-                    <h2 class="text-white fw-bold mb-0">{{ stats.jobs }}</h2>
+                <div class="pe-2">
+                    <h6 class="text-white-50 text-uppercase text-nowrap mb-1" style="font-size: 0.75rem; letter-spacing: 0.5px;">Jobs</h6>
+                    <h2 class="text-white fw-bold mb-0 fs-3 fs-md-2">{{ stats.jobs }}</h2>
                 </div>
-                <div class="icon-box bg-info bg-opacity-25 text-info rounded-circle p-3">
+                <div class="icon-box bg-info bg-opacity-25 text-info rounded-circle p-2 p-md-3 flex-shrink-0">
                     <i class="bi bi-briefcase-fill fs-6"></i>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+
+        <!-- Placements Card -->
+        <div class="col-12 col-md-3">
             <div class="glass-card p-3 d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="text-white-50 text-uppercase text-xs">Placements</h6>
-                    <h2 class="text-success fw-bold mb-0">{{ stats.placements }}</h2>
+                <div class="pe-2">
+                    <h6 class="text-white-50 text-uppercase text-nowrap mb-1" style="font-size: 0.75rem; letter-spacing: 0.5px;">Placements</h6>
+                    <h2 class="text-success fw-bold mb-0 fs-3 fs-md-2">{{ stats.placements }}</h2>
                 </div>
-                <div class="icon-box bg-success bg-opacity-25 text-success rounded-circle p-3">
+                <div class="icon-box bg-success bg-opacity-25 text-success rounded-circle p-2 p-md-3 flex-shrink-0">
                     <i class="bi bi-trophy-fill fs-6"></i>
                 </div>
             </div>
         </div>
     </div>
+
 
     <div class="row g-4">
         

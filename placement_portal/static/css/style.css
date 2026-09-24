@@ -147,9 +147,34 @@ select.glass-input option {
 }
 
 @media (max-width: 768px) {
-    .login-container { flex-direction: column; }
-    .login-img-section { min-height: 200px; }
-    .login-form-section { padding: 30px; }
+    .login-container {
+        flex-direction: column;
+        width: 100%;
+        max-width: 100%;
+        margin-top: 0 !important;
+        margin-bottom: 20px;
+    }
+    .login-img-section {
+        min-height: 140px;
+    }
+    .login-overlay-text {
+        bottom: 15px;
+        left: 20px;
+    }
+    .login-overlay-text h3 {
+        font-size: 1.3rem;
+        margin-bottom: 2px;
+    }
+    .login-overlay-text p {
+        font-size: 0.85rem;
+    }
+    .login-form-section {
+        padding: 24px 18px;
+    }
+    .register-container,
+    .setup-container {
+        padding: 24px 18px !important;
+    }
 }
 
 /* Register & Setup Specific */
@@ -600,9 +625,14 @@ select.glass-input option {
 
 /* Mobile Responsiveness for Profile */
 @media (max-width: 768px) {
-    .profile-header-card .d-flex {
+    .profile-header-card > .d-flex {
         flex-direction: column;
         text-align: center;
+        align-items: center !important;
+    }
+
+    .profile-header-card .profile-img-container {
+        margin: 0 auto;
     }
     
     .card-header-flex {
@@ -611,6 +641,19 @@ select.glass-input option {
     
     .info-item {
         margin-bottom: 15px;
+    }
+
+    /* Responsive border utilities */
+    .border-end-md {
+        border-right: none !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+    }
+}
+
+@media (min-width: 769px) {
+    .border-end-md {
+        border-right: 1px solid rgba(255, 255, 255, 0.15) !important;
+        border-bottom: none !important;
     }
 }
 
@@ -693,22 +736,44 @@ select.glass-input option {
         width: 50px;
         height: 50px;
     }
-    .d-flex.flex-column.gap-2 {
-        /* flex-direction: row !important;*/ /* Buttons side-by-side on mobile */
+    .job-card .d-flex.flex-column.gap-2 {
         width: 100%;
         margin-top: 10px;
     }
-    .d-flex.flex-column.gap-2 .btn {
+    .job-card .d-flex.flex-column.gap-2 .btn {
         flex: 1;
     }
     .notif {
         position: absolute;
-        top: 12px;   /* Adjusted to sit slightly above the icon */
-        right: 14px; /* Adjusted to sit on the top-right corner */
-        width: 14px; /* Slightly smaller for the collapsed view */
+        top: 8px;
+        right: 8px;
+        width: 14px;
         height: 14px;
-        font-size: 4px;
-      }
+        font-size: 8px;
+    }
+
+    /* Responsive typography */
+    h2 { font-size: 1.35rem !important; }
+    h3 { font-size: 1.2rem !important; }
+    h4 { font-size: 1.05rem !important; }
+    h5 { font-size: 0.95rem !important; }
+
+    .section-title { font-size: 1.05rem !important; }
+
+    .text-xs {
+        font-size: 0.72rem !important;
+        letter-spacing: 0.5px;
+    }
+
+    .glass-card .btn-sm {
+        font-size: 0.78rem !important;
+        padding: 5px 10px !important;
+    }
+
+    .status-badge {
+        font-size: 0.72rem !important;
+        padding: 4px 10px !important;
+    }
 }
 
 
@@ -839,8 +904,15 @@ select.glass-input option {
 /* 2. Job Card Grid Layout */
 .job-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Responsive Grid */
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); /* Responsive Grid */
     gap: 20px;
+}
+
+@media (max-width: 768px) {
+    .job-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
 }
 
 /* 3. Job Card Internal Spacing */
@@ -910,7 +982,7 @@ select.glass-input option {
 /* --- FIXED DROPDOWN STYLING --- */
 .glass-dropdown {
     /* 1. Darker Background: Fixes the readability issue */
-    background: rgba(0, 0, 0, 0.68) ;
+    background: rgba(0, 0, 0, 0.88) ;
     
     /* 2. Strong Blur: Keeps the aesthetic but makes it usable */
     /* backdrop-filter: blur(100px) !important; */

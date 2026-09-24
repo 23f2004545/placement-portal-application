@@ -26,7 +26,7 @@
                 <small class="text-white-50 text-uppercase text-xs d-block">Company</small>
                 <h5 class="text-white fw-bold mb-0">{{ application.job_position.company.user.name }}</h5>
             </div>
-            <div class="vr bg-secondary mx-2 opacity-50"></div>
+            <div class="vr bg-secondary mx-2 opacity-50 d-none d-sm-block"></div>
             <div >
                 <small class="text-white-50 text-uppercase text-xs d-block ">Role Offered</small>
                 <h5 class="text-success fw-bold mb-0 ">{{ application.job_position.job_title }}</h5>
@@ -83,7 +83,7 @@
             </div>
 
             <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                <a href="{{ url_for('student_bp.applications') }}" class="btn btn-outline-light px-5 rounded-pill">Close</a>
+                <a href="{{ url_for('student_bp.applications') }}" class="btn btn-outline-light px-4 px-md-5 rounded-pill">Close</a>
             </div>
 
         </form>
