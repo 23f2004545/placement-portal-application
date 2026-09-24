@@ -13,7 +13,7 @@ class User(UserMixin,db.Model):
     blacklisted = db.Column(db.Boolean, default=False)
     image_url = db.Column(db.String(225)) 
 
-    fs_uniquifier = db.Column(db.String(255), unique=True, nullable=False, default=secrets.token_urlsafe(16))
+    fs_uniquifier = db.Column(db.String(255), unique=True, nullable=False, default=lambda: secrets.token_urlsafe(16))
     last_login_at = db.Column(db.DateTime) 
 
     student_details = db.relationship('Student', backref='user', lazy=True, uselist=False)

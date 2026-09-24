@@ -33,14 +33,15 @@ def method_not_allowed(e):
 # Notification status modify
 @app.context_processor
 def inject_notifications():
-    if current_user.is_authenticated and current_user.roles.name == 'student':
-        # Count apps that are NOT cleared and NOT read
-        count = Application.query.filter_by(
-            student_id=current_user.student_details.id ,
-            is_read=False,
-            is_cleared=False 
+    if current_user.is_authenticated and current_user.roles and current_user.roles.name == 'student':
+        if current_user.student_details:
+            # Count apps that are NOT cleared and NOT read
+            count = Application.query.filter_by(
+                student_id=current_user.student_details.id,
+                is_read=False,
+                is_cleared=False 
             ).count()
-        return dict(unread_count=count)
+            return dict(unread_count=count)
     return dict(unread_count=0)
 
 

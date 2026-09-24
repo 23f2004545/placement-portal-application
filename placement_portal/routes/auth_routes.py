@@ -1,11 +1,55 @@
-from flask import Blueprint ,current_app , render_template , request , flash , redirect , url_for
+from flask import Blueprint, current_app, render_template, request, flash, redirect, url_for
 from flask_login import login_user, logout_user, login_required, current_user
 from controller.models import *
-import os , re
+import os, re
 from werkzeug.security import generate_password_hash
-from datetime import datetime , timezone
+from datetime import datetime, timezone
+from controller.storage import upload_file
 
 auth_bp = Blueprint('auth_bp', __name__) 
+
+# --- DEMO QUICK LOGIN ENDPOINT ---
+@auth_bp.route("/demo-login/<role>")
+def demo_login(role):
+    """Bypasses password entry for recruiters and visitors testing specific roles."""
+    role = role.lower().strip()
+    if role not in ['admin', 'company', 'student']:
+        flash("Invalid demo role selected.", "danger")
+        return redirect(url_for('auth_bp.login'))
+    
+    # Pre-configured demo email mapping
+    demo_accounts = {
+        'admin': 'admin@gmail.com',
+        'company': 'demo_recruiter@company.com',
+        'student': 'demo_student@college.edu'
+    }
+    
+    target_email = demo_accounts.get(role)
+    user = None
+    
+    if target_email:
+        user = User.query.filter_by(email=target_email).first()
+        
+    # Fallback: if exact demo email not seeded, find first active user with this role
+    if not user:
+        user = User.query.join(User.roles).filter(Role.name == role, User.blacklisted == False).first()
+
+    if not user:
+        flash(f"No demo account found for role '{role.capitalize()}'. Please seed demo accounts or create one.", "warning")
+        return redirect(url_for('auth_bp.login'))
+
+    if user.blacklisted:
+        flash("This account has been deactivated.", "danger")
+        return redirect(url_for('auth_bp.login'))
+
+    login_user(user)
+    user.last_login_at = datetime.now(timezone.utc)
+    db.session.commit()
+    
+    role_name = user.roles.name
+    flash(f"Logged in as Demo {role_name.capitalize()}! Welcome to the portfolio preview.", "success")
+    return redirect(url_for(f"{role_name}_bp.profile"))
+
 
 @auth_bp.route("/login", methods=['GET', 'POST'])
 def login():
@@ -27,6 +71,10 @@ def login():
             return redirect(url_for('auth_bp.login'))
         else:
             if user.check_password(password):
+                if user.blacklisted:
+                    flash('This account has been deactivated.', 'danger')
+                    return redirect(url_for('auth_bp.login'))
+
                 login_user(user)
                 
                 # Update last login
@@ -65,19 +113,13 @@ def register():
         
         profile_pic = None 
         if 'profile_pic' in request.files:
-            file = request.files['profile_pic']
-            if file and file.filename != '':
-                filename = os.path.basename(file.filename) 
-                save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'Profile_pics', filename)
-                file.save(save_path)
-
-                profile_pic = f"/static/uploads/Profile_pics/{filename}"
+            profile_pic = upload_file(request.files['profile_pic'], folder_name="Profile_pics")
         
         # Fallback if no image uploaded
         if not profile_pic:
             profile_pic = f"/static/uploads/Profile_pics/{role_name}.png"
             
-        name = name.strip().title() 
+        name = name.strip().title() if name else ""
 
         # BACKEND VALIDATION LAYER 
         if not name or not email or not password or not contact or not role_name:
@@ -86,7 +128,7 @@ def register():
 
         # Regex for standard email format
         pattern = r'^[\w\.-]+@[\w\.-]+$'
-        if re.match(pattern, email) is  None:
+        if re.match(pattern, email) is None:
             flash("Invalid email format.", "warning")
             return redirect(url_for('auth_bp.register'))
         
@@ -128,4 +170,3 @@ def register():
         
         flash('Registration successful. Please login.', 'success')
         return redirect(url_for('auth_bp.login'))
-        

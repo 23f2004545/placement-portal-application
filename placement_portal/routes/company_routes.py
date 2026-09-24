@@ -2,6 +2,7 @@ from flask import Blueprint , current_app , render_template , flash , redirect ,
 from controller.decorators import company_required
 from flask_login import current_user
 from controller.models import *
+from controller.storage import upload_file
 import os
 
 company_bp = Blueprint('company_bp', __name__) 
@@ -45,15 +46,15 @@ def setup():
 
             if not all([hr_name, employee_count, location, website]):
                 flash("All fields are required.", "warning")
-                return redirect(url_for('student_bp.edit_profile'))
+                return redirect(url_for('company_bp.setup'))
 
             if not hr_name.replace(" ", "").isalpha():
                 flash("Name must contain only alphabetic characters and spaces.", "warning")
-                return redirect(url_for('student_bp.edit_profile'))
+                return redirect(url_for('company_bp.setup'))
 
             if employee_count < 0:
                 flash("Employee count can't be negative.", "warning")
-                return redirect(url_for('student_bp.edit_profile'))
+                return redirect(url_for('company_bp.setup'))
             
             current_user.company_details.user_id=current_user.id
             current_user.company_details.hr_name=hr_name.strip().title() 
@@ -66,22 +67,27 @@ def setup():
             return redirect(url_for('company_bp.verification'))
         else:    
             hr_name = request.form.get('hr_name')
-            employee_count = int(request.form.get('employee_count'))
+            try:
+                employee_count = int(request.form.get('employee_count', 0))
+            except (ValueError, TypeError):
+                flash("Employee count must be a number.", "warning")
+                return redirect(url_for('company_bp.setup'))
+
             location = request.form.get('location')
             website = request.form.get('website') 
             description = request.form.get('description')
             
             if not all([hr_name, employee_count, location, website]):
                 flash("All fields are required.", "warning")
-                return redirect(url_for('student_bp.edit_profile'))
+                return redirect(url_for('company_bp.setup'))
 
             if not hr_name.replace(" ", "").isalpha():
                 flash("Name must contain only alphabetic characters and spaces.", "warning")
-                return redirect(url_for('student_bp.edit_profile'))
+                return redirect(url_for('company_bp.setup'))
 
             if employee_count < 0:
                 flash("Employee count can't be negative.", "warning")
-                return redirect(url_for('student_bp.edit_profile'))
+                return redirect(url_for('company_bp.setup'))
             
             hr_name = hr_name.strip().title()        
             location = location.strip().title()        
@@ -162,28 +168,24 @@ def edit_profile():
                 flash("Contact number must be exactly 10 digits.", "warning")
                 return redirect(url_for('company_bp.edit_profile'))
             
-            if employee_count < 0:
-                flash("Employee count can't be negative.", "warning")
-                return redirect(url_for('student_bp.edit_profile'))
+            try:
+                emp_cnt = int(employee_count)
+                if emp_cnt < 0:
+                    flash("Employee count can't be negative.", "warning")
+                    return redirect(url_for('company_bp.edit_profile'))
+            except (ValueError, TypeError):
+                flash("Employee count must be a number.", "warning")
+                return redirect(url_for('company_bp.edit_profile'))
 
             # --- Update User Table ---
             current_user.name = name.title()
             current_user.contact = contact
 
-            # 6. Profile Picture Size (< 2MB)
-            if 'profile_pic' in request.files:
-                pic = request.files['profile_pic']
-                if pic and pic.filename != '':
-                    pic.seek(0, os.SEEK_END)
-                    if pic.tell() > 2 * 1024 * 1024:
-                        flash("Profile picture must be less than 2 MB.", "warning")
-                        return redirect(url_for('company_bp.edit_profile'))
-                    pic.seek(0) # Reset pointer
-                    
-                    filename = os.path.basename(pic.filename)
-                    save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'Profile_pics', filename)
-                    pic.save(save_path)
-                    current_user.image_url = f"/static/uploads/Profile_pics/{filename}"
+            # Profile Picture
+            if 'profile_pic' in request.files and request.files['profile_pic'].filename != '':
+                pic_url = upload_file(request.files['profile_pic'], folder_name="Profile_pics")
+                if pic_url:
+                    current_user.image_url = pic_url
 
             # --- Update Company Table ---
             company = current_user.company_details
@@ -242,6 +244,10 @@ def job_postings():
 def view_job(id):
 
     job = JobPosition.query.get_or_404(id)
+    if job.company_id != current_user.company_details.id:
+        flash("Unauthorized access.", "danger")
+        return redirect(url_for('company_bp.job_postings'))
+
     return render_template('company/view_job.html', 
                             job=job,
                             user=current_user)
@@ -253,6 +259,10 @@ def view_job(id):
 def close_job(id):  
 
     job = JobPosition.query.get_or_404(id)
+    if job.company_id != current_user.company_details.id:
+        flash("Unauthorized access.", "danger")
+        return redirect(url_for('company_bp.job_postings'))
+
     job.job_status = "Closed"
     db.session.commit()
     
@@ -269,6 +279,10 @@ def reopen_job(id):
         return redirect(url_for('company_bp.job_postings'))
     else:
         job = JobPosition.query.get_or_404(id)
+        if job.company_id != current_user.company_details.id:
+            flash("Unauthorized access.", "danger")
+            return redirect(url_for('company_bp.job_postings'))
+
         job.job_status = "Hiring"
         db.session.commit()
         
@@ -349,6 +363,10 @@ def applications():
 def shortlist_application(id):  
    
     application = Application.query.get_or_404(id)
+    if application.job_position.company_id != current_user.company_details.id:
+        flash("Unauthorized access.", "danger")
+        return redirect(url_for('company_bp.applications'))
+
     application.application_status = "Shortlisted"
     application.is_cleared = False
     db.session.commit()
@@ -363,6 +381,10 @@ def shortlist_application(id):
 def reject_application(id):  
 
     application = Application.query.get_or_404(id)
+    if application.job_position.company_id != current_user.company_details.id:
+        flash("Unauthorized access.", "danger")
+        return redirect(url_for('company_bp.applications'))
+
     if request.method == 'POST':
         try:
             application.application_status = "Rejected"
@@ -412,7 +434,7 @@ def reviewed():
     my_applications = query.filter(Application.application_status!="Applied", Student.is_deleted==False).order_by(Application.applied_at.desc()).all()
 
     return render_template('company/reviewed.html', 
-                            user=current_user,
+                            user=current_user, 
                             applications=my_applications,
                             search=search_query,
                             status=status_filter,
@@ -425,34 +447,25 @@ def reviewed():
 def select_application(id):  
 
     application = Application.query.get_or_404(id)
+    if application.job_position.company_id != current_user.company_details.id:
+        flash("Unauthorized access.", "danger")
+        return redirect(url_for('company_bp.applications'))
+
     if request.method == 'POST':
         application.application_status = "Selected"
         application.is_cleared = False # Keep in notifications
         
         offer_letter = None 
-        if 'offer_letter' in request.files:
-            file = request.files['offer_letter']
-            if file and file.filename != '':
-                file.seek(0, os.SEEK_END)
-                if file.tell() > 2 * 1024 * 1024:
-                        flash("Offer Letter must be less than 2 MB.", "warning")
-                        return redirect(url_for('company_bp.edit_profile'))
-                file.seek(0) # Reset pointer
-                
-                filename = os.path.basename(file.filename) 
-                save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'Offer_letters' , filename)
-                file.save(save_path)
+        if 'offer_letter' in request.files and request.files['offer_letter'].filename != '':
+            offer_letter = upload_file(request.files['offer_letter'], folder_name="Offer_letters")
 
-            offer_letter = f"/static/uploads/Offer_letters/{filename}"
-            
-
-        application.remarks=request.form.get('remarks')
+        application.remarks = request.form.get('remarks')
         # Placement Record
         new_placement = Placement(
             application_id=application.id,
             salary_offered=request.form.get('salary_offered'),
             joining_date=request.form.get('joining_date'),
-            offer_letter=offer_letter,
+            offer_letter=offer_letter or "",
             status='Offered'
         )
         
@@ -461,7 +474,7 @@ def select_application(id):
         
         flash(f'Offer sent to {application.student.user.name}!', 'success')
         return redirect(url_for('company_bp.reviewed'))
-    return render_template('company/selection.html', application=application, user=current_user,)
+    return render_template('company/selection.html', application=application, user=current_user)
 
 
 # --- ACTION: VIEW APPLICATION ---
@@ -470,6 +483,10 @@ def select_application(id):
 def view_application(id):
 
     application = Application.query.get_or_404(id)
+    if application.job_position.company_id != current_user.company_details.id:
+        flash("Unauthorized access.", "danger")
+        return redirect(url_for('company_bp.applications'))
+
     return render_template('company/view_application.html', 
                             application=application,
                             user=current_user,

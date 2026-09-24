@@ -3,6 +3,7 @@ from controller.decorators import student_required
 from flask_login import current_user
 from sqlalchemy import func
 from controller.models import *
+from controller.storage import upload_file
 import os
 
 student_bp = Blueprint('student_bp', __name__) 
@@ -52,47 +53,35 @@ def setup():
         return redirect(url_for('auth_bp.login'))
     
     if request.method == 'POST':
-        cgpa = float(request.form.get('cgpa'))
-        experience = request.form.get('experience')
-        skills = request.form.get('skill_set')
-        milestones = request.form.get('milestones')
+        try:
+            cgpa = float(request.form.get('cgpa', 0))
+            experience = int(request.form.get('experience', 0))
+        except (ValueError, TypeError):
+            flash("CGPA and Experience must be valid numbers.", "warning")
+            return redirect(url_for('student_bp.setup'))
+
+        skills = request.form.get('skill_set', '').strip()
+        milestones = request.form.get('milestones', '')
         
         # --- RESUME SAVING LOGIC ---
         resume = None 
         if 'resume' in request.files:
-            file = request.files['resume']
-            if file and file.filename != '':
-                filename = os.path.basename(file.filename) # Prevents directory traversal
-                save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'Resumes' , filename)
-                file.save(save_path)
-
-                resume = f"/static/uploads/Resumes/{filename}"
+            resume = upload_file(request.files['resume'], folder_name="Resumes")
         
-        
-        if not cgpa or not experience or not skills or not resume:
+        if not cgpa or experience is None or not skills or not resume:
             flash("All fields are required.", "danger")
-            return redirect(url_for('auth_bp.register'))
+            return redirect(url_for('student_bp.setup'))
         
-        if experience<0:
+        if experience < 0:
             flash("Experience cannot be negative.", "danger")
             return redirect(url_for('student_bp.setup'))
         
-        if cgpa<0.0 or cgpa>10.0:
+        if cgpa < 0.0 or cgpa > 10.0:
             flash("CGPA must be between 0.0 and 10.0.", "danger")
             return redirect(url_for('student_bp.setup'))
         
-        if file:
-            file.seek(0, os.SEEK_END) 
-            size_in_bytes = file.tell()
-            
-            file.seek(0)
-
-            if size_in_bytes > 2097152:
-                flash("Resume is too large. Please upload a file smaller than 2 MB.", "warning")
-                return redirect(url_for('auth_bp.register'))
-        
         # --- CREATE STUDENT RECORD ---
-        skills = ', '.join(word.capitalize().strip() for word in skills.split(','))
+        skills = ', '.join(word.capitalize().strip() for word in skills.split(',') if word.strip())
         user_id = current_user.id
         new_student = Student(
             user_id=user_id, 
@@ -158,44 +147,26 @@ def edit_profile():
             current_user.name = name.title()
             current_user.contact = contact
 
-            # Profile Picture Size Validation (< 2MB)
-            if 'profile_pic' in request.files:
-                file = request.files['profile_pic']
-                if file and file.filename != '':
-                    file.seek(0, os.SEEK_END)
-                    if file.tell() > 2 * 1024 * 1024:
-                        flash("Profile picture must be less than 2 MB.", "warning")
-                        return redirect(url_for('student_bp.edit_profile'))
-                    file.seek(0)
-                    
-                    filename = os.path.basename(file.filename) 
-                    save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'Profile_pics' , filename)
-                    file.save(save_path)
-                    current_user.image_url = f"/static/uploads/Profile_pics/{filename}"
+            # Profile Picture
+            if 'profile_pic' in request.files and request.files['profile_pic'].filename != '':
+                pic_url = upload_file(request.files['profile_pic'], folder_name="Profile_pics")
+                if pic_url:
+                    current_user.image_url = pic_url
 
             # --- Update Student Table ---
             student = current_user.student_details
-            formatted_skills = ' , '.join(word.capitalize().strip() for word in skills.split(','))
+            formatted_skills = ' , '.join(word.capitalize().strip() for word in skills.split(',') if word.strip())
             
             student.cgpa = cgpa
             student.experience = experience
             student.skill_set = formatted_skills
             student.milestones = milestones 
             
-            # Resume Size Validation (< 2MB)
-            if 'resume' in request.files:
-                file = request.files['resume']
-                if file and file.filename != '':
-                    file.seek(0, os.SEEK_END)
-                    if file.tell() > 2 * 1024 * 1024:
-                        flash("Resume must be less than 2 MB.", "warning")
-                        return redirect(url_for('student_bp.edit_profile'))
-                    file.seek(0)
-
-                    filename = os.path.basename(file.filename)
-                    save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'Resumes' , filename)
-                    file.save(save_path)
-                    student.resume = f"/static/uploads/Resumes/{filename}"
+            # Resume
+            if 'resume' in request.files and request.files['resume'].filename != '':
+                resume_url = upload_file(request.files['resume'], folder_name="Resumes")
+                if resume_url:
+                    student.resume = resume_url
 
             db.session.commit()
             flash('Profile updated successfully!', 'success')
@@ -288,14 +259,8 @@ def apply_job(id):
                 cover_letter_text = request.form.get('cover_letter')
 
                 resume = None 
-                if 'resume' in request.files:
-                    file = request.files['resume']
-                    if file and file.filename != '':
-                        filename = os.path.basename(file.filename) 
-                        save_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'Resumes' , filename)
-                        file.save(save_path)
-
-                        resume = f"/static/uploads/Resumes/{filename}"
+                if 'resume' in request.files and request.files['resume'].filename != '':
+                    resume = upload_file(request.files['resume'], folder_name="Resumes")
 
                 # Application Entry
                 new_application = Application(
@@ -368,15 +333,21 @@ def view_offer(id):
     
 # --- ACTION: JOIN OFFER ---
 @student_bp.route('/offer/join/<int:id>')
+@student_required
 def join_offer(id):
 
     application = Application.query.get_or_404(id)
+    if not current_user.student_details or application.student_id != current_user.student_details.id:
+        flash("Unauthorized access.", "danger")
+        return redirect(url_for('student_bp.applications'))
     
     try:
-        application.placements.status = 'Joined'
-        db.session.commit()
-        
-        flash(f'Congratulations! You have successfully accepted the offer at {application.job_position.company.user.name}.', 'success')
+        if application.placements:
+            application.placements.status = 'Joined'
+            db.session.commit()
+            flash(f'Congratulations! You have successfully accepted the offer at {application.job_position.company.user.name}.', 'success')
+        else:
+            flash('No active offer found for this application.', 'warning')
     except Exception as e:
         db.session.rollback()
         flash('An error occurred while processing your request.', 'danger')
@@ -386,15 +357,21 @@ def join_offer(id):
 
 # --- ACTION: DECLINE OFFER ---
 @student_bp.route('/offer/decline/<int:id>')
+@student_required
 def decline_offer(id):
 
     application = Application.query.get_or_404(id)
+    if not current_user.student_details or application.student_id != current_user.student_details.id:
+        flash("Unauthorized access.", "danger")
+        return redirect(url_for('student_bp.applications'))
 
     try:
-        application.placements.status = 'Declined'
-        db.session.commit()
-        
-        flash('You have declined the offer.', 'info')
+        if application.placements:
+            application.placements.status = 'Declined'
+            db.session.commit()
+            flash('You have declined the offer.', 'info')
+        else:
+            flash('No active offer found for this application.', 'warning')
     except Exception as e:
         db.session.rollback()
         flash('Error processing request.', 'danger')
@@ -523,6 +500,7 @@ def clear_all_notifications():
 
 # --- PLACEMENT HISTORY ROUTE ---
 @student_bp.route('/history')
+@student_required
 def history():
 
     if not current_user.student_details:
@@ -531,12 +509,12 @@ def history():
     
     my_id = current_user.student_details.id
     
-    query = Placement.query.join(Application)
+    query = Placement.query.join(Application).join(JobPosition).join(Company)
     
     status_filter = request.args.get('status', '')
         
     if status_filter:
         query = query.filter(Placement.status == status_filter)
 
-    placements = query.filter(Application.student_id == my_id , Placement.status != "Offered", Company.is_deleted==False).order_by(Placement.created_at.desc()).all()
-    return render_template('student/history.html' , placements=placements, user=current_user, status=status_filter)
+    placements = query.filter(Application.student_id == my_id, Placement.status != "Offered", Company.is_deleted == False).order_by(Placement.created_at.desc()).all()
+    return render_template('student/history.html', placements=placements, user=current_user, status=status_filter)

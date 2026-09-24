@@ -2,3 +2,7 @@ flask
 Flask-SQLAlchemy
 jinja2
 flask-login
+gunicorn
+psycopg2-binary
+python-dotenv
+cloudinary
