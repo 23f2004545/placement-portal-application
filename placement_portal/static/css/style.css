@@ -430,6 +430,7 @@ select.glass-input option {
     border-left: 3px solid var(--primary-green);
 }
 
+
 .sidebar-link i { font-size: 1.3rem; min-width: 30px; text-align: center; }
 
 /* Create Button */
