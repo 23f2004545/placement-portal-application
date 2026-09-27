@@ -14,8 +14,13 @@ class config:
     database_url = os.environ.get("DATABASE_URL", "sqlite:///database.sqlite3")
     
     # Render / Supabase compatibility: SQLAlchemy requires postgresql:// instead of legacy postgres://
-    if database_url and database_url.startswith("postgres://"):
-        database_url = database_url.replace("postgres://", "postgresql://", 1)
+    if database_url:
+        if database_url.startswith("postgres://"):
+            # Explicitly bind +psycopg2 to ensure backward compatibility across SQLAlchemy version updates
+            database_url = database_url.replace("postgres://", "postgresql+psycopg2://", 1)
+        elif database_url.startswith("postgresql://"):
+            # Fix native strings if provided generically by Neon/Render environment fields
+            database_url = database_url.replace("postgresql://", "postgresql+psycopg2://", 1)
         
     SQLALCHEMY_DATABASE_URI = database_url
     SQLALCHEMY_TRACK_MODIFICATIONS = False
