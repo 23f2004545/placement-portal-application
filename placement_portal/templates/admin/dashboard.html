@@ -63,6 +63,7 @@
 
 
             <main class="main-content">
+
                 {% block dashboard_content %}
                 {% endblock %}
             </main>
@@ -79,6 +80,11 @@
                     </div>
                     <div class="modal-body">
                         <p class="text-white-50 mb-0" id="confirmMessage">Are you sure you want to proceed?</p>
+                        {% if current_user.is_authenticated and current_user.email == 'admin@portfolio.demo' %}
+                        <p class="text-white-50 small mt-2 mb-0" style="font-size: 0.78rem;">
+                            <i class="bi bi-info-circle me-1 text-info"></i><em>*Note: Actions on real accounts are simulated. Use (Demo) tagged profiles to test live data cascading.*</em>
+                        </p>
+                        {% endif %}
                     </div>
                     <div class="modal-footer border-0 pt-0">
                         <button type="button" class="btn btn-sm btn-outline-light rounded-pill" data-bs-dismiss="modal">Cancel</button>

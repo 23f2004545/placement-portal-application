@@ -11,6 +11,10 @@ def home():
         return redirect(url_for(f"{role}_bp.profile"))
     return render_template('auth/login.html')
 
+@app.route('/login/demo/<role>')
+def root_demo_login(role):
+    return redirect(url_for('auth_bp.demo_login', role=role))
+
 
 
 # ERROR HANDLERS

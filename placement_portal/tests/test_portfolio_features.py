@@ -146,8 +146,7 @@ class TestPlacementPortal(unittest.TestCase):
             res = self.client.get(f'/student/offer/join/{app_item.id}', follow_redirects=True)
             self.assertIn(b"Unauthorized access", res.data)
 
-            # Clean up
-            db.session.delete(intruder_details)
+            # Clean up (deleting intruder cascades to intruder_details)
             db.session.delete(intruder)
             db.session.commit()
 
@@ -191,10 +190,212 @@ class TestPlacementPortal(unittest.TestCase):
             res = self.client.get(f'/company/job/close/{job.id}', follow_redirects=True)
             self.assertIn(b"Unauthorized access", res.data)
 
-            # Clean up
-            db.session.delete(rival_comp)
+            # Clean up (deleting rival_user cascades to rival_comp)
             db.session.delete(rival_user)
             db.session.commit()
 
+    def test_11_dynamic_onclick_seeding_and_rich_dataset(self):
+        """Verify dynamic on-click demo seeding generates rich baseline dataset without impacting real users."""
+        # 1. Access dynamic route /login/demo/student
+        res = self.client.get('/login/demo/student', follow_redirects=True)
+        self.assertEqual(res.status_code, 200)
+        self.assertIn(b"Logged in as Demo Student", res.data)
+        self.client.get('/auth/logout')
+
+        # 2. Verify baseline dataset counts
+        demo_companies = Company.query.join(User).filter(User.email.like('%@portfolio.demo')).all()
+        self.assertGreaterEqual(len(demo_companies), 2)
+
+        demo_students = Student.query.join(User).filter(User.email.like('%@portfolio.demo')).all()
+        self.assertGreaterEqual(len(demo_students), 2)
+
+        demo_jobs = JobPosition.query.join(Company).join(User).filter(User.email.like('%@portfolio.demo')).all()
+        self.assertGreaterEqual(len(demo_jobs), 2)
+
+        demo_apps = Application.query.join(Student).join(User).filter(User.email.like('%@portfolio.demo')).all()
+        self.assertGreaterEqual(len(demo_apps), 2)
+
+    def test_12_cascade_deletions(self):
+        """Verify cascading deletion cleanly removes child entities (User -> Student/Company -> Job -> App -> Placement)."""
+        role_stud = Role.query.filter_by(name='student').first()
+        role_comp = Role.query.filter_by(name='company').first()
+
+        # Create temporary company, job, student, application, and placement
+        c_user = User(name="Cascade Co", email="cascade_co@test.com", password="pw", contact="1112223334", roles=role_comp)
+        db.session.add(c_user)
+        db.session.commit()
+        co = Company(user_id=c_user.id, hr_name="Cascade HR", employee_count=50, location="Remote", website="http://c.com")
+        db.session.add(co)
+        db.session.commit()
+
+        job = JobPosition(company_id=co.id, job_title="Cascade Eng", requirements="None", job_location="Remote", job_pay="100k", job_type="Remote", job_timing="Full Time")
+        db.session.add(job)
+        db.session.commit()
+
+        s_user = User(name="Cascade Student", email="cascade_st@test.com", password="pw", contact="5556667778", roles=role_stud)
+        db.session.add(s_user)
+        db.session.commit()
+        st = Student(user_id=s_user.id, cgpa=9.0, experience=0, skill_set="Testing", resume="test.pdf")
+        db.session.add(st)
+        db.session.commit()
+
+        app_obj = Application(student_id=st.id, job_position_id=job.id, application_status="Selected")
+        db.session.add(app_obj)
+        db.session.commit()
+
+        plc = Placement(application_id=app_obj.id, salary_offered="100k", joining_date="Tomorrow", offer_letter="offer.pdf")
+        db.session.add(plc)
+        db.session.commit()
+
+        app_id = app_obj.id
+        plc_id = plc.id
+        job_id = job.id
+        co_id = co.id
+        st_id = st.id
+
+        # Delete student user -> should cascade to Student, Application, Placement
+        db.session.delete(s_user)
+        db.session.commit()
+
+        self.assertIsNone(Student.query.get(st_id))
+        self.assertIsNone(Application.query.get(app_id))
+        self.assertIsNone(Placement.query.get(plc_id))
+
+        # Delete company user -> should cascade to Company and JobPosition
+        db.session.delete(c_user)
+        db.session.commit()
+
+        self.assertIsNone(Company.query.get(co_id))
+        self.assertIsNone(JobPosition.query.get(job_id))
+
+    def test_13_demo_admin_guardrails_protect_real_users(self):
+        """Verify demo admin cannot delete, blacklist, or reject real users (faux-success protection)."""
+        # 1. Create a real student and real company
+        role_stud = Role.query.filter_by(name='student').first()
+        role_comp = Role.query.filter_by(name='company').first()
+
+        real_stud_user = User(name="Real Student", email="real_student@university.edu", password="pw", contact="7778889990", roles=role_stud)
+        db.session.add(real_stud_user)
+        db.session.commit()
+        real_stud = Student(user_id=real_stud_user.id, cgpa=8.5, experience=1, skill_set="Java", resume="res.pdf")
+        db.session.add(real_stud)
+
+        real_comp_user = User(name="Real Enterprise", email="real_recruiter@enterprise.org", password="pw", contact="8889990001", roles=role_comp)
+        db.session.add(real_comp_user)
+        db.session.commit()
+        real_comp = Company(user_id=real_comp_user.id, hr_name="Real HR", employee_count=200, location="Chicago", website="http://real.org")
+        db.session.add(real_comp)
+        db.session.commit()
+
+        real_job = JobPosition(company_id=real_comp.id, job_title="Real Architect", requirements="AWS", job_location="Chicago", job_pay="150k", job_type="Onsite", job_timing="Full Time")
+        db.session.add(real_job)
+        db.session.commit()
+
+        # 2. Login as Demo Admin
+        self.client.get('/auth/demo-login/admin')
+
+        # 3. Attempt to Blacklist Real Student -> should simulate success but NOT modify database
+        res_bl_stud = self.client.get(f'/admin/student/blacklist/{real_stud.id}', follow_redirects=True)
+        self.assertEqual(res_bl_stud.status_code, 200)
+        self.assertIn(b"has been Blacklisted", res_bl_stud.data)
+        db.session.refresh(real_stud_user)
+        self.assertFalse(real_stud_user.blacklisted)  # Intercepted! Remained False
+
+        # 4. Attempt to Delete Real Student -> should simulate success but NOT modify database
+        res_del_stud = self.client.get(f'/admin/student/delete/{real_stud.id}', follow_redirects=True)
+        self.assertEqual(res_del_stud.status_code, 200)
+        self.assertIn(b"Student profile deleted", res_del_stud.data)
+        db.session.refresh(real_stud)
+        self.assertFalse(real_stud.is_deleted)  # Intercepted! Remained False
+
+        # 5. Attempt to Blacklist Real Company -> should simulate success but NOT modify database
+        res_bl_comp = self.client.get(f'/admin/company/blacklist/{real_comp.id}', follow_redirects=True)
+        self.assertEqual(res_bl_comp.status_code, 200)
+        self.assertIn(b"has been Blacklisted", res_bl_comp.data)
+        db.session.refresh(real_comp_user)
+        self.assertFalse(real_comp_user.blacklisted)  # Intercepted! Remained False
+
+        # 6. Attempt to Delete Real Company -> should simulate success but NOT modify database
+        res_del_comp = self.client.get(f'/admin/company/delete/{real_comp.id}', follow_redirects=True)
+        self.assertEqual(res_del_comp.status_code, 200)
+        self.assertIn(b"Company profile deleted", res_del_comp.data)
+        db.session.refresh(real_comp)
+        self.assertFalse(real_comp.is_deleted)  # Intercepted! Remained False
+
+        # 7. Attempt to Reject/Delete Real Job -> should simulate success but NOT delete job
+        res_rej_job = self.client.get(f'/admin/job/reject/{real_job.id}', follow_redirects=True)
+        self.assertEqual(res_rej_job.status_code, 200)
+        self.assertIn(b"has been rejected", res_rej_job.data)
+        self.assertIsNotNone(JobPosition.query.get(real_job.id))  # Intercepted! Job still exists
+
+        # Clean up real test accounts
+        self.client.get('/auth/logout')
+        db.session.delete(real_stud_user)
+        db.session.delete(real_comp_user)
+        db.session.commit()
+
+    def test_14_demo_admin_allows_natural_action_on_demo_users(self):
+        """Verify demo admin actions on demo users execute naturally."""
+        # 1. Login as Demo Admin
+        self.client.get('/auth/demo-login/admin')
+
+        # 2. Find demo student
+        demo_stud = Student.query.join(User).filter(User.email == 'student@portfolio.demo').first()
+        self.assertIsNotNone(demo_stud)
+
+        # 3. Toggle blacklist on demo student -> should actually toggle
+        initial_status = demo_stud.user.blacklisted
+        res = self.client.get(f'/admin/student/blacklist/{demo_stud.id}', follow_redirects=True)
+        self.assertEqual(res.status_code, 200)
+        db.session.refresh(demo_stud.user)
+        self.assertNotEqual(demo_stud.user.blacklisted, initial_status)
+
+        # Reset blacklist for subsequent tests
+        demo_stud.user.blacklisted = False
+        db.session.commit()
+        self.client.get('/auth/logout')
+
+    def test_15_demo_names_and_admin_ui_guardrails(self):
+        """Verify seeded entity names have (Demo) and Admin banner & micro-text render for demo admin."""
+        # 1. Verify seeded entity names
+        c1 = User.query.filter_by(email='company@portfolio.demo').first()
+        c2 = User.query.filter_by(email='cloudscale@portfolio.demo').first()
+        s1 = User.query.filter_by(email='student@portfolio.demo').first()
+        s2 = User.query.filter_by(email='student2@portfolio.demo').first()
+
+        self.assertIsNotNone(c1)
+        self.assertEqual(c1.name, "Nexus Tech Innovations (Demo)")
+        self.assertIsNotNone(c2)
+        self.assertEqual(c2.name, "CloudScale AI Labs (Demo)")
+        self.assertIsNotNone(s1)
+        self.assertEqual(s1.name, "Alex Morgan (Demo)")
+        self.assertIsNotNone(s2)
+        self.assertEqual(s2.name, "Priya Sharma (Demo)")
+
+        # 2. Login as Demo Admin and check Admin Banner
+        self.client.get('/auth/demo-login/admin')
+        res_profile = self.client.get('/admin/profile')
+        self.assertEqual(res_profile.status_code, 200)
+        self.assertIn(b"Demo Environment Active", res_profile.data)
+        self.assertIn(b"To protect live user data, destructive actions", res_profile.data)
+
+        # 3. Check Action Micro-text on companies page
+        res_comps = self.client.get('/admin/companies')
+        self.assertEqual(res_comps.status_code, 200)
+        self.assertIn(b"*Note: Actions on real accounts are simulated. Use (Demo) tagged profiles to test live data cascading.*", res_comps.data)
+
+        # 4. Check Action Micro-text on students page
+        res_studs = self.client.get('/admin/students')
+        self.assertEqual(res_studs.status_code, 200)
+        self.assertIn(b"*Note: Actions on real accounts are simulated. Use (Demo) tagged profiles to test live data cascading.*", res_studs.data)
+
+        # 5. Check Action Micro-text on job postings page
+        res_jobs = self.client.get('/admin/job_postings')
+        self.assertEqual(res_jobs.status_code, 200)
+        self.assertIn(b"*Note: Actions on real accounts are simulated. Use (Demo) tagged profiles to test live data cascading.*", res_jobs.data)
+
+        self.client.get('/auth/logout')
+
 if __name__ == '__main__':
     unittest.main()
+

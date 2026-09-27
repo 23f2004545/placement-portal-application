@@ -1,11 +1,20 @@
 from flask import Blueprint , render_template  , flash , redirect , url_for , request
 from controller.decorators import admin_required
 from flask_login import current_user
-from sqlalchemy import func
+from sqlalchemy import func , cast , String
 from datetime import datetime , timedelta
 from controller.models import *
 
 admin_bp = Blueprint('admin_bp', __name__) 
+
+# --- DEMO ADMIN GUARDRAIL HELPERS ---
+def is_demo_admin():
+    """Checks if current logged-in user is the portfolio demo admin."""
+    return current_user.is_authenticated and getattr(current_user, 'email', '') == 'admin@portfolio.demo'
+
+def is_protected_real_user(email):
+    """Real users have emails that do not end in '@portfolio.demo'."""
+    return not (email and email.endswith('@portfolio.demo'))
 
 
 @admin_bp.route('/profile')
@@ -78,7 +87,7 @@ def companies():
         query = query.filter(
             (User.name.ilike(search)) | 
             (Company.hr_name.ilike(search)) |
-            (Company.id.ilike(search))
+            (cast(Company.id, String).ilike(search))
         )
 
     all_companies = query.all()
@@ -114,8 +123,12 @@ def reject_company(id):
 
     company = Company.query.get_or_404(id)
     if request.method == 'POST':
+        # Guardrail: Demo Admin attempting to reject a real company is intercepted
+        if is_demo_admin() and is_protected_real_user(company.user.email):
+            flash(f'{company.user.name} has been rejected.', 'danger')
+            return redirect(url_for('admin_bp.companies'))
+
         try:
-            
             rejection_reason = request.form.get('rejection_reason')
             company.rejection_reason = rejection_reason
             company.status = "Rejected"
@@ -139,6 +152,12 @@ def toggle_blacklist_company(id):
     
     company = Company.query.get_or_404(id)
 
+    # Guardrail: Demo Admin attempting to blacklist/unblacklist a real company is intercepted
+    if is_demo_admin() and is_protected_real_user(company.user.email):
+        simulated_status = "Blacklisted" if not company.user.blacklisted else "Reactivated"
+        flash(f'{company.user.name} has been {simulated_status}.', 'info')
+        return redirect(url_for('admin_bp.companies'))
+
     company.user.blacklisted = not company.user.blacklisted
     db.session.commit()
     
@@ -153,6 +172,11 @@ def toggle_blacklist_company(id):
 def delete_company(id):
       
     company = Company.query.get_or_404(id)
+
+    # Guardrail: Demo Admin attempting to delete a real company is intercepted
+    if is_demo_admin() and is_protected_real_user(company.user.email):
+        flash('Company profile deleted.', 'warning')
+        return redirect(url_for('admin_bp.companies'))
     
     try:
         company.is_deleted = True 
@@ -193,7 +217,7 @@ def students():
         query = query.filter(
             (User.name.ilike(search)) | 
             (User.email.ilike(search)) |
-            (Student.id.ilike(search))
+            (cast(Student.id, String).ilike(search))
         )
 
     all_students = query.all()
@@ -210,6 +234,13 @@ def students():
 def toggle_blacklist_student(id):
    
     student = Student.query.get_or_404(id)
+
+    # Guardrail: Demo Admin attempting to blacklist/unblacklist a real student is intercepted
+    if is_demo_admin() and is_protected_real_user(student.user.email):
+        simulated_status = "Blacklisted" if not student.user.blacklisted else "Reactivated"
+        flash(f'{student.user.name} has been {simulated_status}.', 'info')
+        return redirect(url_for('admin_bp.students'))
+
     student.user.blacklisted = not student.user.blacklisted
     db.session.commit()
     
@@ -224,6 +255,11 @@ def toggle_blacklist_student(id):
 def delete_student(id):
     
     student = Student.query.get_or_404(id)
+
+    # Guardrail: Demo Admin attempting to delete a real student is intercepted
+    if is_demo_admin() and is_protected_real_user(student.user.email):
+        flash('Student profile deleted.', 'warning')
+        return redirect(url_for('admin_bp.students'))
     
     try:
         student.is_deleted = True
@@ -302,6 +338,12 @@ def approve_job(id):
 def reject_job(id):
     
     job = JobPosition.query.get_or_404(id)
+
+    # Guardrail: Demo Admin attempting to reject/delete a job owned by a real company
+    if is_demo_admin() and is_protected_real_user(job.company.user.email):
+        flash(f'Job "{job.job_title}" has been rejected.', 'danger')
+        return redirect(url_for('admin_bp.job_postings'))
+
     db.session.delete(job)
     db.session.commit()
     
@@ -326,6 +368,11 @@ def view_job(id):
 def delete_job(id):
 
     job = JobPosition.query.get_or_404(id)
+
+    # Guardrail: Demo Admin attempting to delete a job owned by a real company
+    if is_demo_admin() and is_protected_real_user(job.company.user.email):
+        flash('Job deleted.', 'warning')
+        return redirect(url_for('admin_bp.job_postings'))
     
     try:
         job.is_deleted = True

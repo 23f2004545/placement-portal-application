@@ -5,43 +5,52 @@ import os, re
 from werkzeug.security import generate_password_hash
 from datetime import datetime, timezone
 from controller.storage import upload_file
+from controller.seed_demo import ensure_demo_dataset, DEMO_ACCOUNTS
 
 auth_bp = Blueprint('auth_bp', __name__) 
 
-# --- DEMO QUICK LOGIN ENDPOINT ---
+# --- RESILIENT DEMO QUICK LOGIN ENDPOINTS ---
+@auth_bp.route("/login/demo/<role>")
 @auth_bp.route("/demo-login/<role>")
 def demo_login(role):
-    """Bypasses password entry for recruiters and visitors testing specific roles."""
-    role = role.lower().strip()
-    if role not in ['admin', 'company', 'student']:
+    """
+    Dynamic on-click demo login: checks if demo account exists;
+    if not, dynamically seeds rich baseline demo data and logs in instantly.
+    """
+    role_key = role.lower().strip()
+    if role_key not in ['admin', 'company', 'student']:
         flash("Invalid demo role selected.", "danger")
         return redirect(url_for('auth_bp.login'))
-    
-    # Pre-configured demo email mapping
-    demo_accounts = {
-        'admin': 'admin@gmail.com',
-        'company': 'demo_recruiter@company.com',
-        'student': 'demo_student@college.edu'
-    }
-    
-    target_email = demo_accounts.get(role)
+
+    target_email = DEMO_ACCOUNTS.get(role_key)
     user = None
-    
     if target_email:
         user = User.query.filter_by(email=target_email).first()
-        
-    # Fallback: if exact demo email not seeded, find first active user with this role
+
+    # Dynamic On-Click Seeding: If demo user does not exist, seed rich dataset immediately
     if not user:
-        user = User.query.join(User.roles).filter(Role.name == role, User.blacklisted == False).first()
+        ensure_demo_dataset()
+        if target_email:
+            user = User.query.filter_by(email=target_email).first()
+
+    # Fallback to role lookup if email lookup failed
+    if not user:
+        user = User.query.join(User.roles).filter(Role.name == role_key).first()
 
     if not user:
-        flash(f"No demo account found for role '{role.capitalize()}'. Please seed demo accounts or create one.", "warning")
+        flash(f"No demo account found for role '{role_key.capitalize()}'.", "warning")
         return redirect(url_for('auth_bp.login'))
 
-    if user.blacklisted:
-        flash("This account has been deactivated.", "danger")
-        return redirect(url_for('auth_bp.login'))
-
+     # --- UNDELETE LOGIC FOR CHILD PROFILE TABLES ---
+    if hasattr(user, 'company_details') and user.company_details:
+        if hasattr(user.company_details, 'is_deleted') and user.company_details.is_deleted:
+            user.company_details.is_deleted = False
+            
+    if hasattr(user, 'student_details') and user.student_details:
+        if hasattr(user.student_details, 'is_deleted') and user.student_details.is_deleted:
+            user.student_details.is_deleted = False
+            
+            
     login_user(user)
     user.last_login_at = datetime.now(timezone.utc)
     db.session.commit()

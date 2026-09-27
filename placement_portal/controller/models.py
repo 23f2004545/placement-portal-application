@@ -16,8 +16,8 @@ class User(UserMixin,db.Model):
     fs_uniquifier = db.Column(db.String(255), unique=True, nullable=False, default=lambda: secrets.token_urlsafe(16))
     last_login_at = db.Column(db.DateTime) 
 
-    student_details = db.relationship('Student', backref='user', lazy=True, uselist=False)
-    company_details = db.relationship('Company', backref='user', lazy=True, uselist=False)
+    student_details = db.relationship('Student', backref='user', lazy=True, uselist=False, cascade="all, delete-orphan")
+    company_details = db.relationship('Company', backref='user', lazy=True, uselist=False, cascade="all, delete-orphan")
     roles = db.relationship('Role', secondary='user_roles', backref='user', lazy=True, uselist=False)
     
     def check_password(self, password):
@@ -36,12 +36,12 @@ class Role(db.Model):
 
 class UserRoles(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    role_id = db.Column(db.Integer, db.ForeignKey('role.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+    role_id = db.Column(db.Integer, db.ForeignKey('role.id', ondelete='CASCADE'), nullable=False)
 
 class Student(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
     cgpa = db.Column(db.Float, nullable=False)
     experience = db.Column(db.Integer, nullable=False)
     skill_set = db.Column(db.String(200), nullable=False)
@@ -49,7 +49,7 @@ class Student(db.Model):
     milestones = db.Column(db.String(500))
     is_deleted = db.Column(db.Boolean, default=False) 
     
-    applications = db.relationship('Application', backref='student', lazy=True)
+    applications = db.relationship('Application', backref='student', lazy=True, cascade="all, delete-orphan")
     
     def to_dict(self):
         return {
@@ -67,7 +67,7 @@ class Student(db.Model):
 
 class Company(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
     employee_count = db.Column(db.Integer, nullable=False)
     hr_name = db.Column(db.String(80), nullable=False)
     location = db.Column(db.String(200), nullable=False)
@@ -77,7 +77,7 @@ class Company(db.Model):
     rejection_reason = db.Column(db.String(255)) 
     is_deleted = db.Column(db.Boolean, default=False)
     
-    job_postings = db.relationship('JobPosition', backref='company', lazy=True)
+    job_postings = db.relationship('JobPosition', backref='company', lazy=True, cascade="all, delete-orphan")
     
     def to_dict(self):
         return {
@@ -97,7 +97,7 @@ class Company(db.Model):
 
 class JobPosition(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    company_id = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
+    company_id = db.Column(db.Integer, db.ForeignKey('company.id', ondelete='CASCADE'), nullable=False)
     requirements = db.Column(db.String(200), nullable=False)
     job_location = db.Column(db.String(200), nullable=False)
     job_description = db.Column(db.String(700))
@@ -111,10 +111,12 @@ class JobPosition(db.Model):
     views = db.Column(db.Integer, default=0) 
     is_deleted = db.Column(db.Boolean, default=False) 
 
+    applications = db.relationship('Application', backref='job_position', lazy=True, cascade="all, delete-orphan")
+
 class Application(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
-    job_position_id = db.Column(db.Integer, db.ForeignKey('job_position.id'), nullable=False)
+    student_id = db.Column(db.Integer, db.ForeignKey('student.id', ondelete='CASCADE'), nullable=False)
+    job_position_id = db.Column(db.Integer, db.ForeignKey('job_position.id', ondelete='CASCADE'), nullable=False)
     application_status = db.Column(db.String(15), default='Applied') # Applied , Reviewed , Interviewed , Selected , Rejected
     applied_at = db.Column(db.DateTime, nullable=False, default=db.func.current_timestamp())
     cover_letter = db.Column(db.String(250))
@@ -123,8 +125,7 @@ class Application(db.Model):
     is_read = db.Column(db.Boolean, default=False)
     is_cleared = db.Column(db.Boolean, default=False)
     
-    placements = db.relationship('Placement', backref='application', lazy=True, uselist=False)
-    job_position = db.relationship('JobPosition', backref='applications', lazy=True)
+    placements = db.relationship('Placement', backref='application', lazy=True, uselist=False, cascade="all, delete-orphan")
     
     def to_dict(self):
         return {
@@ -138,7 +139,7 @@ class Application(db.Model):
 
 class Placement(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    application_id = db.Column(db.Integer, db.ForeignKey('application.id'), nullable=False)
+    application_id = db.Column(db.Integer, db.ForeignKey('application.id', ondelete='CASCADE'), nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=db.func.current_timestamp()) 
     salary_offered = db.Column(db.String(40), nullable=False)
     joining_date = db.Column(db.String(20), nullable=False) # When the student is expected to join

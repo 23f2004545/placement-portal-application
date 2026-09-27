@@ -19,6 +19,12 @@
         </div>
         
         <hr class="border-secondary opacity-25 mb-4">
+
+    {% if current_user.is_authenticated and current_user.email == 'admin@portfolio.demo' %}
+    <div class="mb-3 text-info small d-flex align-items-center gap-2 px-1">
+        <em>*Note: Actions on real accounts are simulated. Use (Demo) tagged profiles to test live data cascading.*</em>
+    </div>
+    {% endif %}
     {% if search and students %}
         <div class="mb-3 text-white-50">
             Showing results for "{{ search }}" 
@@ -120,6 +126,7 @@
                                     Delete
                                 </button>
                             {% endif %}
+
 
                         </div>
                     </div>
